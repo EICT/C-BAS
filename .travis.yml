@@ -30,7 +30,6 @@ before_script:
   - "python src/main_registration.py &"
 script:
   - "python test/unit/registration_test.py"
-
 # notify result of build to email address
 notifications:
   email:
