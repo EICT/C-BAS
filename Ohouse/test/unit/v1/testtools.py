@@ -15,7 +15,7 @@ class SafeTransportWithCert(xmlrpclib.SafeTransport):
         host_with_cert = (host, {'key_file' : self._key_path, 'cert_file' : self._cert_path})
         return xmlrpclib.SafeTransport.make_connection(self, host_with_cert) # no super, because old style class
 
-def ssl_call(method_name, params, endpoint, key_path='alice-key.pem', cert_path='alice-cert.pem', host='127.0.0.1', port=8001):
+def ssl_call(method_name, params, endpoint, key_path='alice-key.pem', cert_path='alice-cert.pem', host='127.0.0.1', port=8008):
     creds_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'creds'))
     if not os.path.isabs(key_path):
         key_path = os.path.join(creds_path, key_path)

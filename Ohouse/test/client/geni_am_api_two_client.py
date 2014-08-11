@@ -141,7 +141,7 @@ if __name__ == '__main__':
     cert_path = os.path.join(local_path, "alice-cert.pem")
     
     # instanciate the client
-    client = GENI2Client('127.0.0.1', 8001, key_path, cert_path)
+    client = GENI2Client('127.0.0.1', 8008, key_path, cert_path)
     
     # load test credential (look into the `test/creds/TODO.md` to generate these certs)
     with open(os.path.join(local_path, "alice-cred.xml"), 'r') as f:
