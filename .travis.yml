@@ -21,8 +21,16 @@ before_script:
 # run Python unit tests
 script:
   - "python test/unit/v2/reg_tests.py"
-#  - "python test/unit/v2/sa_tests.py"
+  - "python test/unit/v2/sa_tests.py"
   - "python test/unit/v2/ma_tests.py"
+# setup environment for registration app tests
+before_script:
+  - "cd Ohouse_registeration_app"
+  - "cp configuration/registration_app_config.json.example configuration/registration_app_config.json"
+  - "python src/main_registration.py &"
+script:
+  - "python test/unit/registration_test.py"
+
 # notify result of build to email address
 notifications:
   email:
