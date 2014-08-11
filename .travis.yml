@@ -9,6 +9,7 @@ install:
   - "sudo apt-get update -qq"
   - "sudo apt-get install swig libxmlsec1 xmlsec1"
   - "pip install -r Ohouse/requirements.txt"
+  - "pip install pexpect"
 # setup environment and start Ohouse
 before_script:
   - "cd Ohouse"
@@ -16,21 +17,16 @@ before_script:
   - "cp deploy/registry.json.example deploy/registry.json"
   - "cp deploy/supplementary_fields.json.example deploy/supplementary_fields.json"
   - "./test/creds/gen-certs.sh"
-  - "python src/main.py &"
-  - "sleep 5"
-# run Python unit tests
-script:
-  - "python test/unit/v2/reg_tests.py"
-  - "python test/unit/v2/sa_tests.py"
-  - "python test/unit/v2/ma_tests.py"
-# setup environment for registration app tests
-before_script:
-  - "killall python"
-  - "pip install pexpect"
+#  - "python src/main.py &"
   - "cd ../Ohouse_registeration_app"
   - "cp configuration/registration_app_config.json.example configuration/registration_app_config.json"
   - "python src/main_registration.py &"
+  - "sleep 5"
+# run Python unit tests
 script:
+#  - "python test/unit/v2/reg_tests.py"
+#  - "python test/unit/v2/sa_tests.py"
+#  - "python test/unit/v2/ma_tests.py"
   - "python test/unit/registration_test.py"
 # notify result of build to email address
 notifications:

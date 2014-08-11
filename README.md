@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/umartoseef/C-BAS.svg?branch=master)](https://travis-ci.org/umartoseef/C-BAS)
+[![Build Status](https://travis-ci.org/umartoseef/C-BAS-framework.svg?branch=master)](https://travis-ci.org/umartoseef/C-BAS-framework)
 
 #Description 
 
