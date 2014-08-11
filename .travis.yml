@@ -18,10 +18,10 @@ before_script:
   - "cp deploy/supplementary_fields.json.example deploy/supplementary_fields.json"
   - "./test/creds/gen-certs.sh"
 #  - "python src/main.py &"
-  - "cd ../Ohouse_registeration_app"
-  - "cp configuration/registration_app_config.json.example configuration/registration_app_config.json"
   - "python src/main_registration.py &"
   - "sleep 5"
+  - "cd ../Ohouse_registeration_app"
+  - "cp configuration/registration_app_config.json.example configuration/registration_app_config.json"
 # run Python unit tests
 script:
 #  - "python test/unit/v2/reg_tests.py"
