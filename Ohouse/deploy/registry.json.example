@@ -20,7 +20,7 @@
             "_ofelia_island_name" : "island 2"
         }, {
             "service_type" : "SLICE_AUTHORITY",
-            "service_url" : "https://localhost:8001/SA",
+            "service_url" : "https://localhost:8008/SA",
             "service_cert" : "<certificate>foo_sa</certificate>",
             "service_name" : "chapI-SA",
             "service_description" : "CHAPI Service Authority",
@@ -36,7 +36,7 @@
             "_ofelia_island_name" : "island 4"
         }, {
             "service_type" : "MEMBER_AUTHORITY",
-            "service_url" : "https://localhost:8001/MA",
+            "service_url" : "https://localhost:8008/MA",
             "service_cert" : "<certificate>foo_ma</certificate>",
             "service_name" : "CHAPI-MA",
             "service_description" : "CHAPI Member Authority",
