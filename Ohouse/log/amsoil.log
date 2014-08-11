@@ -9180,3 +9180,84 @@ GFedv2ArgumentError: [ARGUMENT_ERROR] The arguments provided to the call were ma
 2014-08-11 10:55:01,210 [INFO] - [pluginmanager] registering service gsav2delegatebase
 2014-08-11 10:55:01,212 [INFO] - [pluginmanager] loading ofed2
 2014-08-11 10:55:01,221 [INFO] - [pluginmanager] done loading plugins
+2014-08-11 11:57:22,975 [INFO] - Logging initialized
+2014-08-11 11:57:22,978 [INFO] - [pluginmanager] loading mailer
+2014-08-11 11:57:23,013 [INFO] - [pluginmanager] registering service mailer
+2014-08-11 11:57:23,013 [INFO] - [pluginmanager] loading mongodb
+2014-08-11 11:57:23,229 [INFO] - [pluginmanager] registering service mongodb
+2014-08-11 11:57:23,230 [INFO] - [pluginmanager] loading configdb
+2014-08-11 11:57:23,791 [INFO] - [pluginmanager] registering service config
+2014-08-11 11:57:23,791 [INFO] - [pluginmanager] registering service configexceptions
+2014-08-11 11:57:23,792 [INFO] - [pluginmanager] loading schedule
+2014-08-11 11:57:23,980 [INFO] - [pluginmanager] registering service schedule
+2014-08-11 11:57:23,980 [INFO] - [pluginmanager] registering service scheduleexceptions
+2014-08-11 11:57:23,981 [INFO] - [pluginmanager] loading fedtools
+2014-08-11 11:57:24,487 [INFO] - [pluginmanager] registering service apiexceptionsv1
+2014-08-11 11:57:24,487 [INFO] - [pluginmanager] registering service apiexceptionsv2
+2014-08-11 11:57:24,487 [INFO] - [pluginmanager] registering service apitools
+2014-08-11 11:57:24,488 [INFO] - [pluginmanager] registering service resourcemanagertools
+2014-08-11 11:57:24,759 [INFO] - [pluginmanager] registering service delegatetools
+2014-08-11 11:57:24,759 [INFO] - [pluginmanager] loading oregistryrm
+2014-08-11 11:57:24,763 [INFO] - [pluginmanager] registering service oregistryrm
+2014-08-11 11:57:24,763 [INFO] - [pluginmanager] registering service oregistryexceptions
+2014-08-11 11:57:24,763 [INFO] - [pluginmanager] loading osliceauthorityrm
+2014-08-11 11:57:24,906 [INFO] - [pluginmanager] registering service osliceauthorityrm
+2014-08-11 11:57:24,906 [INFO] - [pluginmanager] registering service osliceauthorityexceptions
+2014-08-11 11:57:24,907 [INFO] - [pluginmanager] loading worker
+2014-08-11 11:57:25,221 [INFO] - [pluginmanager] registering service worker
+2014-08-11 11:57:25,221 [INFO] - [pluginmanager] loading flaskrpcs
+2014-08-11 11:57:32,209 [INFO] - [pluginmanager] registering service rpcserver
+2014-08-11 11:57:32,209 [INFO] - [pluginmanager] registering service xmlrpc
+2014-08-11 11:57:32,210 [INFO] - [pluginmanager] loading geni_trust
+2014-08-11 11:57:32,276 [INFO] - [pluginmanager] registering service geniutil
+2014-08-11 11:57:32,277 [INFO] - [pluginmanager] loading omemberauthorityrm
+2014-08-11 11:57:32,290 [INFO] - [pluginmanager] registering service omemberauthorityrm
+2014-08-11 11:57:32,290 [INFO] - [pluginmanager] registering service omemberauthorityexceptions
+2014-08-11 11:57:32,290 [INFO] - [pluginmanager] loading fedrpc1
+2014-08-11 11:57:32,318 [INFO] - [pluginmanager] registering service gfedv1exceptions
+2014-08-11 11:57:32,319 [INFO] - [pluginmanager] registering service gregistryv1handler
+2014-08-11 11:57:32,319 [INFO] - [pluginmanager] registering service gregistryv1delegatebase
+2014-08-11 11:57:32,347 [INFO] - [pluginmanager] registering service gmav1handler
+2014-08-11 11:57:32,347 [INFO] - [pluginmanager] registering service gmav1delegatebase
+2014-08-11 11:57:32,348 [INFO] - [pluginmanager] registering service gsav1handler
+2014-08-11 11:57:32,348 [INFO] - [pluginmanager] registering service gsav1delegatebase
+2014-08-11 11:57:32,349 [INFO] - [pluginmanager] loading ofed1
+2014-08-11 11:57:32,416 [INFO] - [pluginmanager] loading registration
+2014-08-11 11:57:32,443 [INFO] - [pluginmanager] registering service registration
+2014-08-11 11:57:32,444 [INFO] - [pluginmanager] loading configrpc
+2014-08-11 11:57:32,446 [INFO] - [pluginmanager] loading fedrpc2
+2014-08-11 11:57:32,453 [INFO] - [pluginmanager] registering service gregistryv2handler
+2014-08-11 11:57:32,453 [INFO] - [pluginmanager] registering service gregistryv2delegatebase
+2014-08-11 11:57:32,454 [INFO] - [pluginmanager] registering service gmav2handler
+2014-08-11 11:57:32,454 [INFO] - [pluginmanager] registering service gmav2delegatebase
+2014-08-11 11:57:32,455 [INFO] - [pluginmanager] registering service gsav2handler
+2014-08-11 11:57:32,455 [INFO] - [pluginmanager] registering service gsav2delegatebase
+2014-08-11 11:57:32,456 [INFO] - [pluginmanager] loading ofed2
+2014-08-11 11:57:32,468 [INFO] - [pluginmanager] done loading plugins
+2014-08-11 11:57:32,476 [INFO] - [flaskrpcs] registering app server at 0.0.0.0:8001
+2014-08-11 11:57:32,569 [INFO] - Logging initialized
+2014-08-11 11:57:32,573 [INFO] - [pluginmanager] loading mailer
+2014-08-11 11:57:32,594 [INFO] - [pluginmanager] registering service mailer
+2014-08-11 11:57:32,594 [INFO] - [pluginmanager] loading mongodb
+2014-08-11 11:57:32,640 [INFO] - [pluginmanager] registering service mongodb
+2014-08-11 11:57:32,640 [INFO] - [pluginmanager] loading configdb
+2014-08-11 11:57:32,807 [INFO] - [pluginmanager] registering service config
+2014-08-11 11:57:32,807 [INFO] - [pluginmanager] registering service configexceptions
+2014-08-11 11:57:32,807 [INFO] - [pluginmanager] loading schedule
+2014-08-11 11:57:32,821 [INFO] - [pluginmanager] registering service schedule
+2014-08-11 11:57:32,821 [INFO] - [pluginmanager] registering service scheduleexceptions
+2014-08-11 11:57:32,821 [INFO] - [pluginmanager] loading fedtools
+2014-08-11 11:57:32,909 [INFO] - [pluginmanager] registering service apiexceptionsv1
+2014-08-11 11:57:32,909 [INFO] - [pluginmanager] registering service apiexceptionsv2
+2014-08-11 11:57:32,909 [INFO] - [pluginmanager] registering service apitools
+2014-08-11 11:57:32,909 [INFO] - [pluginmanager] registering service resourcemanagertools
+2014-08-11 11:57:32,930 [INFO] - [pluginmanager] registering service delegatetools
+2014-08-11 11:57:32,930 [INFO] - [pluginmanager] loading oregistryrm
+2014-08-11 11:57:32,932 [INFO] - [pluginmanager] registering service oregistryrm
+2014-08-11 11:57:32,932 [INFO] - [pluginmanager] registering service oregistryexceptions
+2014-08-11 11:57:32,932 [INFO] - [pluginmanager] loading osliceauthorityrm
+2014-08-11 11:57:32,939 [INFO] - [pluginmanager] registering service osliceauthorityrm
+2014-08-11 11:57:32,939 [INFO] - [pluginmanager] registering service osliceauthorityexceptions
+2014-08-11 11:57:32,939 [INFO] - [pluginmanager] loading worker
+2014-08-11 11:57:32,952 [INFO] - [pluginmanager] registering service worker
+2014-08-11 11:57:32,953 [INFO] - [pluginmanager] loading flaskrpcs

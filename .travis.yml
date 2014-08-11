@@ -25,7 +25,9 @@ script:
   - "python test/unit/v2/ma_tests.py"
 # setup environment for registration app tests
 before_script:
-  - "cd Ohouse_registeration_app"
+  - "killall python"
+  - "pip install pexpect"
+  - "cd ../Ohouse_registeration_app"
   - "cp configuration/registration_app_config.json.example configuration/registration_app_config.json"
   - "python src/main_registration.py &"
 script:
