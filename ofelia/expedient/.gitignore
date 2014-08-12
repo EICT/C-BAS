@@ -42,3 +42,4 @@ expedient-settings
 deployment_settings.py
 *.db
 build/
+.idea/*

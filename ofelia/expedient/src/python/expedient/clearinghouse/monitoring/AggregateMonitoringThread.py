@@ -18,7 +18,7 @@ class AggregateMonitoringThread(Thread):
     '''
     def __updateAggregateStatus(self, aggregate):
 	print "MONITORING >>>> " + aggregate.name
-    '''
+
         try:
             agg = aggregate.as_leaf_class()
             agg_xmlrpc_server = "https://" + agg.client.username + ":" + agg.client.password + "@" + agg.client.url[8:]
@@ -61,5 +61,4 @@ class AggregateMonitoringThread(Thread):
         self.start()
 
     def run(self):	
-        self.__method(self.__param)			
-    '''
+        self.__method(self.__param)

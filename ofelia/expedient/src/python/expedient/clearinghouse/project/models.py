@@ -95,7 +95,7 @@ class Project(models.Model):
     # in which super(model_func(), self).save(*args, **kwargs) is called
     # thus the save function of our parent class.
     #
-    # the inner 2ls function that is return by permissions_save_override
+    # the inner save function that is return by permissions_save_override
     # calls must_have_permission, which raises an PermissionDenied when
     # saving is not allowed. ==> extending the save functionality does not
     # require checking whether action was allowed or not when this 

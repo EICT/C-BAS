@@ -9735,3 +9735,222 @@ GFedv2ArgumentError: [ARGUMENT_ERROR] The arguments provided to the call were ma
 2014-08-11 16:37:42,746 [INFO] - [gregistryrpc] Called: <lookup>
 2014-08-11 16:37:42,756 [INFO] - [gregistryrpc] Called: <lookup>
 2014-08-11 16:37:42,766 [INFO] - [gregistryrpc] Called: <lookup_authorities_for_urns>
+2014-08-11 16:44:38,511 [INFO] - Logging initialized
+2014-08-11 16:44:38,516 [INFO] - [pluginmanager] loading mailer
+2014-08-11 16:44:38,538 [INFO] - [pluginmanager] registering service mailer
+2014-08-11 16:44:38,538 [INFO] - [pluginmanager] loading mongodb
+2014-08-11 16:44:38,626 [INFO] - [pluginmanager] registering service mongodb
+2014-08-11 16:44:38,626 [INFO] - [pluginmanager] loading configdb
+2014-08-11 16:44:38,801 [INFO] - [pluginmanager] registering service config
+2014-08-11 16:44:38,801 [INFO] - [pluginmanager] registering service configexceptions
+2014-08-11 16:44:38,802 [INFO] - [pluginmanager] loading schedule
+2014-08-11 16:44:38,816 [INFO] - [pluginmanager] registering service schedule
+2014-08-11 16:44:38,816 [INFO] - [pluginmanager] registering service scheduleexceptions
+2014-08-11 16:44:38,816 [INFO] - [pluginmanager] loading fedtools
+2014-08-11 16:44:38,906 [INFO] - [pluginmanager] registering service apiexceptionsv1
+2014-08-11 16:44:38,907 [INFO] - [pluginmanager] registering service apiexceptionsv2
+2014-08-11 16:44:38,907 [INFO] - [pluginmanager] registering service apitools
+2014-08-11 16:44:38,907 [INFO] - [pluginmanager] registering service resourcemanagertools
+2014-08-11 16:44:38,928 [INFO] - [pluginmanager] registering service delegatetools
+2014-08-11 16:44:38,928 [INFO] - [pluginmanager] loading oregistryrm
+2014-08-11 16:44:38,930 [INFO] - [pluginmanager] registering service oregistryrm
+2014-08-11 16:44:38,930 [INFO] - [pluginmanager] registering service oregistryexceptions
+2014-08-11 16:44:38,930 [INFO] - [pluginmanager] loading osliceauthorityrm
+2014-08-11 16:44:38,937 [INFO] - [pluginmanager] registering service osliceauthorityrm
+2014-08-11 16:44:38,938 [INFO] - [pluginmanager] registering service osliceauthorityexceptions
+2014-08-11 16:44:38,938 [INFO] - [pluginmanager] loading worker
+2014-08-11 16:44:38,951 [INFO] - [pluginmanager] registering service worker
+2014-08-11 16:44:38,952 [INFO] - [pluginmanager] loading flaskrpcs
+2014-08-11 16:44:45,014 [INFO] - [pluginmanager] registering service rpcserver
+2014-08-11 16:44:45,014 [INFO] - [pluginmanager] registering service xmlrpc
+2014-08-11 16:44:45,014 [INFO] - [pluginmanager] loading geni_trust
+2014-08-11 16:44:45,080 [INFO] - [pluginmanager] registering service geniutil
+2014-08-11 16:44:45,080 [INFO] - [pluginmanager] loading omemberauthorityrm
+2014-08-11 16:44:45,084 [INFO] - [pluginmanager] registering service omemberauthorityrm
+2014-08-11 16:44:45,084 [INFO] - [pluginmanager] registering service omemberauthorityexceptions
+2014-08-11 16:44:45,084 [INFO] - [pluginmanager] loading fedrpc1
+2014-08-11 16:44:45,086 [INFO] - [pluginmanager] registering service gfedv1exceptions
+2014-08-11 16:44:45,086 [INFO] - [pluginmanager] registering service gregistryv1handler
+2014-08-11 16:44:45,086 [INFO] - [pluginmanager] registering service gregistryv1delegatebase
+2014-08-11 16:44:45,087 [INFO] - [pluginmanager] registering service gmav1handler
+2014-08-11 16:44:45,087 [INFO] - [pluginmanager] registering service gmav1delegatebase
+2014-08-11 16:44:45,088 [INFO] - [pluginmanager] registering service gsav1handler
+2014-08-11 16:44:45,088 [INFO] - [pluginmanager] registering service gsav1delegatebase
+2014-08-11 16:44:45,089 [INFO] - [pluginmanager] loading ofed1
+2014-08-11 16:44:45,093 [INFO] - [pluginmanager] loading registration
+2014-08-11 16:44:45,097 [INFO] - [pluginmanager] registering service registration
+2014-08-11 16:44:45,097 [INFO] - [pluginmanager] loading configrpc
+2014-08-11 16:44:45,098 [INFO] - [pluginmanager] loading fedrpc2
+2014-08-11 16:44:45,100 [INFO] - [pluginmanager] registering service gregistryv2handler
+2014-08-11 16:44:45,100 [INFO] - [pluginmanager] registering service gregistryv2delegatebase
+2014-08-11 16:44:45,101 [INFO] - [pluginmanager] registering service gmav2handler
+2014-08-11 16:44:45,101 [INFO] - [pluginmanager] registering service gmav2delegatebase
+2014-08-11 16:44:45,102 [INFO] - [pluginmanager] registering service gsav2handler
+2014-08-11 16:44:45,102 [INFO] - [pluginmanager] registering service gsav2delegatebase
+2014-08-11 16:44:45,103 [INFO] - [pluginmanager] loading ofed2
+2014-08-11 16:44:45,109 [INFO] - [pluginmanager] done loading plugins
+2014-08-11 16:45:44,629 [INFO] - Logging initialized
+2014-08-11 16:45:44,633 [INFO] - [pluginmanager] loading mailer
+2014-08-11 16:45:44,652 [INFO] - [pluginmanager] registering service mailer
+2014-08-11 16:45:44,652 [INFO] - [pluginmanager] loading mongodb
+2014-08-11 16:45:44,696 [INFO] - [pluginmanager] registering service mongodb
+2014-08-11 16:45:44,696 [INFO] - [pluginmanager] loading configdb
+2014-08-11 16:45:44,843 [INFO] - [pluginmanager] registering service config
+2014-08-11 16:45:44,844 [INFO] - [pluginmanager] registering service configexceptions
+2014-08-11 16:45:44,844 [INFO] - [pluginmanager] loading schedule
+2014-08-11 16:45:44,857 [INFO] - [pluginmanager] registering service schedule
+2014-08-11 16:45:44,857 [INFO] - [pluginmanager] registering service scheduleexceptions
+2014-08-11 16:45:44,857 [INFO] - [pluginmanager] loading fedtools
+2014-08-11 16:45:44,944 [INFO] - [pluginmanager] registering service apiexceptionsv1
+2014-08-11 16:45:44,944 [INFO] - [pluginmanager] registering service apiexceptionsv2
+2014-08-11 16:45:44,944 [INFO] - [pluginmanager] registering service apitools
+2014-08-11 16:45:44,944 [INFO] - [pluginmanager] registering service resourcemanagertools
+2014-08-11 16:45:44,964 [INFO] - [pluginmanager] registering service delegatetools
+2014-08-11 16:45:44,964 [INFO] - [pluginmanager] loading oregistryrm
+2014-08-11 16:45:44,966 [INFO] - [pluginmanager] registering service oregistryrm
+2014-08-11 16:45:44,966 [INFO] - [pluginmanager] registering service oregistryexceptions
+2014-08-11 16:45:44,966 [INFO] - [pluginmanager] loading osliceauthorityrm
+2014-08-11 16:45:44,973 [INFO] - [pluginmanager] registering service osliceauthorityrm
+2014-08-11 16:45:44,973 [INFO] - [pluginmanager] registering service osliceauthorityexceptions
+2014-08-11 16:45:44,973 [INFO] - [pluginmanager] loading worker
+2014-08-11 16:45:44,985 [INFO] - [pluginmanager] registering service worker
+2014-08-11 16:45:44,986 [INFO] - [pluginmanager] loading flaskrpcs
+2014-08-11 16:45:50,959 [INFO] - [pluginmanager] registering service rpcserver
+2014-08-11 16:45:50,959 [INFO] - [pluginmanager] registering service xmlrpc
+2014-08-11 16:45:50,959 [INFO] - [pluginmanager] loading geni_trust
+2014-08-11 16:45:51,003 [INFO] - [pluginmanager] registering service geniutil
+2014-08-11 16:45:51,003 [INFO] - [pluginmanager] loading omemberauthorityrm
+2014-08-11 16:45:51,007 [INFO] - [pluginmanager] registering service omemberauthorityrm
+2014-08-11 16:45:51,007 [INFO] - [pluginmanager] registering service omemberauthorityexceptions
+2014-08-11 16:45:51,007 [INFO] - [pluginmanager] loading fedrpc1
+2014-08-11 16:45:51,009 [INFO] - [pluginmanager] registering service gfedv1exceptions
+2014-08-11 16:45:51,009 [INFO] - [pluginmanager] registering service gregistryv1handler
+2014-08-11 16:45:51,009 [INFO] - [pluginmanager] registering service gregistryv1delegatebase
+2014-08-11 16:45:51,010 [INFO] - [pluginmanager] registering service gmav1handler
+2014-08-11 16:45:51,011 [INFO] - [pluginmanager] registering service gmav1delegatebase
+2014-08-11 16:45:51,011 [INFO] - [pluginmanager] registering service gsav1handler
+2014-08-11 16:45:51,011 [INFO] - [pluginmanager] registering service gsav1delegatebase
+2014-08-11 16:45:51,012 [INFO] - [pluginmanager] loading ofed1
+2014-08-11 16:45:51,016 [INFO] - [pluginmanager] loading registration
+2014-08-11 16:45:51,020 [INFO] - [pluginmanager] registering service registration
+2014-08-11 16:45:51,020 [INFO] - [pluginmanager] loading configrpc
+2014-08-11 16:45:51,021 [INFO] - [pluginmanager] loading fedrpc2
+2014-08-11 16:45:51,023 [INFO] - [pluginmanager] registering service gregistryv2handler
+2014-08-11 16:45:51,023 [INFO] - [pluginmanager] registering service gregistryv2delegatebase
+2014-08-11 16:45:51,024 [INFO] - [pluginmanager] registering service gmav2handler
+2014-08-11 16:45:51,024 [INFO] - [pluginmanager] registering service gmav2delegatebase
+2014-08-11 16:45:51,025 [INFO] - [pluginmanager] registering service gsav2handler
+2014-08-11 16:45:51,025 [INFO] - [pluginmanager] registering service gsav2delegatebase
+2014-08-11 16:45:51,026 [INFO] - [pluginmanager] loading ofed2
+2014-08-11 16:45:51,032 [INFO] - [pluginmanager] done loading plugins
+2014-08-11 16:45:51,040 [INFO] - [flaskrpcs] registering app server at 0.0.0.0:8008
+2014-08-11 16:45:51,088 [INFO] - Logging initialized
+2014-08-11 16:45:51,092 [INFO] - [pluginmanager] loading mailer
+2014-08-11 16:45:51,111 [INFO] - [pluginmanager] registering service mailer
+2014-08-11 16:45:51,111 [INFO] - [pluginmanager] loading mongodb
+2014-08-11 16:45:51,154 [INFO] - [pluginmanager] registering service mongodb
+2014-08-11 16:45:51,155 [INFO] - [pluginmanager] loading configdb
+2014-08-11 16:45:51,310 [INFO] - [pluginmanager] registering service config
+2014-08-11 16:45:51,310 [INFO] - [pluginmanager] registering service configexceptions
+2014-08-11 16:45:51,310 [INFO] - [pluginmanager] loading schedule
+2014-08-11 16:45:51,326 [INFO] - [pluginmanager] registering service schedule
+2014-08-11 16:45:51,326 [INFO] - [pluginmanager] registering service scheduleexceptions
+2014-08-11 16:45:51,326 [INFO] - [pluginmanager] loading fedtools
+2014-08-11 16:45:51,414 [INFO] - [pluginmanager] registering service apiexceptionsv1
+2014-08-11 16:45:51,414 [INFO] - [pluginmanager] registering service apiexceptionsv2
+2014-08-11 16:45:51,414 [INFO] - [pluginmanager] registering service apitools
+2014-08-11 16:45:51,414 [INFO] - [pluginmanager] registering service resourcemanagertools
+2014-08-11 16:45:51,434 [INFO] - [pluginmanager] registering service delegatetools
+2014-08-11 16:45:51,435 [INFO] - [pluginmanager] loading oregistryrm
+2014-08-11 16:45:51,436 [INFO] - [pluginmanager] registering service oregistryrm
+2014-08-11 16:45:51,436 [INFO] - [pluginmanager] registering service oregistryexceptions
+2014-08-11 16:45:51,436 [INFO] - [pluginmanager] loading osliceauthorityrm
+2014-08-11 16:45:51,443 [INFO] - [pluginmanager] registering service osliceauthorityrm
+2014-08-11 16:45:51,444 [INFO] - [pluginmanager] registering service osliceauthorityexceptions
+2014-08-11 16:45:51,444 [INFO] - [pluginmanager] loading worker
+2014-08-11 16:45:51,457 [INFO] - [pluginmanager] registering service worker
+2014-08-11 16:45:51,457 [INFO] - [pluginmanager] loading flaskrpcs
+2014-08-11 16:45:57,431 [INFO] - [pluginmanager] registering service rpcserver
+2014-08-11 16:45:57,431 [INFO] - [pluginmanager] registering service xmlrpc
+2014-08-11 16:45:57,431 [INFO] - [pluginmanager] loading geni_trust
+2014-08-11 16:45:57,494 [INFO] - [pluginmanager] registering service geniutil
+2014-08-11 16:45:57,494 [INFO] - [pluginmanager] loading omemberauthorityrm
+2014-08-11 16:45:57,498 [INFO] - [pluginmanager] registering service omemberauthorityrm
+2014-08-11 16:45:57,498 [INFO] - [pluginmanager] registering service omemberauthorityexceptions
+2014-08-11 16:45:57,498 [INFO] - [pluginmanager] loading fedrpc1
+2014-08-11 16:45:57,501 [INFO] - [pluginmanager] registering service gfedv1exceptions
+2014-08-11 16:45:57,502 [INFO] - [pluginmanager] registering service gregistryv1handler
+2014-08-11 16:45:57,502 [INFO] - [pluginmanager] registering service gregistryv1delegatebase
+2014-08-11 16:45:57,503 [INFO] - [pluginmanager] registering service gmav1handler
+2014-08-11 16:45:57,503 [INFO] - [pluginmanager] registering service gmav1delegatebase
+2014-08-11 16:45:57,504 [INFO] - [pluginmanager] registering service gsav1handler
+2014-08-11 16:45:57,505 [INFO] - [pluginmanager] registering service gsav1delegatebase
+2014-08-11 16:45:57,506 [INFO] - [pluginmanager] loading ofed1
+2014-08-11 16:45:57,511 [INFO] - [pluginmanager] loading registration
+2014-08-11 16:45:57,516 [INFO] - [pluginmanager] registering service registration
+2014-08-11 16:45:57,516 [INFO] - [pluginmanager] loading configrpc
+2014-08-11 16:45:57,518 [INFO] - [pluginmanager] loading fedrpc2
+2014-08-11 16:45:57,520 [INFO] - [pluginmanager] registering service gregistryv2handler
+2014-08-11 16:45:57,520 [INFO] - [pluginmanager] registering service gregistryv2delegatebase
+2014-08-11 16:45:57,521 [INFO] - [pluginmanager] registering service gmav2handler
+2014-08-11 16:45:57,522 [INFO] - [pluginmanager] registering service gmav2delegatebase
+2014-08-11 16:45:57,523 [INFO] - [pluginmanager] registering service gsav2handler
+2014-08-11 16:45:57,523 [INFO] - [pluginmanager] registering service gsav2delegatebase
+2014-08-11 16:45:57,524 [INFO] - [pluginmanager] loading ofed2
+2014-08-11 16:45:57,532 [INFO] - [pluginmanager] done loading plugins
+2014-08-11 16:45:57,543 [INFO] - [flaskrpcs] registering app server at 0.0.0.0:8008
+2014-08-11 16:49:42,082 [INFO] - [gsarpc] Called: <create>
+2014-08-11 16:49:42,083 [ERROR] - [gsarpc] [SERVER_ERROR] An error in the client/server connection (string indices must be integers, not str)
+2014-08-11 16:49:42,084 [ERROR] - [gsarpc] Traceback (most recent call last):
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/fedrpc2/fedrpctwo/gsavtwo.py", line 63, in create
+    result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/ofed2/osavtwodelegate.py", line 49, in create
+    return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/osliceauthorityrm/osliceauthorityresourcemanager.py", line 119, in create_slice
+    root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+TypeError: string indices must be integers, not str
+
+2014-08-11 17:13:02,182 [INFO] - [gsarpc] Called: <create>
+2014-08-11 17:13:02,182 [ERROR] - [gsarpc] [SERVER_ERROR] An error in the client/server connection (string indices must be integers, not str)
+2014-08-11 17:13:02,182 [ERROR] - [gsarpc] Traceback (most recent call last):
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/fedrpc2/fedrpctwo/gsavtwo.py", line 63, in create
+    result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/ofed2/osavtwodelegate.py", line 49, in create
+    return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/osliceauthorityrm/osliceauthorityresourcemanager.py", line 119, in create_slice
+    root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+TypeError: string indices must be integers, not str
+
+2014-08-11 17:14:40,334 [INFO] - [gsarpc] Called: <create>
+2014-08-11 17:14:40,335 [ERROR] - [gsarpc] [SERVER_ERROR] An error in the client/server connection (string indices must be integers, not str)
+2014-08-11 17:14:40,335 [ERROR] - [gsarpc] Traceback (most recent call last):
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/fedrpc2/fedrpctwo/gsavtwo.py", line 63, in create
+    result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/ofed2/osavtwodelegate.py", line 49, in create
+    return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/osliceauthorityrm/osliceauthorityresourcemanager.py", line 119, in create_slice
+    root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+TypeError: string indices must be integers, not str
+
+2014-08-11 17:24:29,234 [INFO] - [gsarpc] Called: <create>
+2014-08-11 17:24:29,234 [ERROR] - [gsarpc] [SERVER_ERROR] An error in the client/server connection (string indices must be integers, not str)
+2014-08-11 17:24:29,235 [ERROR] - [gsarpc] Traceback (most recent call last):
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/fedrpc2/fedrpctwo/gsavtwo.py", line 63, in create
+    result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/ofed2/osavtwodelegate.py", line 49, in create
+    return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/osliceauthorityrm/osliceauthorityresourcemanager.py", line 119, in create_slice
+    root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+TypeError: string indices must be integers, not str
+
+2014-08-11 17:28:59,353 [INFO] - [gsarpc] Called: <create>
+2014-08-11 17:28:59,354 [ERROR] - [gsarpc] [SERVER_ERROR] An error in the client/server connection (string indices must be integers, not str)
+2014-08-11 17:28:59,354 [ERROR] - [gsarpc] Traceback (most recent call last):
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/fedrpc2/fedrpctwo/gsavtwo.py", line 63, in create
+    result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/ofed2/osavtwodelegate.py", line 49, in create
+    return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
+  File "/home/umar.toseef/ALIEN/C-BAS-framework/Ohouse/src/plugins/osliceauthorityrm/osliceauthorityresourcemanager.py", line 119, in create_slice
+    root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+TypeError: string indices must be integers, not str
+

@@ -72,7 +72,7 @@ class LdapProxy:
                 logger.error ("ldapproxy: create or replace %s with %s failed: %s" % (dn, entry, error_message))
                 raise
 
-    def rs (self, dn):
+    def delete (self, dn):
         try:
             if settings.LDAP_MASTER_DISABLE == True: return
         except AttributeError: pass

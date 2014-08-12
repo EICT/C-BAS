@@ -79,7 +79,6 @@ from expedient.common import loggingconf
 import logging
 
 
-DEBUG = True
 if DEBUG:
     loggingconf.set_up(logging.DEBUG, LOGGING_LEVELS)
 else:

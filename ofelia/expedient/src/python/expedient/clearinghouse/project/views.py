@@ -153,6 +153,7 @@ def detail(request, proj_id):
             "member_roles": member_roles,
             "breadcrumbs": (
                 ("Home", reverse("home")),
+                ("Project %s" % project.name, reverse("project_detail", args=[project.id])),
             )
         }
     )
