@@ -114,18 +114,9 @@ class OSliceAuthorityResourceManager(object):
                 yet expired
         """
 
-        u_c = None
-        #credentials_testing = credentials #self._resource_manager_tools.read_file(OSliceAuthorityResourceManager.KEY_PATH + "credentials_test")
-        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
-
-        #print '-->'
-        #print credentials
-        #print '<--'
-
         self._resource_manager_tools.validate_credentials(credentials)
-        config = pm.getService('config')
         geniutil = pm.getService('geniutil')
-        hostname = config.get('flask.hostname')
+
 
         fields['SLICE_URN'] =  geniutil.encode_urn(OSliceAuthorityResourceManager.AUTHORITY_NAME, 'slice', str(fields.get('SLICE_NAME')))
         fields['SLICE_UID'] = str(uuid.uuid4())
@@ -135,14 +126,18 @@ class OSliceAuthorityResourceManager(object):
         #Generating Slice Credentials
         s_c, s_pu, s_pr = geniutil.create_certificate(fields['SLICE_URN'], self._sa_pr, self._sa_c)
 
-        #default owner is slice itself
+        #If no user credentials are passed then default owner is slice itself
         u_c = s_c
 
         #Try to get the user credentials for use as owner
-        for child in root:
-            if child.tag == 'credential':
-                u_c = child[2].text
-                break
+        try:
+            root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+            for child in root:
+                if child.tag == 'credential':
+                    u_c = child[2].text
+                    break
+        except:
+            pass
 
         fields['SLICE_CREDENTIALS'] = geniutil.create_credential(u_c, s_c, self._sa_pr, self._sa_c, "slice",
                                                 OSliceAuthorityResourceManager.CRED_EXPIRY)

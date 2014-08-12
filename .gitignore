@@ -9,4 +9,4 @@ keys/*
 _deployment
 rmpyc.sh
 count_lines.sh
-amsoil.log
+Ohouse/log/amsoil.log

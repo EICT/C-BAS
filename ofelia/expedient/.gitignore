@@ -43,3 +43,4 @@ deployment_settings.py
 *.db
 build/
 .idea/*
+src/python/expedient/clearinghouse/localsettings.py

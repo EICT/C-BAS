@@ -9,7 +9,7 @@ def ma_call(method_name, params=[], user_name='alice'):
 def sa_call(method_name, params=[], user_name='expedient'):
     return api_call(method_name, 'sa/2', params=params, user_name=user_name)
 
-def create_slice(slice_name, slice_desc, slice_project_urn='urn:publicid:IDN+this_sa+alien+expedient', user_credentials=''):
+def create_slice(slice_name, slice_desc, slice_project_urn='urn:publicid:IDN+this_sa+alien+expedient', user_credentials=[{'SFA': ''}]):
 
     create_data = {'SLICE_NAME': slice_name, 'SLICE_DESCRIPTION': slice_desc, 'SLICE_PROJECT_URN': slice_project_urn}
     code, value, output = sa_call('create', ['SLICE', user_credentials, {'fields': create_data}])

@@ -43,15 +43,13 @@ def create(request, proj_id):
         instance.uuid = uuid.uuid4()
 
         #<UT>
-        #print "-------------------- "+ str(ENABLE_CBAS)
+        instance.credentials = 'n/a'
         if ENABLE_CBAS:
-            code, values, output = create_slice(slice_name=instance.name, slice_desc=instance.description, user_credentials=user_credentials)
+            code, values, output = create_slice(slice_name=instance.name, slice_desc=instance.description, user_credentials=[{'SFA': user_credentials}])
             if code == 0 and 'SLICE_CREDENTIAL' in values:
                 instance.credentials = values.SLICE_CREDENTIAL
-                import pdb; pdb.set_trace()
-        else:
-            instance.credentials = 'n/a'
 
+        #import pdb; pdb.set_trace()
         instance.save()
         instance.reserved = False
 
