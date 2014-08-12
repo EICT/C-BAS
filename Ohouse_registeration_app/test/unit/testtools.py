@@ -15,12 +15,12 @@ def generate_ssh_keys_pexpect(user_first_name, user_last_name, path):
         ch_name: the name of the corresponding clearing house
 
     """
-    print path
+
     try:
         child = pexpect.spawn('ssh-keygen -t rsa')
 
         child.expect('Enter file in which to save the key (.*):')
-        child.sendline(path + user_first_name[0] + user_last_name)
+        child.sendline(path + '/' + user_first_name[0] + user_last_name)
 
         child.expect('Enter passphrase (.*):')
         child.sendline('')
@@ -77,8 +77,8 @@ def get_ssh_keys(user_first_name, user_last_name):
     path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'keys'))
     generate_ssh_keys_pexpect(user_first_name, user_last_name, path)
 
-    private_key = read_file(str(path)+ user_first_name[0] + user_last_name)
-    public_key =  read_file(str(path)+ user_first_name[0] + user_last_name +'.pub')
+    private_key = read_file(str(path)+ '/' + user_first_name[0] +  user_last_name)
+    public_key =  read_file(str(path)+ '/' + user_first_name[0] + user_last_name +'.pub')
     return (public_key, private_key)
 
 def get_server_conf(filename):
