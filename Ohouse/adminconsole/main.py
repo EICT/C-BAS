@@ -50,17 +50,6 @@ else:
 open('./certs/%s-key.pem' % (entity_cn,), 'w').write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
 open('./certs/%s-cert.pem' % (entity_cn,), 'w').write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
-"""
-geniutil = pm.getService('geniutil')
-resource_manager_tools = pm.getService('resourcemanagertools')
-
-ca_c = read_file(KEY_PATH + CA_CERT_FILE)
-ca_pr = read_file(KEY_PATH + CA_KEY_FILE)
-u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ca_pr, issuer_cert=ca_c,
-                                                        email=str(user_email))
-
-"""
-
-print "Your certificate", st_cert
+print "Your SSL certificate is as follows:\n", st_cert
 
 

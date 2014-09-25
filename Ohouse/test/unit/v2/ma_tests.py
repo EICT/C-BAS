@@ -41,7 +41,7 @@ class TestGMAv2(unittest.TestCase):
         for service_name in value['SERVICES']:
             self.assertIn(service_name, ['MEMBER', 'KEY'])
         self.assertIn('CREDENTIAL_TYPES', value)
-        creds = value['CREDENTIAL_TYPES']
+        creds = value['CREDENTIAL_TYPES']; self.a
         self.assertIsInstance(creds, list)
         self.assertTrue(len(creds) > 0)
         for cred in creds:

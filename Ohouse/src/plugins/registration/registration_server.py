@@ -36,6 +36,10 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None)
         User generated data such as keys, credentials, etc.
     """
 
+    #<UT> Check if proper arguments were passed
+    if not (first_name and last_name and user_name and user_email):
+        return "Empty string passed for one or more arguments"
+
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
     urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
