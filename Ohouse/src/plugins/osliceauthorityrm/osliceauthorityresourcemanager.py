@@ -156,15 +156,15 @@ class OSliceAuthorityResourceManager(object):
         #Let's make the owner as LEAD
         fields['SLICE_LEAD'] = user_urn
 
-        #Create slice object
+        #Finally, create slice object
         ret_values = self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'slice')
+
+        #Add slice credentials to the return values
         ret_values['SLICE_CREDENTIALS'] = slice_cred
 
         #Create SLICE_MEMBER object
         options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'SLICE_CREDENTIALS': slice_cred}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, options, 'SLICE_MEMBER', 'SLICE_URN')
-
-        #Let's make owner as the LEAD
 
         return ret_values
 
@@ -221,35 +221,52 @@ class OSliceAuthorityResourceManager(object):
         config = pm.getService('config')
         hostname = config.get('flask.hostname')
 
-        fields['PROJECT_URN'] = 'urn:publicid:IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
+        p_urn = 'urn:publicid:IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
+        fields['PROJECT_URN'] = p_urn
         fields['PROJECT_UID'] = str(uuid.uuid4())
         fields['PROJECT_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['PROJECT_EXPIRED'] = False
 
-        #<UT> Adding code to generate project credentials.
+        #<UT>
         self._resource_manager_tools.validate_credentials(credentials)
         geniutil = pm.getService('geniutil')
 
-        #Generating Project Credentials
-        p_c, p_pu, p_pr = geniutil.create_certificate(fields['PROJECT_URN'], self._sa_pr, self._sa_c)
-
-        #If no user credentials are passed then default owner is project itself
-        u_c = p_c
+        #Generating Project Certificate
+        p_cert, p_pu, p_pr = geniutil.create_certificate(p_urn, self._sa_pr, self._sa_c)
+        fields['PROJECT_CERTIFICATE'] = p_cert
 
         #Try to get the user credentials for use as owner
         try:
             root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
             for child in root:
                 if child.tag == 'credential':
-                    u_c = child[2].text
+                    user_cert = child[2].text
                     break
         except:
-            pass
+            user_cert = None
 
-        fields['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(u_c, p_c, self._sa_pr, self._sa_c, "",
-                                                OSliceAuthorityResourceManager.CRED_EXPIRY)
+        #Extract user info from his certificate
+        user_urn, user_uuid, user_email = geniutil.extract_certificate_info(user_cert)
+        #Get the privileges user would get as owner in the project credential
+        user_pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='PROJECT')
+        #Create project cred for owner
+        p_creds = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=p_cert, issuer_key=self._sa_pr, issuer_cert=self._sa_c, privileges_list=user_pri,
+                                                    expiration=OSliceAuthorityResourceManager.CRED_EXPIRY)
 
-        return self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'project')
+        #Let's make the owner as LEAD
+        fields['PROJECT_LEAD'] = user_urn
+
+        #Finally, create project object
+        ret_values = self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'project')
+        #Add Project credentials to ret values
+        ret_values['PROJECT_CREDENTIALS'] = p_creds
+
+        #Create PROJECT_MEMBER object
+        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'PROJECT_CREDENTIALS': p_creds}]}
+        self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
+
+        return ret_values
+
 
     def update_project(self, urn, client_cert, credentials, fields, options):
         """

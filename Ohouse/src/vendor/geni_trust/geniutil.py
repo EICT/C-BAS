@@ -107,7 +107,7 @@ def create_credential(owner_cert, target_cert, issuer_key, issuer_cert, typ, exp
     return ucred.save_to_string()
 
 #<UT>
-def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list, expiration, delegatable=False):
+def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list, expiration, delegatable=True):
     """
     {expiration} can be a datetime.datetime or a int/float (see http://docs.python.org/2/library/datetime.html#datetime.date.fromtimestamp) or a string with a UTC timestamp in it
     {privileges_list} list of privileges as list
