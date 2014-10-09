@@ -6,7 +6,6 @@ import uuid
 import pyrfc3339
 import datetime
 import pytz
-import xml.etree.ElementTree as ET
 from amsoil.config import  expand_amsoil_path
 
 class OSliceAuthorityResourceManager(object):
@@ -136,14 +135,7 @@ class OSliceAuthorityResourceManager(object):
         fields['SLICE_CERTIFICATE'] = s_cert
 
         #Try to get the user credentials for use as owner
-        try:
-            root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
-            for child in root:
-                if child.tag == 'credential':
-                    user_cert = child[2].text
-                    break
-        except:
-            user_cert = None
+        user_cert = geniutil.extract_owner_certificate(credentials)
 
         #Extract user info from his certificate
         user_urn, user_uuid, user_email = geniutil.extract_certificate_info(user_cert)
@@ -163,7 +155,7 @@ class OSliceAuthorityResourceManager(object):
         ret_values['SLICE_CREDENTIALS'] = slice_cred
 
         #Create SLICE_MEMBER object
-        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'SLICE_CREDENTIALS': slice_cred}]}
+        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'SLICE_CREDENTIALS': slice_cred, 'SLICE_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, options, 'SLICE_MEMBER', 'SLICE_URN')
 
         return ret_values
@@ -236,14 +228,7 @@ class OSliceAuthorityResourceManager(object):
         fields['PROJECT_CERTIFICATE'] = p_cert
 
         #Try to get the user credentials for use as owner
-        try:
-            root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
-            for child in root:
-                if child.tag == 'credential':
-                    user_cert = child[2].text
-                    break
-        except:
-            user_cert = None
+        user_cert = geniutil.extract_owner_certificate(credentials)
 
         #Extract user info from his certificate
         user_urn, user_uuid, user_email = geniutil.extract_certificate_info(user_cert)
@@ -262,7 +247,7 @@ class OSliceAuthorityResourceManager(object):
         ret_values['PROJECT_CREDENTIALS'] = p_creds
 
         #Create PROJECT_MEMBER object
-        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'PROJECT_CREDENTIALS': p_creds}]}
+        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
 
         return ret_values
@@ -290,6 +275,22 @@ class OSliceAuthorityResourceManager(object):
         """
         Modify a slice membership object.
         """
+        #<UT>
+        slice_lookup_result = self.lookup_slice(match={'SLICE_URN':urn}, filter_=['SLICE_CERTIFICATE'])
+        slice_cert = slice_lookup_result['SLICE_CERTIFICATE']
+        geniutil = pm.getService('geniutil')
+
+        for option_key, option_value in options.iteritems():
+            if option_key in ['members_to_add', 'members_to_change']:
+                member_urn = option_value['MEMBER_URN']
+                member_lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'MEMBER', {'MEMBER_URN' : member_urn}, ['MEMBER_CERTIFICATE'])
+                member_cert = member_lookup_result['MEMBER_CERTIFICATE']
+                member_role = option_value['SLICE_ROLE']
+                member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='SLICE')
+                slice_cred = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert, issuer_key=self._sa_pr, issuer_cert=self._sa_c, privileges_list=member_pri,
+                                                            expiration=OSliceAuthorityResourceManager.CRED_EXPIRY)
+                option_value['SLICE_CREDENTIALS'] = slice_cred
+
         return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, options, 'SLICE_MEMBER', 'SLICE_URN')
 
     def modify_project_membership(self, urn, certificate, credentials, options):

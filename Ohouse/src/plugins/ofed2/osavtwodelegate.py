@@ -57,6 +57,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_=='PROJECT'):
             self._delegate_tools.object_creation_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
+            if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+                raise gfed_ex.GFedv2ArgumentError("Passed invalid or no credentials")
+
             return self._slice_authority_resource_manager.create_project(certificate, credentials, fields, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
@@ -161,9 +164,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             return self._slice_authority_resource_manager.modify_slice_membership(urn, certificate, credentials, options)
 
         elif (type_=='PROJECT'):
-            #<UT> Extending to accept CREDENTIALS
-            #self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE'], options)
-            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'OWNER', 'CREDENTIAL', 'TARGET'],options)
+            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE'], options)
             return self._slice_authority_resource_manager.modify_project_membership(urn, certificate, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))

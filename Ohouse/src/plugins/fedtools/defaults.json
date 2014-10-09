@@ -109,7 +109,7 @@
             "TYPE": "STRING",
             "DESC": "Certificate of the slice",
             "MATCH": false,
-            "CREATE": "ALLOWED",
+            "CREATE": "NOT ALLOWED",
             "UPDATE": false
         }
 
@@ -214,7 +214,15 @@
             "MATCH": true,
             "CREATE": "ALLOWED",
             "UPDATE": true
+        },
+        "PROJECT_CERTIFICATE": {
+            "TYPE": "STRING",
+            "DESC": "Certificate of the project",
+            "MATCH": false,
+            "CREATE": "NOT ALLOWED",
+            "UPDATE": false
         }
+
     },
     "MEMBER": {
         "MEMBER_URN": {
@@ -257,8 +265,8 @@
             "TYPE": "STRING",
             "DESC": "System credentials of the member",
             "MATCH": false,
-            "CREATE": "ALLOWED",
-            "UPDATE": true
+            "CREATE": "NOT ALLOWED",
+            "UPDATE": false
         }
     },
     "KEY": {

@@ -45,8 +45,10 @@ class OMAv2Delegate(GMAv2DelegateBase):
             self._delegate_tools.object_creation_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._member_authority_resource_manager.create_key(certificate, credentials, fields, options)
+        elif (type_ =='MEMBER'):
+            return self._member_authority_resource_manager.register_member(certificate, credentials, fields, options)
         else:
-            raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
+            raise gfed_ex.GFedv2NotImplementedError("__No create method found for object type: " + str(type_))
 
     def update(self, type_, urn, certificate, credentials, fields, options):
         """

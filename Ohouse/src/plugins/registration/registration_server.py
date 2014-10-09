@@ -43,7 +43,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
     urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
-    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'KEY', {'KEY_MEMBER' : urn}, [])
+    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'key', {'KEY_MEMBER' : urn}, [])
 
     if public_key:
         if not lookup_result:
@@ -62,7 +62,9 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
                                        MEMBER_FIRSTNAME = first_name,
                                        MEMBER_LASTNAME 	= last_name,
                                        MEMBER_USERNAME =  user_name ,
-                                       MEMBER_EMAIL =user_email)
+                                       MEMBER_EMAIL =user_email,
+                                       MEMBER_CERTIFICATE = u_c,
+                                       MEMBER_CREDENTIALS = user_cred)
 
             registration_fields_key = dict(KEY_MEMBER= urn,
                                        KEY_TYPE = 'rsa-ssh',
@@ -70,15 +72,10 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
                                        KEY_PUBLIC= ssh_public_key,
                                        KEY_ID= hashlib.sha224(ssh_public_key).hexdigest())
 
-            registration_fields_credentials = dict(CREDENTIAL_OWNER = urn,
-                                                   CREDENTIAL_TARGET = urn,
-                                                   CREDENTIAL_VALUE = user_cred)
+            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'key')
+            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'member')
 
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'KEY')
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'MEMBER')
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_credentials, 'CREDENTIAL')
-
-            return registration_fields_member, registration_fields_key, registration_fields_credentials
+            return registration_fields_member, registration_fields_key
             #return u_c, u_pr, user_cred
         else:
             return "User already registered, try looking up the user with its URN instead !!"

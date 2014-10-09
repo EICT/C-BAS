@@ -135,6 +135,19 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
 
     return ucred.save_to_string()
 
+#<UT>
+def extract_owner_certificate(credentials):
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        for child in root:
+            if child.tag == 'credential':
+                owner_cert = child[2].text
+                break
+    except:
+        owner_cert = None
+    return owner_cert
+
 
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""

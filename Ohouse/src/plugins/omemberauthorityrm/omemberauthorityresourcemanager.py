@@ -5,6 +5,11 @@ logger=amsoil.core.log.getLogger('omemberauthorityrm')
 import hashlib
 
 from omemberauthorityexceptions import *
+#<UT>
+from amsoil.config import  expand_amsoil_path
+import datetime
+from apiexceptionsv2 import *
+
 
 class OMemberAuthorityResourceManager(object):
     """
@@ -12,6 +17,11 @@ class OMemberAuthorityResourceManager(object):
 
     Generates neccessary fields when creating a new object.
     """
+    #<UT>
+    KEY_PATH = expand_amsoil_path('test/creds') + '/'
+    MA_CERT_FILE = 'ma-cert.pem'
+    MA_KEY_FILE = 'ma-key.pem'
+    CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=100)
 
     AUTHORITY_NAME = 'ma' #: The short-name for this authority
 
@@ -28,6 +38,12 @@ class OMemberAuthorityResourceManager(object):
         super(OMemberAuthorityResourceManager, self).__init__()
         self._resource_manager_tools = pm.getService('resourcemanagertools')
         self._set_unique_keys()
+        #<UT>
+        self._ma_c = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+                                                            OMemberAuthorityResourceManager.MA_CERT_FILE)
+        self._ma_pr = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+                                                             OMemberAuthorityResourceManager.MA_KEY_FILE)
+
 
     def _set_unique_keys(self):
         """
@@ -143,3 +159,59 @@ class OMemberAuthorityResourceManager(object):
         """
         return self._resource_manager_tools.object_delete(self.AUTHORITY_NAME,
             'key', {'KEY_ID':urn})
+
+    def register_member(self, certificate, credentials, fields, options):
+        """
+        Register user to member authority without any privileges
+
+        Args:
+            first_name: The first name of the user which will be included in the URN
+            last_name: The last name of the user which will be included in the URN
+            username: A name that might be used to reference a certain user
+            email : The User Email
+            public_key: An optional field, allows a user-generated public key
+
+        Return:
+            User generated data such as usrn, credentials, etc.
+        """
+        first_name = fields['MEMBER_FIRSTNAME']
+        last_name  = fields['MEMBER_LASTNAME']
+        user_name  = fields['MEMBER_USERNAME']
+        user_email = fields['MEMBER_EMAIL']
+
+        if 'KEY_PUBLIC' in fields:
+            public_key = fields['KEY_PUBLIC']
+        else:
+            public_key = None
+
+        geniutil = pm.getService('geniutil')
+        u_urn = geniutil.encode_urn(self.urn(), 'user', str(user_name))
+        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
+
+        if not lookup_result:
+
+            u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_pr, issuer_cert=self._ma_c, email=str(user_email))
+            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_pr, issuer_cert=self._ma_c, privileges_list=[], expiration=self.CRED_EXPIRY)
+            registration_fields_member = dict( MEMBER_URN = u_urn,
+                                               MEMBER_FIRSTNAME = first_name,
+                                               MEMBER_LASTNAME 	= last_name,
+                                               MEMBER_USERNAME =  user_name ,
+                                               MEMBER_EMAIL =user_email,
+                                               MEMBER_CERTIFICATE = u_c,
+                                               MEMBER_CREDENTIALS = u_cred)
+            self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
+
+            #Register public key if provided
+            if public_key:
+                registration_fields_key = dict(KEY_MEMBER= u_urn,
+                                               KEY_TYPE = 'rsa-ssh',
+                                               KEY_DESCRIPTION='SSH key for user ' + user_name,
+                                               KEY_PUBLIC= public_key,
+                                               KEY_ID= hashlib.sha224(public_key).hexdigest())
+                self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_key, 'key')
+                return dict(registration_fields_member, **registration_fields_key)
+            else:
+                return registration_fields_member
+
+        else:
+            raise GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")
