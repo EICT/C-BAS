@@ -43,7 +43,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
     urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
-    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'SSH_KEY', {'KEY_MEMBER' : urn}, [])
+    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'KEY', {'KEY_MEMBER' : urn}, [])
 
     if public_key:
         if not lookup_result:
