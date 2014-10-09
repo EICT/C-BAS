@@ -96,10 +96,15 @@ class DelegateTools(object):
         supplemetary_fields_path = config.get("delegatetools.supplemetary_fileds_path")
         service_registry_path = config.get("delegatetools.service_registry_path")
         defaults_path = config.get("delegatetools.defaults_path")
+        authz_path = config.get("delegatetools.authz_path") #<UT>
+        roles_path = config.get("delegatetools.roles_path") #<UT>
         return {'CONFIG' : expand_amsoil_path(config_path),
                 'DEFAULTS' : expand_amsoil_path(defaults_path),
                 'SUPPLEMENTARY_FIELDS' : expand_amsoil_path(supplemetary_fields_path),
-                'REGISTRY' : expand_amsoil_path(service_registry_path)}
+                'REGISTRY' : expand_amsoil_path(service_registry_path),
+                'AUTHZ' : expand_amsoil_path(authz_path), #<UT>
+                'ROLES' : expand_amsoil_path(roles_path) #<UT>
+                }
 
 
     @serviceinterface
@@ -208,6 +213,43 @@ class DelegateTools(object):
             if hasattr(resource_manager, field.lower()):
                 version[field] = getattr(resource_manager, field.lower())()
         return version
+
+
+    #<UT>
+    @serviceinterface
+    def get_default_privilege_list(self, role_, context_):
+        """
+        Provides a list of privileges for required member role
+
+        Args:
+            role_: the member role as mentioned in roles.json files
+            context_: Context of member role, e.g., project or slice etc.
+
+        Returns:
+            List of privileges for member roles passed as argument
+        """
+        return self.STATIC['ROLES'][role_][context_]
+
+    #<UT>
+    @serviceinterface
+    def get_required_privilege_for(self, method_, type_, role_=None):
+        """
+        Provides a list of privileges required to access a method
+        (see authz.json for further details)
+
+        Args:
+            method_: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
+            type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
+            role_: Describes the member role which is required to change. It is only used in conjunction with CHANGE_ROLE
+
+        Returns:
+            List of privileges required to access given method
+        """
+        if role_ is None:
+            return self.STATIC['AUTHZ'][method_][type_]
+        else:
+            return self.STATIC['AUTHZ'][method_][type_][role_]
+
 
     @serviceinterface
     def get_whitelist(self, type_):
@@ -341,6 +383,7 @@ class DelegateTools(object):
             GFedv2ArgumentError: It is not possible to pass this field during an object update.
 
         """
+
         whitelist = set(fields).difference(set(whitelist.get('update_whitelist')))
         if whitelist:
             raise GFedv2ArgumentError('Cannot pass the following key(s) when updating an object : ' + ', '.join(whitelist))

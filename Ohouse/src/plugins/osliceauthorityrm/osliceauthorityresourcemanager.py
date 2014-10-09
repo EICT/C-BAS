@@ -37,16 +37,24 @@ class OSliceAuthorityResourceManager(object):
                                                             OSliceAuthorityResourceManager.SA_CERT_FILE)
         self._sa_pr = self._resource_manager_tools.read_file(OSliceAuthorityResourceManager.KEY_PATH +
                                                              OSliceAuthorityResourceManager.SA_KEY_FILE)
+
+        #<UT>
+        self._delegate_tools = pm.getService('delegatetools')
+
+
     #--- 'get_version' methods
     def _set_unique_keys(self):
         """
         Set the required unique keys in the database for a Slice Authority.
         """
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_UID')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_URN')
+        #<UT> According to new structure SLICE_URN cannot be a unique key
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_URN')
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLIVER_INFO_URN')
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_UID')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_URN')
+
+        #<UT> According to new structure PROJECT_URN cannot be a unique key
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_URN')
 
     def urn(self):
         """
@@ -117,32 +125,48 @@ class OSliceAuthorityResourceManager(object):
         self._resource_manager_tools.validate_credentials(credentials)
         geniutil = pm.getService('geniutil')
 
-
-        fields['SLICE_URN'] =  geniutil.encode_urn(OSliceAuthorityResourceManager.AUTHORITY_NAME, 'slice', str(fields.get('SLICE_NAME')))
+        slice_urn = geniutil.encode_urn(OSliceAuthorityResourceManager.AUTHORITY_NAME, 'slice', str(fields.get('SLICE_NAME')))
+        fields['SLICE_URN'] =  slice_urn
         fields['SLICE_UID'] = str(uuid.uuid4())
         fields['SLICE_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['SLICE_EXPIRED'] = False
 
-        #Generating Slice Credentials
-        s_c, s_pu, s_pr = geniutil.create_certificate(fields['SLICE_URN'], self._sa_pr, self._sa_c)
-
-        #If no user credentials are passed then default owner is slice itself
-        u_c = s_c
+        #Generating Slice certificate
+        s_cert, s_pu, s_pr = geniutil.create_certificate(slice_urn, self._sa_pr, self._sa_c)
+        fields['SLICE_CERTIFICATE'] = s_cert
 
         #Try to get the user credentials for use as owner
         try:
             root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
             for child in root:
                 if child.tag == 'credential':
-                    u_c = child[2].text
+                    user_cert = child[2].text
                     break
         except:
-            pass
+            user_cert = None
 
-        fields['SLICE_CREDENTIALS'] = geniutil.create_credential(u_c, s_c, self._sa_pr, self._sa_c, "slice",
-                                                OSliceAuthorityResourceManager.CRED_EXPIRY)
+        #Extract user info from his certificate
+        user_urn, user_uuid, user_email = geniutil.extract_certificate_info(user_cert)
+        #Get the privileges user would get as owner in the slice credential
+        user_pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='SLICE')
+        #Create slice cred for owner
+        slice_cred = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=s_cert, issuer_key=self._sa_pr, issuer_cert=self._sa_c, privileges_list=user_pri,
+                                                    expiration=OSliceAuthorityResourceManager.CRED_EXPIRY)
 
-        return self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'slice')
+        #Let's make the owner as LEAD
+        fields['SLICE_LEAD'] = user_urn
+
+        #Create slice object
+        ret_values = self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'slice')
+        ret_values['SLICE_CREDENTIALS'] = slice_cred
+
+        #Create SLICE_MEMBER object
+        options = {'members_to_add' : [{'MEMBER_URN' : user_urn, 'SLICE_CREDENTIALS': slice_cred}]}
+        self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, options, 'SLICE_MEMBER', 'SLICE_URN')
+
+        #Let's make owner as the LEAD
+
+        return ret_values
 
     def update_slice(self, urn, client_cert, credentials, fields, options):
         """
@@ -197,10 +221,34 @@ class OSliceAuthorityResourceManager(object):
         config = pm.getService('config')
         hostname = config.get('flask.hostname')
 
-        fields['PROJECT_URN'] = 'urn:publicid+IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
+        fields['PROJECT_URN'] = 'urn:publicid:IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
         fields['PROJECT_UID'] = str(uuid.uuid4())
         fields['PROJECT_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['PROJECT_EXPIRED'] = False
+
+        #<UT> Adding code to generate project credentials.
+        self._resource_manager_tools.validate_credentials(credentials)
+        geniutil = pm.getService('geniutil')
+
+        #Generating Project Credentials
+        p_c, p_pu, p_pr = geniutil.create_certificate(fields['PROJECT_URN'], self._sa_pr, self._sa_c)
+
+        #If no user credentials are passed then default owner is project itself
+        u_c = p_c
+
+        #Try to get the user credentials for use as owner
+        try:
+            root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+            for child in root:
+                if child.tag == 'credential':
+                    u_c = child[2].text
+                    break
+        except:
+            pass
+
+        fields['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(u_c, p_c, self._sa_pr, self._sa_c, "",
+                                                OSliceAuthorityResourceManager.CRED_EXPIRY)
+
         return self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'project')
 
     def update_project(self, urn, client_cert, credentials, fields, options):

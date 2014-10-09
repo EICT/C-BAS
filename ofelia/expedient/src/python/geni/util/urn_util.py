@@ -136,6 +136,7 @@ def is_valid_urn_string(instr):
 # Note that this is not sufficient but it is necessary
 def is_valid_urn(inurn):
     ''' Check that this string is a valid URN'''
+
     return is_valid_urn_string(inurn) and inurn.startswith(publicid_urn_prefix)
 
 def urn_to_publicid(urn):

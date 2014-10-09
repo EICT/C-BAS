@@ -161,7 +161,7 @@ class TestRegApp(unittest.TestCase):
         user_name = ['test_username_400', 'test_username_401', '', 'test_username_403']
         email     = ['test_400@test.de', 'test_401@test.de', 'test_402@test.de', '']
 
-        #All registration attempts should succeed in the this loop because First and Last name combinations are unique
+        #All registration attempts should fail in the this loop because of missing details
         for index in range(0, 4):
             public_key_value, private_key_value = get_ssh_keys(first_name[index], last_name[index])
             ret_values = self.server.register_user(first_name[index],
@@ -174,9 +174,32 @@ class TestRegApp(unittest.TestCase):
             else:
                 credentials = None
 
-            #Registration should succeed for all combinations
+            #Registration should fail for all combinations
             self.assertIsNone(credentials)
 
+    # def test_create_root_user(self):
+    #     """
+    #     Creates a root user
+    #     :return:
+    #     """
+    #     privileges = "PROJECT_CREATE, GLOBAL_PROJECTS_WILDCARDS, GLOBAL_SLICES_WILDCARDS, GLOBAL_MEMBERS_WILDCARDS, SERVICE_REGISTER, SERVICE_REMOVE, SERVICE_VIEW, MEMBER_SET_LEAD_ROLE, GLOBAL_PROJECTS_VIEW, GLOBAL_PROJECTS_MONITOR, GLOBAL_SLICES_VIEW, GLOBAL_SLICES_MONITOR, MEMBER_REGISTER, MEMBER_REMOVE_REGISTRATION"
+    #     public_key_value, private_key_value = get_ssh_keys("System", "Root")
+    #     ret_values = self.server.register_user("System",
+    #                                             "Root",
+    #                                             "root",
+    #                                             "root@eisland.de",
+    #                                             public_key_value,
+    #                                             privileges)
+    #     if len(ret_values) == 3:
+    #         member, key, credentials = ret_values[:3]
+    #     else:
+    #         credentials = None
+    #
+    #     self.assertIsNotNone(credentials)
+    #
+    #     write_file("root-cred.xml", credentials)
+    #     write_file("root-cert.pem", member)
+    #     write_file("root-key.pem", key)
 
 if __name__ == '__main__':
     unittest.main(verbosity=0, exit=True)

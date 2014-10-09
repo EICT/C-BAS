@@ -106,6 +106,36 @@ def create_credential(owner_cert, target_cert, issuer_key, issuer_cert, typ, exp
 
     return ucred.save_to_string()
 
+#<UT>
+def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list, expiration, delegatable=False):
+    """
+    {expiration} can be a datetime.datetime or a int/float (see http://docs.python.org/2/library/datetime.html#datetime.date.fromtimestamp) or a string with a UTC timestamp in it
+    {privileges_list} list of privileges as list
+    Returns the credential as String
+    """
+    ucred = sfa_cred.Credential()
+    ucred.set_gid_caller(GID(string=owner_cert))
+    ucred.set_gid_object(GID(string=target_cert))
+    ucred.set_expiration(expiration)
+
+    privileges_str = ','.join(privileges_list)
+    privileges = sfa_rights.Rights(privileges_str)
+    privileges.delegate_all_privileges(delegatable)
+    ucred.set_privileges(privileges)
+    ucred.encode()
+
+    issuer_key_file, issuer_key_filename = tempfile.mkstemp(); os.write(issuer_key_file, issuer_key); os.close(issuer_key_file)
+    issuer_cert_file, issuer_cert_filename = tempfile.mkstemp(); os.write(issuer_cert_file, issuer_cert); os.close(issuer_cert_file)
+
+    ucred.set_issuer_keys(issuer_key_filename, issuer_cert_filename) # priv, gid
+    ucred.sign()
+
+    os.remove(issuer_key_filename)
+    os.remove(issuer_cert_filename)
+
+    return ucred.save_to_string()
+
+
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""
     user_gid = GID(string=certificate)

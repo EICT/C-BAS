@@ -46,6 +46,22 @@ def read_file(path):
         s = f.read()
         return s
 
+def write_file(name, contents):
+    """
+    Write a file content and place in Keys dir
+
+    Args:
+        name: The name of the file to create
+        contents: Text contents as string
+
+    Returns:
+        Nothing
+    """
+    keys_dir_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'keys'))
+    path = str(keys_dir_path)+ '/' + name
+
+    with open(path,"w") as f:
+        f.write(contents)
 
 def read_json_file(path):
     """

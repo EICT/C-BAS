@@ -20,6 +20,9 @@ def setup():
     config.install("delegatetools.supplemetary_fileds_path", "deploy/supplementary_fields.json", "JSON file with Supplementary Fields for CH, SA, MA",True)
     config.install("delegatetools.service_registry_path","deploy/registry.json", "JSON file with Services supported by the registry",True)
     config.install("delegatetools.defaults_path", "src/plugins/fedtools/defaults.json", "JSON file with default data for CH, SA, MA", True)
+    #<UT>
+    config.install("delegatetools.authz_path", "src/plugins/fedtools/authz.json", "JSON file with mapping between privileges and methods", True)
+    config.install("delegatetools.roles_path", "src/plugins/fedtools/roles.json", "JSON file with default privileges for CH roles", True)
 
     delegate_tools = DelegateTools()
     pm.registerService('delegatetools', delegate_tools)

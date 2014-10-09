@@ -46,6 +46,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
+            if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+                raise gfed_ex.GFedv2ArgumentError("Passed invalid or no credentials")
+
             return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
         elif (type_=='SLIVER_INFO'):
             self._delegate_tools.object_creation_check(fields, self._sliver_info_whitelist)
@@ -154,11 +157,13 @@ class OSAv2Delegate(GSAv2DelegateBase):
         membership for the given URN using the resource manager.
         """
         if (type_=='SLICE'):
-
-            self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE'],options)
+            self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE'], options)
             return self._slice_authority_resource_manager.modify_slice_membership(urn, certificate, credentials, options)
+
         elif (type_=='PROJECT'):
-            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE'], options)
+            #<UT> Extending to accept CREDENTIALS
+            #self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE'], options)
+            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'OWNER', 'CREDENTIAL', 'TARGET'],options)
             return self._slice_authority_resource_manager.modify_project_membership(urn, certificate, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))

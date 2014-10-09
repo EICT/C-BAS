@@ -74,104 +74,104 @@ class TestGSAv2(unittest.TestCase):
         else:
             warn("No supplementary fields to test with.")
 
-    def test_malformed_field(self):
-        """
-        Test type checking by passing a malformed field ('KEY_MEMBER' as a boolean)
-        during creation.
-        """
-        create_data = {'SLICE_NAME':True, 'SLICE_DESCRIPTION' : 'My Malformed Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
-        self._test_create(create_data, 'SLICE', 'SLICE_URN', 3)
-
-        lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
-
-    def test_invalid_slice_name(self):
-        """
-        This test is intended to test the validity of the slice_name upon creation.
-        """
-        invalid_charachters = ['_','!',"@",'#','$','%','^','&','*','(',')','+']
-        invalid_sliceNames = ['invalid%sslicename' %c for c in invalid_charachters] +['-invalidslicename']
-
-        for invalid_sliceName in invalid_sliceNames:
-            create_data = {'SLICE_NAME': invalid_sliceName,
-                           'SLICE_DESCRIPTION': 'My Malformed Slice',
-                           'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-            self._test_create(create_data, 'SLICE', 'SLICE_URN',3)
-
-            #Asserting to make sure the invalid slice name was not created
-            lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-            self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
-
-
-    def test_create_unauthorized_field(self):
-        """
-        Test creation rules by passing an unauthorized field     ('KEY_ID') during creation.
-        """
-        create_data = {'SLICE_EXPIRED' : True, 'SLICE_NAME':'UNAUTHORIZED_CREATION',
-                       'SLICE_DESCRIPTION' : 'My Unauthorized Slice',
-                       'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
-        self._test_create(create_data, 'SLICE', 'SLICE_URN', 3)
-
-        #Asserting to make sure the unauthorized_field was not created
-        lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
-
-    def test_update_unauthorized_field(self):
-        """
-        Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
-        """
-        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
-        update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
-        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
-        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
-
-    def test_update_invalid_expiry(self):
-        """
-        Test update rules by passing an invalid expiry date during update.
-        Note: We are only testing projects here because otherwise we would end up with slices left over (we can not remove slices).
-        """
-        create_data = {
-                       'PROJECT_NAME' : 'TEST-PROJECT',
-                       'PROJECT_DESCRIPTION' : 'Time_Expiry'}
-
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
-
-        update_data = {'PROJECT_EXPIRATION' : '2013-07-29T13:15:30Z'}
-        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
-        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
-
-    def test_lookup_multiple_slice_urns(self):
-        """
-        Test whether it is possible to specify multiple slices and look those slices concurrently
-        """
-
-        create_data_1 = {
-               'SLICE_NAME' : 'TEST-SLICE-1',
-               'SLICE_DESCRIPTION' : 'Time_Expiry'}
-
-        create_data_2 = {
-               'SLICE_NAME' : 'TEST-SLICE-3',
-               'SLICE_DESCRIPTION' : 'Time_Expiry'}
-
-        urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0)
-        urn2 = self._test_create(create_data_2, 'SLICE', 'SLICE_URN', 0)
-
-        lookup_data={'SLICE_URN':[str(urn1),str(urn2)]}
-        self._test_lookup(lookup_data, None, 'SLICE', 0, 2)
-
-
-    def test_get_credentials(self):
-        """
-        Test to see whether the get_credentials method is working or not
-        """
-        create_data= {
-               'PROJECT_NAME' : 'TEST-SLICE-CREDENTIALS',
-               'PROJECT_DESCRIPTION' : 'TEST_CREDENTIALS'}
-
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
-        self._test_get_credentials(urn, TestGSAv2.NOT_IMPLEMENTED)
-
+    # def test_malformed_field(self):
+    #     """
+    #     Test type checking by passing a malformed field ('KEY_MEMBER' as a boolean)
+    #     during creation.
+    #     """
+    #     create_data = {'SLICE_NAME':True, 'SLICE_DESCRIPTION' : 'My Malformed Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
+    #     self._test_create(create_data, 'SLICE', 'SLICE_URN', 3)
+    #
+    #     lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
+    #     self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
+    #
+    # def test_invalid_slice_name(self):
+    #     """
+    #     This test is intended to test the validity of the slice_name upon creation.
+    #     """
+    #     invalid_charachters = ['_','!',"@",'#','$','%','^','&','*','(',')','+']
+    #     invalid_sliceNames = ['invalid%sslicename' %c for c in invalid_charachters] +['-invalidslicename']
+    #
+    #     for invalid_sliceName in invalid_sliceNames:
+    #         create_data = {'SLICE_NAME': invalid_sliceName,
+    #                        'SLICE_DESCRIPTION': 'My Malformed Slice',
+    #                        'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
+    #         self._test_create(create_data, 'SLICE', 'SLICE_URN',3)
+    #
+    #         #Asserting to make sure the invalid slice name was not created
+    #         lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
+    #         self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
+    #
+    #
+    # def test_create_unauthorized_field(self):
+    #     """
+    #     Test creation rules by passing an unauthorized field     ('KEY_ID') during creation.
+    #     """
+    #     create_data = {'SLICE_EXPIRED' : True, 'SLICE_NAME':'UNAUTHORIZED_CREATION',
+    #                    'SLICE_DESCRIPTION' : 'My Unauthorized Slice',
+    #                    'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
+    #     self._test_create(create_data, 'SLICE', 'SLICE_URN', 3)
+    #
+    #     #Asserting to make sure the unauthorized_field was not created
+    #     lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
+    #     self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
+    #
+    # def test_update_unauthorized_field(self):
+    #     """
+    #     Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
+    #     """
+    #     create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+    #     urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
+    #     update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
+    #     self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
+    #     self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
+    #
+    # def test_update_invalid_expiry(self):
+    #     """
+    #     Test update rules by passing an invalid expiry date during update.
+    #     Note: We are only testing projects here because otherwise we would end up with slices left over (we can not remove slices).
+    #     """
+    #     create_data = {
+    #                    'PROJECT_NAME' : 'TEST-PROJECT',
+    #                    'PROJECT_DESCRIPTION' : 'Time_Expiry'}
+    #
+    #     urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
+    #
+    #     update_data = {'PROJECT_EXPIRATION' : '2013-07-29T13:15:30Z'}
+    #     self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
+    #     self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
+    #
+    # def test_lookup_multiple_slice_urns(self):
+    #     """
+    #     Test whether it is possible to specify multiple slices and look those slices concurrently
+    #     """
+    #
+    #     create_data_1 = {
+    #            'SLICE_NAME' : 'TEST-SLICE-1',
+    #            'SLICE_DESCRIPTION' : 'Time_Expiry'}
+    #
+    #     create_data_2 = {
+    #            'SLICE_NAME' : 'TEST-SLICE-3',
+    #            'SLICE_DESCRIPTION' : 'Time_Expiry'}
+    #
+    #     urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0)
+    #     urn2 = self._test_create(create_data_2, 'SLICE', 'SLICE_URN', 0)
+    #
+    #     lookup_data={'SLICE_URN':[str(urn1),str(urn2)]}
+    #     self._test_lookup(lookup_data, None, 'SLICE', 0, 2)
+    #
+    #
+    # def test_get_credentials(self):
+    #     """
+    #     Test to see whether the get_credentials method is working or not
+    #     """
+    #     create_data= {
+    #            'PROJECT_NAME' : 'TEST-SLICE-CREDENTIALS',
+    #            'PROJECT_DESCRIPTION' : 'TEST_CREDENTIALS'}
+    #
+    #     urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
+    #     self._test_get_credentials(urn, TestGSAv2.NOT_IMPLEMENTED)
+    #
     def test_slice(self):
         """
         Test object type 'SLICE' methods: create, lookup, update.
@@ -238,6 +238,11 @@ class TestGSAv2(unittest.TestCase):
         """
         code, value, output = sa_call('create', [object_type, self._credential_list("admin"), {'fields' : fields}], user_name="admin")
 
+        print 'expected code:'+str(expected_code)
+        print 'code:'+str(code)
+        print 'value:'+str(value)
+        print 'output:'+str(output)
+
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsInstance(value, dict)
@@ -248,12 +253,36 @@ class TestGSAv2(unittest.TestCase):
             self.assertIsInstance(urn, str)
             return urn
 
+    def _test_create_ex(self, fields, object_type, expected_urn, expected_code, op_user_name="admin"):
+        """
+        Helper method to test object creation.
+        """
+        code, value, output = sa_call('create', [object_type, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+
+        print 'expected code:'+str(expected_code)
+        print 'code:'+str(code)
+        print 'value:'+str(value)
+        print 'output:'+str(output)
+
+        self.assertEqual(code, expected_code)
+        if code is 0:
+            self.assertIsInstance(value, dict)
+            for field_key, field_value in fields.iteritems():
+                self.assertEqual(value.get(field_key), field_value)
+            self.assertIn(expected_urn, value)
+            urn = value.get(expected_urn)
+            self.assertIsInstance(urn, str)
+            return urn, value
+
 
     def _test_update(self, urn, fields, object_type, expected_urn, expected_code):
         """
         Helper method to test object update.
         """
         code, value, output = sa_call('update', [object_type, urn, self._credential_list("admin"), {'fields' : fields}], user_name="admin")
+
+
+
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
@@ -329,11 +358,100 @@ class TestGSAv2(unittest.TestCase):
         self._test_lookup_for_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'test_urn','SLICE', change_data, 1, 0)
         self._test_lookup_for_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'test_urn', 'SLICE', remove_data, 0, 0)
 
+
+    #<UT> A test to check
+    # def test_project_member_roles_in_project(self):
+    #     """
+    #
+    #     """
+    #     #User creates a project and becomes the LEAD
+    #     #Step 1: Create a project
+    #     create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT1', 'PROJECT_DESCRIPTION':'My test project'}
+    #     project_urn, project_cred = self._test_create_ex(create_data, 'PROJECT', 'PROJECT_URN', 0)
+    #     add_data = {'members_to_add' : [{'CREDENTIAL' : project_cred, 'OWNER' : 'test_user1_urn', 'TARGET': project_urn}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', add_data, 1, 0)
+    #
+    #     #Step 2: Add a user to the project
+    #     add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_user1_urn', 'PROJECT_ROLE' : 'MEMBER'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', add_data, 1, 0)
+    #
+    #     #Step 3: Change user role to LEAD
+    #     change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_user1_urn', 'PROJECT_ROLE' : 'LEAD'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', change_data, 1, 0)
+    #     update_data = {'PROJECT_LEAD' : 'test_user1_urn'}
+    #     self._test_update(project_urn, update_data, 'PROJECT', 'PROJECT_URN', 0)
+    #
+    #     #self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
+    #
+    #     #LEAD adds another use to the project as MEMBER
+    #     add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_user2_urn', 'PROJECT_ROLE' : 'MEMBER'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', add_data, 2, 0)
+    #
+    #     #LEAD assigns the project MEMBER a role of ADMIN
+    #     change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_user2_urn', 'PROJECT_ROLE' : 'ADMIN'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', change_data, 2, 0)
+    #
+    #     #cleanup
+    #     remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_user1_urn'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', remove_data, 1, 0)
+    #     remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_user2_urn'}]}
+    #     self._test_lookup_members(project_urn, 'PROJECT', remove_data, 0, 0)
+    #     self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
+    #
+
+    # def test_project_member_roles_in_slice(self):
+    #     """
+    #
+    #     """
+    #     #User creates a project and becomes the LEAD
+    #     #Step 1: Create a project
+    #     create_data = {'SLICE_NAME':'TEST-SLICE1', 'SLICE_DESCRIPTION' : 'My Clean Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject1'}
+    #     lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
+    #     presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0)
+    #     if len(presence_check) is 1:
+    #         create_code = 5
+    #     else:
+    #         create_code = 0
+    #     slice_urn, slice_cred = self._test_create_ex(create_data, 'SLICE', 'SLICE_URN', create_code)
+
+        # #Step 2: Add a user to the project
+        # add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_user1_urn', 'SLICE_ROLE' : 'MEMBER'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', add_data, 1, 0)
+        #
+        # #Step 3: Change user role to LEAD
+        # change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_user1_urn', 'SLICE_ROLE' : 'LEAD'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', change_data, 1, 0)
+        # update_data = {'SLICE_LEAD' : 'test_user1_urn'}
+        # self._test_update(slice_urn, update_data, 'SLICE', 'SLICE_URN', 0)
+        #
+        # #self._test_delete(slice_urn, 'PROJECT', 'SLICE_URN', 0)
+        #
+        # #LEAD adds another use to the project as MEMBER
+        # add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_user2_urn', 'SLICE_ROLE' : 'MEMBER'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0)
+        #
+        # #LEAD assigns the project MEMBER a role of ADMIN
+        # change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_user2_urn', 'SLICE_ROLE' : 'ADMIN'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0)
+        #
+        # #cleanup
+        # remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_user1_urn'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', remove_data, 1, 0)
+        # remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_user2_urn'}]}
+        # self._test_lookup_members(slice_urn, 'SLICE', remove_data, 0, 0)
+        # self._test_delete(slice_urn, 'SLICE', 'SLICE_URN', 100)
+
     def _test_modify_membership(self, urn, object_type, data, expected_code):
         """
         Helper method to test object membership modification.
         """
         code, value, output = sa_call('modify_membership', [object_type, urn, self._credential_list("admin"), data], user_name="admin")
+
+        print 'expected code:'+str(expected_code)
+        print 'code:'+str(code)
+        print 'value:'+str(value)
+        print 'output:'+str(output)
+
         self.assertEqual(code, expected_code)
         return code
 

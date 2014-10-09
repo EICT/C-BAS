@@ -20,8 +20,7 @@ CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=100)
 class RegistrationAppServer(ThreadingMixIn, SimpleJSONRPCServer):
     pass
 
-
-def register_user(first_name, last_name, user_name, user_email, public_key=None):
+def register_user(first_name, last_name, user_name, user_email, public_key=None, privileges=[]):
     """
     Register user by creating public ssh Keys and credentials
 
@@ -31,6 +30,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None)
         username: A name that might be used to reference a certail user
         email : The User Email
         public_key: An optional field, allows a user-generated public key
+        privileges: list of privileges to be included in user credentials
 
     Return:
         User generated data such as keys, credentials, etc.
@@ -43,7 +43,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None)
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
     urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
-    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'key', {'KEY_MEMBER' : urn}, [])
+    lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'SSH_KEY', {'KEY_MEMBER' : urn}, [])
 
     if public_key:
         if not lookup_result:
@@ -53,7 +53,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None)
             ma_pr = read_file(KEY_PATH + MA_KEY_FILE)
             u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c,
                                                         email=str(user_email))
-            user_cred = geniutil.create_credential(u_c, u_c, ma_pr, ma_c, "user", CRED_EXPIRY)
+            user_cred = geniutil.create_credential_ex(u_c, u_c, ma_pr, ma_c, privileges, CRED_EXPIRY)
 
         # Receiving public key and saving it in the Member Authority Data-base
             resource_manager_tools = pm.getService('resourcemanagertools')
@@ -70,18 +70,18 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None)
                                        KEY_PUBLIC= ssh_public_key,
                                        KEY_ID= hashlib.sha224(ssh_public_key).hexdigest())
 
-
-            registration_fields_credentials = dict(CREDENTIAL_MEMBER = urn,
-                                                   CREDENTIAL_DESCRIPTION = 'Credentials for' + urn,
+            registration_fields_credentials = dict(CREDENTIAL_OWNER = urn,
+                                                   CREDENTIAL_TARGET = urn,
                                                    CREDENTIAL_VALUE = user_cred)
 
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'key')
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'member')
-            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_credentials, 'member')
+            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'KEY')
+            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'MEMBER')
+            resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_credentials, 'CREDENTIAL')
 
             return registration_fields_member, registration_fields_key, registration_fields_credentials
+            #return u_c, u_pr, user_cred
         else:
-            return "User already registerd, try looking up the user with its URN instead !!"
+            return "User already registered, try looking up the user with its URN instead !!"
 
     return "Public key missing, please provide you public key"
 

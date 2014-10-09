@@ -97,7 +97,22 @@
             "MATCH": true,
             "CREATE": "REQUIRED",
             "UPDATE": false
+        },
+        "SLICE_LEAD": {
+            "TYPE": "STRING",
+            "DESC": "Owner of the slice",
+            "MATCH": true,
+            "CREATE": "ALLOWED",
+            "UPDATE": true
+        },
+        "SLICE_CERTIFICATE": {
+            "TYPE": "STRING",
+            "DESC": "Certificate of the slice",
+            "MATCH": false,
+            "CREATE": "ALLOWED",
+            "UPDATE": false
         }
+
     },
     "SLIVER_INFO": {
         "SLIVER_INFO_SLICE_URN": {
@@ -192,6 +207,13 @@
             "MATCH": false,
             "CREATE": "ALLOWED",
             "UPDATE": true
+        },
+        "PROJECT_LEAD": {
+            "TYPE": "STRING",
+            "DESC": "Owner of the project",
+            "MATCH": true,
+            "CREATE": "ALLOWED",
+            "UPDATE": true
         }
     },
     "MEMBER": {
@@ -230,6 +252,13 @@
             "DESC": "Email of user",
             "MATCH": false,
             "PROTECT": "IDENTIFYING"
+        },
+        "MEMBER_CREDENTIALS": {
+            "TYPE": "STRING",
+            "DESC": "System credentials of the member",
+            "MATCH": false,
+            "CREATE": "ALLOWED",
+            "UPDATE": true
         }
     },
     "KEY": {
