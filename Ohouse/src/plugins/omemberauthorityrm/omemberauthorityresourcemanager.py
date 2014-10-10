@@ -44,6 +44,7 @@ class OMemberAuthorityResourceManager(object):
         self._ma_pr = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
                                                              OMemberAuthorityResourceManager.MA_KEY_FILE)
 
+        gfed_ex = pm.getService('apiexceptionsv2')
 
     def _set_unique_keys(self):
         """
@@ -214,4 +215,4 @@ class OMemberAuthorityResourceManager(object):
                 return registration_fields_member
 
         else:
-            raise GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")
+            raise gfed_ex.GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")

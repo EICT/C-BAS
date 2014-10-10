@@ -182,7 +182,7 @@ class TestRegApp(unittest.TestCase):
     #     Creates a root user
     #     :return:
     #     """
-    #     privileges = "PROJECT_CREATE, GLOBAL_PROJECTS_WILDCARDS, GLOBAL_SLICES_WILDCARDS, GLOBAL_MEMBERS_WILDCARDS, SERVICE_REGISTER, SERVICE_REMOVE, SERVICE_VIEW, MEMBER_SET_LEAD_ROLE, GLOBAL_PROJECTS_VIEW, GLOBAL_PROJECTS_MONITOR, GLOBAL_SLICES_VIEW, GLOBAL_SLICES_MONITOR, MEMBER_REGISTER, MEMBER_REMOVE_REGISTRATION"
+    #     privileges = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW", "GLOBAL_PROJECTS_WILDCARDS", "MEMBER_REGISTER", "SERVICE_REMOVE", "SERVICE_VIEW", "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
     #     public_key_value, private_key_value = get_ssh_keys("System", "Root")
     #     ret_values = self.server.register_user("System",
     #                                             "Root",
@@ -190,16 +190,19 @@ class TestRegApp(unittest.TestCase):
     #                                             "root@eisland.de",
     #                                             public_key_value,
     #                                             privileges)
-    #     if len(ret_values) == 3:
-    #         member, key, credentials = ret_values[:3]
+    #     if len(ret_values) == 2:
+    #         member, key = ret_values[:2]
+    #         credentials = member['MEMBER_CREDENTIALS']
+    #         certificate = member['MEMBER_CERTIFICATE']
+    #         private_key_cert = member['MEMBER_CERTIFICATE_PRIVATE_KEY']
     #     else:
     #         credentials = None
     #
     #     self.assertIsNotNone(credentials)
     #
     #     write_file("root-cred.xml", credentials)
-    #     write_file("root-cert.pem", member)
-    #     write_file("root-key.pem", key)
+    #     write_file("root-cert.pem", certificate)
+    #     write_file("root-key.pem", private_key_cert)
 
 if __name__ == '__main__':
     unittest.main(verbosity=0, exit=True)

@@ -23,6 +23,7 @@ class DelegateTools(object):
     JSON_COMMENT = "__comment" #: delimeter for comments in loaded JSON files (config.json and defaults.json)
     REQUIRED_METHOD_KEYS = ['members_to_add', 'members_to_change', 'members_to_remove'] #: list of valid keys to be passed as 'options' in a 'modify_membership' call
     GET_VERSION_FIELDS = ['URN', 'IMPLEMENTATION', 'SERVICES', 'CREDENTIAL_TYPES', 'ROLES', 'SERVICE_TYPES', 'API_VERSIONS'] #: list of fields possible in a 'get_version' API call response
+    TRUSTED_CERT_PATH = expand_amsoil_path('deploy/trusted') + '/'
 
     def __init__(self):
         """
@@ -250,6 +251,32 @@ class DelegateTools(object):
         else:
             return self.STATIC['AUTHZ'][method_][type_][role_]
 
+    @serviceinterface
+    def check_if_authorized(self, credentials, certificate, method, type_, target_urn=None):
+        """
+        Check if credentials have any of the given privileges
+        :param credentials: credential string in SFA format
+        :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
+        :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
+        """
+        if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+            raise GFedv2ArgumentError("Passed invalid or no credentials")
+
+        geniutil = pm.getService('geniutil')
+
+        priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        user_urn, _, _ = geniutil.extract_certificate_info(certificate)
+
+        #If given are system member credentials then target_urn cannot be used in verification
+        if user_urn == target_urn:
+            geniutil.verify_credential(credentials, certificate, user_urn, self.TRUSTED_CERT_PATH)
+        else:
+            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+
+        required_privileges = self.get_required_privilege_for(method, type_)
+        
+        if not set(priv_from_cred).intersection(required_privileges):
+            raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to execute "+ method + " call on "+ type_ + " object")
 
     @serviceinterface
     def get_whitelist(self, type_):

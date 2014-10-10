@@ -148,6 +148,22 @@ def extract_owner_certificate(credentials):
         owner_cert = None
     return owner_cert
 
+def get_privileges_and_target_urn(credentials):
+    """
+    Provides a list of privileges included in the given credentials
+    :param credentials: SFA formatted string
+    :return: list of privileges
+    """
+    priv_list = []
+    target_urn = None
+    if credentials:
+        cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
+        target_urn = cred_obj.get_gid_object().get_urn
+        privileges = cred_obj.get_privileges().rights
+        for p in privileges:
+            priv_list.append(p.kind)
+
+    return priv_list, target_urn
 
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""

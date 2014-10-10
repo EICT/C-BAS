@@ -294,7 +294,11 @@ class OSliceAuthorityResourceManager(object):
             if option_key in ['members_to_add', 'members_to_change']:
                 for member_dict in option_value:
                     member_cert = member_dict['MEMBER_CERTIFICATE']
-                    member_pri = self._delegate_tools.get_default_privilege_list(role_=member_dict['SLICE_ROLE'], context_='SLICE')
+                    member_role = member_dict['SLICE_ROLE'] if 'SLICE_ROLE' in member_dict else 'MEMBER'
+                    member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='SLICE')
+                    if 'EXTRA_PRIVILEGES' in member_dict:
+                        member_pri = member_pri+member_dict['EXTRA_PRIVILEGES']
+                        member_dict.pop('EXTRA_PRIVILEGES', None)
                     member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
                                                                                      issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                                                      privileges_list=member_pri, expiration=self.CRED_EXPIRY)
@@ -320,7 +324,11 @@ class OSliceAuthorityResourceManager(object):
             if option_key in ['members_to_add', 'members_to_change']:
                 for member_dict in option_value:
                     member_cert = member_dict['MEMBER_CERTIFICATE']
-                    member_pri = self._delegate_tools.get_default_privilege_list(role_=member_dict['PROJECT_ROLE'], context_='PROJECT')
+                    member_role = member_dict['PROJECT_ROLE'] if 'PROJECT_ROLE' in member_dict else 'MEMBER'
+                    member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='PROJECT')
+                    if 'EXTRA_PRIVILEGES' in member_dict:
+                        member_pri = member_pri+member_dict['EXTRA_PRIVILEGES']
+                        member_dict.pop('EXTRA_PRIVILEGES', None)
                     member_dict['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
                                                                                        issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                                                        privileges_list=member_pri, expiration=self.CRED_EXPIRY)

@@ -75,6 +75,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
             resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'key')
             resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'member')
 
+            registration_fields_member['MEMBER_CERTIFICATE_PRIVATE_KEY'] = u_pr
             return registration_fields_member, registration_fields_key
             #return u_c, u_pr, user_cred
         else:
