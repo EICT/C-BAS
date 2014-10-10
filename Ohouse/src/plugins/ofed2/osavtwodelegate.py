@@ -160,11 +160,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
         membership for the given URN using the resource manager.
         """
         if (type_=='SLICE'):
-            self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE'], options)
+            self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE', 'MEMBER_CERTIFICATE'], options)
             return self._slice_authority_resource_manager.modify_slice_membership(urn, certificate, credentials, options)
 
         elif (type_=='PROJECT'):
-            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE'], options)
+            self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'MEMBER_CERTIFICATE'], options)
             return self._slice_authority_resource_manager.modify_project_membership(urn, certificate, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))

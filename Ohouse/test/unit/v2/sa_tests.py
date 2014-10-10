@@ -333,30 +333,49 @@ class TestGSAv2(unittest.TestCase):
         Test the 'add', 'change' and 'remove' methods for 'PROJECT' membership
         object.
         """
-        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'test_role'}]}
-        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'upgraded_test_role'}]}
+        #Create a project as it is a prerequisite
+        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'MEMBERSHIP_TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
+
+        member_cert = get_creds_file_contents('alice-cert.pem')
+        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
+        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
         remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'PROJECT', add_data, 1, 0)
-        self._test_lookup_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'PROJECT', change_data, 1, 0)
-        self._test_lookup_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'PROJECT', remove_data, 0, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'test_urn','PROJECT', add_data, 1, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'test_urn','PROJECT', change_data, 1, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+project+TESTPROJECT', 'test_urn', 'PROJECT', remove_data, 0, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', add_data, 2, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', change_data, 2, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', remove_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', add_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', change_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn', 'PROJECT', remove_data, 0, 0)
+        self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_slice_membership(self):
         """
         Test the 'add', 'change' and 'remove' methods for 'PROJECT' membership
         object.
         """
-        add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'test_role'}]}
-        change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'upgraded_test_role'}]}
+
+        #Create a slice as it is a prerequisite
+        create_data = {'SLICE_NAME':'CREATION-MEMBER-TEST', 'SLICE_DESCRIPTION' : 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
+        lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
+        presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0)
+        if len(presence_check) is 1:
+            create_code = 5
+        else:
+            create_code = 0
+        slice_urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', create_code)
+
+        #Now perform actual tests
+        member_cert = get_creds_file_contents('alice-cert.pem')
+        add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
+        change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
         remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLICE', add_data, 1, 0)
-        self._test_lookup_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLICE', change_data, 1, 0)
-        self._test_lookup_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLICE', remove_data, 0, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'test_urn','SLICE', add_data, 1, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'test_urn','SLICE', change_data, 1, 0)
-        self._test_lookup_for_members('urn:publicid:IDN+this.sa+slice+TESTSLICE', 'test_urn', 'SLICE', remove_data, 0, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', remove_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', add_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', change_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn', 'SLICE', remove_data, 0, 0)
 
 
     #<UT> A test to check
