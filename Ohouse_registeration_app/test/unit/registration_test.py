@@ -25,18 +25,18 @@ class TestRegApp(unittest.TestCase):
                                                     user_name,
                                                     email[index],
                                                     public_key_value)
-            if len(ret_values) == 3:
-                member, key, credentials = ret_values[:3]
+            if len(ret_values) == 2:
+                member, key = ret_values[:2]
             else:
-                credentials = None
+                member = None
 
             # First registration has unique parameters so it should succeed
             if index == 0:
-                self.assertIsNotNone(credentials)
+                self.assertIsNotNone(member)
 
             # First registration has non-unique user_name so it should fail
             if index == 1:
-                self.assertIsNone(credentials)
+                self.assertIsNone(member)
 
     def test_register_with_non_unique_email(self):
         '''
@@ -56,13 +56,13 @@ class TestRegApp(unittest.TestCase):
                                                     user_name[index],
                                                     email,
                                                     public_key_value)
-            if len(ret_values) == 3:
-                member, key, credentials = ret_values[:3]
+            if len(ret_values) == 2:
+                member, key = ret_values[:2]
             else:
-                credentials = None
+                member = None
 
             #Registration should succeed for all combinations
-            self.assertIsNotNone(credentials)
+            self.assertIsNotNone(member)
 
 
     def test_register_with_non_unique_public_key(self):
@@ -81,13 +81,13 @@ class TestRegApp(unittest.TestCase):
                                                email[0],
                                                public_key_value)
 
-        if len(ret_values) == 3:
-            member, key, credentials = ret_values[:3]
+        if len(ret_values) == 2:
+            member, key = ret_values[:2]
         else:
-            credentials = None
+            member = None
 
         #Registration should succeed for unique public key
-        self.assertIsNotNone(credentials)
+        self.assertIsNotNone(member)
 
         ret_values = None
         try:
@@ -124,13 +124,13 @@ class TestRegApp(unittest.TestCase):
                                                     user_name[index],
                                                     email[index],
                                                     public_key_value)
-            if len(ret_values) == 3:
-                member, key, credentials = ret_values[:3]
+            if len(ret_values) == 2:
+                member, key = ret_values[:2]
             else:
-                credentials = None
+                member = None
 
             #Registration should succeed for all combinations
-            self.assertIsNotNone(credentials)
+            self.assertIsNotNone(member)
 
         #Redefine user names to make them unique
         user_name = ['test_username_E', 'test_username_F', 'test_username_G', 'test_username_H']
@@ -143,13 +143,13 @@ class TestRegApp(unittest.TestCase):
                                                                 user_name[index],
                                                                 email[index],
                                                                 public_key_value)
-            if len(ret_values) == 3:
-                member, key, credentials = ret_values[:3]
+            if len(ret_values) == 2:
+                member, key = ret_values[:2]
             else:
-                credentials = None
+                member = None
 
             #Registration should succeed for all combinations
-            self.assertIsNotNone(credentials)
+            self.assertIsNotNone(member)
 
     def test_register_with_empty_argument(self):
         """
@@ -169,13 +169,13 @@ class TestRegApp(unittest.TestCase):
                                                     user_name[index],
                                                     email[index],
                                                     public_key_value)
-            if len(ret_values) == 3:
-                member, key, credentials = ret_values[:3]
+            if len(ret_values) == 2:
+                member, key = ret_values[:2]
             else:
-                credentials = None
+                member = None
 
             #Registration should fail for all combinations
-            self.assertIsNone(credentials)
+            self.assertIsNone(member)
 
     # def test_create_root_user(self):
     #     """

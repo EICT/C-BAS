@@ -149,16 +149,15 @@ class RegistrationFrame(Frame):
 
                     self.public_key_text_area.insert(END, public_key_value)
                     self.private_key_text_area.insert(END, private_key_value)
-                    member, key, credentials= server.register_user(self.first_name_entry.get(),
-                                                   self.last_name_entry.get(),
-                                                   self.user_name_entry.get(),
-                                                   self.email_entry.get(),
-                                                   public_key_value)
+                    member, key = server.register_user(self.first_name_entry.get(),
+                                                       self.last_name_entry.get(),
+                                                       self.user_name_entry.get(),
+                                                       self.email_entry.get(),
+                                                       public_key_value)
 
-
-                    credentials_value = credentials['CREDENTIAL_VALUE'] if credentials else "EMPTY_CREDENTIALS"
+                    credentials_value = member['MEMBER_CREDENTIALS'] if 'MEMBER_CREDENTIALS' in member else "EMPTY_CREDENTIALS"
                     self.user_credentials.insert(END, credentials_value)
-                    self.raise_tkinter_message('registered')() if credentials else self.raise_tkinter_message('fail')()
+                    self.raise_tkinter_message('registered')() if member else self.raise_tkinter_message('fail')()
                 else:
                     self.raise_tkinter_message('missing')()
 
