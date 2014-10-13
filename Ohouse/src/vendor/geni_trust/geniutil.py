@@ -158,7 +158,7 @@ def get_privileges_and_target_urn(credentials):
     target_urn = None
     if credentials:
         cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
-        target_urn = cred_obj.get_gid_object().get_urn
+        target_urn = cred_obj.get_gid_object().get_urn()
         privileges = cred_obj.get_privileges().rights
         for p in privileges:
             priv_list.append(p.kind)

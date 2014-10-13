@@ -265,18 +265,59 @@ class DelegateTools(object):
         geniutil = pm.getService('geniutil')
 
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
-        user_urn, _, _ = geniutil.extract_certificate_info(certificate)
+        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
 
         #If given are system member credentials then target_urn cannot be used in verification
-        if user_urn == target_urn:
-            geniutil.verify_credential(credentials, certificate, user_urn, self.TRUSTED_CERT_PATH)
+        if user_urn_from_cert == target_urn_from_cred:
+            geniutil.verify_credential(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
         else:
             geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
 
         required_privileges = self.get_required_privilege_for(method, type_)
-        
-        if not set(priv_from_cred).intersection(required_privileges):
+
+        if required_privileges and not set(priv_from_cred).intersection(required_privileges):
             raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to execute "+ method + " call on "+ type_ + " object")
+
+    @serviceinterface
+    def check_if_modify_membership_authorized(self, credentials, options, type_):
+        """
+        Check if credentials have any of the given privileges; NOTE: target_urn is assumed to be already checked
+        Moreover, authorization for remove member is not performed here
+        :param credentials: credential string in SFA format
+        :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
+        :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
+        """
+
+        geniutil = pm.getService('geniutil')
+
+        priv_from_cred, _ = geniutil.get_privileges_and_target_urn(credentials)
+        required_privileges = []
+
+        for option_key, option_value in options.iteritems():
+            for member_dict in option_value:
+                #Authorization check for ADMIN and LEAD roles
+                if type_=='PROJECT':
+                    if 'PROJECT_ROLE' in member_dict:
+                        if member_dict['PROJECT_ROLE'] == 'ADMIN':
+                            required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'ADMIN')
+                        elif member_dict['PROJECT_ROLE'] == 'LEAD':
+                            required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'LEAD')
+                        elif member_dict['PROJECT_ROLE'] == 'MONITOR':
+                            required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'MONITOR')
+                elif type_=='SLICE':
+                    if 'SLICE_ROLE' in member_dict:
+                        if member_dict['SLICE_ROLE'] == 'ADMIN':
+                            required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'ADMIN')
+                        elif member_dict['SLICE_ROLE'] == 'LEAD':
+                            required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'LEAD')
+
+                if required_privileges and not set(priv_from_cred).intersection(required_privileges):
+                    raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
+
+                # Only self owned privileges can be assigned to others
+                if 'EXTRA_PRIVILEGES' in member_dict:
+                    if not set(priv_from_cred).issuperset(member_dict['EXTRA_PRIVILEGES']):
+                        raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
 
     @serviceinterface
     def get_whitelist(self, type_):
