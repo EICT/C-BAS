@@ -226,7 +226,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test object type 'PROJECT' methods: create, lookup, update and delete.
         """
-        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
         update_data = {'PROJECT_DESCRIPTION' : 'M. Broadbent Test Project'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0, "root")
@@ -287,6 +287,8 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object deletion.
         """
         code, value, output = sa_call('delete', [object_type, urn, self._credential_list(op_user_name), {}], user_name=op_user_name)
+        if code != expected_code:
+            print code, value, output
         self.assertEqual(code, expected_code)
         self.assertIsNone(value)
         self._test_lookup({expected_urn : urn}, None, object_type, 0, None, "root")
@@ -345,7 +347,7 @@ class TestGSAv2(unittest.TestCase):
         #Now perform actual tests
         member_cert = get_creds_file_contents('alice-cert.pem')
         add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
-        change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'urn:publicid:IDN+test:fp7-ofelia:eu+user+root', 'SLICE_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
+        change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
         remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_urn'}]}
         self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0, "root")
         self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0, "root")

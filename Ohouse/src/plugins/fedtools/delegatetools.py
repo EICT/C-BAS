@@ -320,6 +320,28 @@ class DelegateTools(object):
                         raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
 
     @serviceinterface
+    def check_if_ma_info_update_authorized(self, credentials, certificate, type_, target_urn):
+        """
+        Performs authorization check on member/key info update
+        :param credentials:
+        :param options:
+        :param type_:
+        :return:
+        """
+        if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+            raise GFedv2ArgumentError("Passed invalid or no credentials")
+
+        geniutil = pm.getService('geniutil')
+        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
+
+        #Update is allowed for owner himself. Otherwise, proper credentials should be presented
+        if user_urn_from_cert == target_urn:
+            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+        else:
+            self.check_if_authorized(credentials=credentials, certificate=certificate, method='UPDATE', type_=type_, target_urn=None)
+
+
+    @serviceinterface
     def get_whitelist(self, type_):
         """
         Forms a number of whitelists for a given object type.

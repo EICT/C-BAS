@@ -169,6 +169,8 @@ class TestGMAv2(unittest.TestCase):
         """
         create_data = {'MEMBER_FIRSTNAME':'mem1', 'MEMBER_LASTNAME':'mem1', 'MEMBER_USERNAME':'mem1', 'MEMBER_EMAIL':'mem1@test.de', 'KEY_PUBLIC':'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Z6'}
         urn = self._test_create(create_data, 'MEMBER', 'MEMBER_URN', 0)
+        update_data = {'MEMBER_LASTNAME':'mem11'}
+        self._test_update(urn, update_data, 'MEMBER', 'MEMBER_URN', 0)
 
 
     def test_key(self):
@@ -185,10 +187,11 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object creation.
         """
-        code, value, output = ma_call('create', [object_type, self._credential_list("admin"), {'fields' : fields}], user_name="admin")
-        print str(code)+':'+str(expected_code)
-        print str(value)
-        print str(output)
+        code, value, output = ma_call('create', [object_type, self._credential_list("root"), {'fields' : fields}], user_name="root")
+        if code != expected_code:
+            print str(code)+':'+str(expected_code)
+            print str(value)
+            print str(output)
 
         self.assertEqual(code, expected_code)
         if code is 0:
@@ -204,7 +207,7 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object update.
         """
-        code, value, output = ma_call('update', [object_type, urn, self._credential_list("admin"), {'fields' : fields}], user_name="admin")
+        code, value, output = ma_call('update', [object_type, urn, self._credential_list("root"), {'fields' : fields}], user_name="root")
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
@@ -221,7 +224,7 @@ class TestGMAv2(unittest.TestCase):
             options['match'] = match
         if _filter:
             options['filter'] = _filter
-        code, value, output = ma_call('lookup', [object_type, self._credential_list("admin"), options], user_name="admin")
+        code, value, output = ma_call('lookup', [object_type, self._credential_list("root"), options], user_name="root")
         self.assertEqual(code, expected_code)
         if expected_length:
             self.assertEqual(len(value), expected_length)
@@ -231,7 +234,7 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object deletion.
         """
-        code, value, output = ma_call('delete', [object_type, urn, self._credential_list("admin"), {}], user_name="admin")
+        code, value, output = ma_call('delete', [object_type, urn, self._credential_list("root"), {}], user_name="root")
         self.assertEqual(code, expected_code)
         self.assertIsNone(value)
         self._test_lookup({expected_urn : urn}, None, object_type, None, 0)

@@ -241,13 +241,15 @@
             "TYPE": "STRING",
             "DESC": "First name of member",
             "MATCH": true,
-            "PROTECT": "IDENTIFYING"
+            "PROTECT": "IDENTIFYING",
+            "UPDATE" : true
         },
         "MEMBER_LASTNAME": {
             "TYPE": "STRING",
             "DESC": "Last name of member",
             "MATCH": true,
-            "PROTECT": "IDENTIFYING"
+            "PROTECT": "IDENTIFYING",
+            "UPDATE" : true
         },
         "MEMBER_USERNAME": {
             "TYPE": "STRING",
