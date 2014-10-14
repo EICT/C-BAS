@@ -47,7 +47,7 @@ class GMAv2Handler(xmlrpc.Dispatcher):
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def create(self, type_, credentials, options):
+    def create(self, type_, certificate, credentials, options):
         """
         Create object of given type with fields given in options.
 
@@ -58,12 +58,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.create(type_, self.requestCertificate(), credentials, fields, options)
+            result = self._delegate.create(type_, certificate, credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def update(self, type_, urn, credentials, options):
+    def update(self, type_, urn, certificate, credentials, options):
         """
         Update object of given type and URN with fields given in options.
 
@@ -74,12 +74,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.update(type_, urn, self.requestCertificate(), credentials, fields, options)
+            result = self._delegate.update(type_, urn, certificate, credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def delete(self, type_, urn, credentials, options):
+    def delete(self, type_, urn, certificate, credentials, options):
         """
         Delete object of given type and URN.
 
@@ -87,12 +87,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
 
         """
         try:
-            result = self._delegate.delete(type_, urn, self.requestCertificate(), credentials, options)
+            result = self._delegate.delete(type_, urn, certificate, credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def lookup(self, type_, credentials, options):
+    def lookup(self, type_, certificate, credentials, options):
         """
         Lookup objects with given type.
 
@@ -103,7 +103,7 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             match, filter_ = self._api_tools.fetch_match_and_filter(options)
-            result = self._delegate.lookup(type_, self.requestCertificate(), credentials, match, filter_, options)
+            result = self._delegate.lookup(type_, certificate, credentials, match, filter_, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)

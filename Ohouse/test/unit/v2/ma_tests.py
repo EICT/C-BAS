@@ -187,7 +187,8 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object creation.
         """
-        code, value, output = ma_call('create', [object_type, self._credential_list("root"), {'fields' : fields}], user_name="root")
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = ma_call('create', [object_type, cert, self._credential_list("root"), {'fields' : fields}], user_name="root")
         if code != expected_code:
             print str(code)+':'+str(expected_code)
             print str(value)
@@ -207,7 +208,8 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object update.
         """
-        code, value, output = ma_call('update', [object_type, urn, self._credential_list("root"), {'fields' : fields}], user_name="root")
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = ma_call('update', [object_type, urn, cert, self._credential_list("root"), {'fields' : fields}], user_name="root")
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
@@ -224,7 +226,8 @@ class TestGMAv2(unittest.TestCase):
             options['match'] = match
         if _filter:
             options['filter'] = _filter
-        code, value, output = ma_call('lookup', [object_type, self._credential_list("root"), options], user_name="root")
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = ma_call('lookup', [object_type, cert, self._credential_list("root"), options], user_name="root")
         self.assertEqual(code, expected_code)
         if expected_length:
             self.assertEqual(len(value), expected_length)
@@ -234,7 +237,8 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object deletion.
         """
-        code, value, output = ma_call('delete', [object_type, urn, self._credential_list("root"), {}], user_name="root")
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = ma_call('delete', [object_type, urn, cert, self._credential_list("root"), {}], user_name="root")
         self.assertEqual(code, expected_code)
         self.assertIsNone(value)
         self._test_lookup({expected_urn : urn}, None, object_type, None, 0)

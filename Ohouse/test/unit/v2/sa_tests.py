@@ -236,7 +236,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object creation.
         """
-        code, value, output = sa_call('create', [object_type, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+        cert = get_creds_file_contents(op_user_name+'-cert.pem')
+        code, value, output = sa_call('create', [object_type, cert, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
 
         if not code == expected_code:
             print 'expected code:'+str(expected_code)
@@ -258,7 +259,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object update.
         """
-        code, value, output = sa_call('update', [object_type, urn, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+        cert = get_creds_file_contents(op_user_name+'-cert.pem')
+        code, value, output = sa_call('update', [object_type, urn, cert, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
 
         self.assertEqual(code, expected_code)
         if code is 0:
@@ -276,7 +278,8 @@ class TestGSAv2(unittest.TestCase):
             options['match'] = match
         if _filter:
             options['filter'] = _filter
-        code, value, output = sa_call('lookup', [object_type, self._credential_list(op_user_name), options], user_name=op_user_name)
+        cert = get_creds_file_contents(op_user_name+'-cert.pem')
+        code, value, output = sa_call('lookup', [object_type, cert, self._credential_list(op_user_name), options], user_name=op_user_name)
         self.assertEqual(code, expected_code)
         if expected_length:
             self.assertEqual(len(value), expected_length)
@@ -286,7 +289,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object deletion.
         """
-        code, value, output = sa_call('delete', [object_type, urn, self._credential_list(op_user_name), {}], user_name=op_user_name)
+        cert = get_creds_file_contents(op_user_name+'-cert.pem')
+        code, value, output = sa_call('delete', [object_type, urn, cert, self._credential_list(op_user_name), {}], user_name=op_user_name)
         if code != expected_code:
             print code, value, output
         self.assertEqual(code, expected_code)
@@ -360,7 +364,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object membership modification.
         """
-        code, value, output = sa_call('modify_membership', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
+        cert = get_creds_file_contents(op_user_name+'-cert.pem')
+        code, value, output = sa_call('modify_membership', [object_type, urn, cert, self._credential_list(op_user_name), data], user_name=op_user_name)
 
         if not code == expected_code:
             print 'expected code:'+str(expected_code)
@@ -376,7 +381,8 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object membership lookup.
         """
         if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
-            code, value, output = sa_call('lookup_members', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
+            cert = get_creds_file_contents(op_user_name+'-cert.pem')
+            code, value, output = sa_call('lookup_members', [object_type, urn, cert, self._credential_list(op_user_name), data], user_name=op_user_name)
             self.assertEqual(code, 0)
             self.assertEqual(len(value), expected_length)
 
@@ -385,7 +391,8 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object membership lookup for a member.
         """
         if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
-            code, value, output = sa_call('lookup_for_member', [object_type, member_urn, self._credential_list(op_user_name), data])
+            cert = get_creds_file_contents(op_user_name+'-cert.pem')
+            code, value, output = sa_call('lookup_for_member', [object_type, member_urn, cert, self._credential_list(op_user_name), data])
             self.assertEqual(code, 0)
             self.assertEqual(len(value), expected_length)
 
