@@ -186,7 +186,7 @@ class OMemberAuthorityResourceManager(object):
             public_key = None
 
         geniutil = pm.getService('geniutil')
-        u_urn = geniutil.encode_urn(self.urn(), 'user', str(user_name))
+        u_urn = geniutil.encode_urn(self.AUTHORITY_NAME, 'user', str(user_name))
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
 
         if not lookup_result:

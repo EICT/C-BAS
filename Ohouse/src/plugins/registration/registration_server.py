@@ -42,7 +42,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
 
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
-    urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
+    urn = geniutil.encode_urn(AUTHORITY_NAME, 'user', str(user_name))
     lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'key', {'KEY_MEMBER' : urn}, [])
 
     if public_key:
