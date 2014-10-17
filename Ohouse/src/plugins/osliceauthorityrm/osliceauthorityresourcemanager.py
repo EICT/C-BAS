@@ -65,7 +65,7 @@ class OSliceAuthorityResourceManager(object):
 
         """
         config = pm.getService('config')
-        hostname = config.get('flask.hostname')
+        hostname = config.get('flask.cbas_hostname')
         return 'urn:publicid:IDN+' + hostname + '+authority+sa'
 
     def implementation(self):
@@ -127,8 +127,10 @@ class OSliceAuthorityResourceManager(object):
 
         #<UT> Shall we enforce existence of project to which this new slice would belong?
         #The information about project is sent in fields under SLICE_PROJECT_URN key
+        config = pm.getService('config')
+        hostname = config.get('flask.cbas_hostname')
 
-        slice_urn = geniutil.encode_urn(OSliceAuthorityResourceManager.AUTHORITY_NAME, 'slice', str(fields.get('SLICE_NAME')))
+        slice_urn = geniutil.encode_urn(hostname, 'slice', str(fields.get('SLICE_NAME')))
         fields['SLICE_URN'] =  slice_urn
         fields['SLICE_UID'] = str(uuid.uuid4())
         fields['SLICE_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
@@ -215,18 +217,17 @@ class OSliceAuthorityResourceManager(object):
 
         """
         config = pm.getService('config')
-        hostname = config.get('flask.hostname')
-
+        hostname = config.get('flask.cbas_hostname')
         p_urn = 'urn:publicid:IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
+
         fields['PROJECT_URN'] = p_urn
         fields['PROJECT_UID'] = str(uuid.uuid4())
         fields['PROJECT_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['PROJECT_EXPIRED'] = False
 
-        #<UT>
-        self._resource_manager_tools.validate_credentials(credentials)
-        geniutil = pm.getService('geniutil')
 
+        #<UT>
+        geniutil = pm.getService('geniutil')
         #Generating Project Certificate
         p_cert, p_pu, p_pr = geniutil.create_certificate(p_urn, self._sa_pr, self._sa_c)
         fields['PROJECT_CERTIFICATE'] = p_cert
@@ -251,7 +252,7 @@ class OSliceAuthorityResourceManager(object):
         ret_values['PROJECT_CREDENTIALS'] = p_creds
 
         #Create PROJECT_MEMBER object
-        options = {'members_to_add' : [{'PROJECT_MEMBER' : user_urn, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_ROLE': 'LEAD'}]}
+        options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
 
         return ret_values
@@ -267,11 +268,11 @@ class OSliceAuthorityResourceManager(object):
         """
         Delete a project object.
         """
-        slice_lookup_result = self.lookup_slice(None, None, match={'PROJECT_URN':urn}, filter_=[], options=None)
+        slice_lookup_result = self.lookup_slice(None, None, match={'PROJECT_URN': urn}, filter_=[], options=None)
 
         if len(slice_lookup_result) > 0:
             raise self.gfed_ex.GFedv2ArgumentError("This project cannot be deleted as it has "+str(len(slice_lookup_result))+" active slices: "+ str(urn))
-        member_lookup_result = self.lookup_project_membership(urn, client_cert, credentials, None)
+        member_lookup_result = self.lookup_project_membership(urn, client_cert, credentials, {}, {}, None)
 
         #Remove all members including LEAD
         if len(member_lookup_result) > 0:
@@ -380,27 +381,27 @@ class OSliceAuthorityResourceManager(object):
 
         return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
 
-    def lookup_slice_membership(self, urn, certificate, credentials, options):
+    def lookup_slice_membership(self, urn, certificate, credentials, match, filter_, options):
         """
         Lookup a slice membership object.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_URN', urn, ['SLICE_URN'])
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_URN', urn, ['SLICE_URN'], match, filter_)
 
-    def lookup_project_membership(self, urn, certificate, credentials, options):
+    def lookup_project_membership(self, urn, certificate, credentials, match, filter_, options):
         """
         Lookup a project membership object.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'])
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'], match, filter_)
 
     def lookup_slice_membership_for_member(self, member_urn, certificate, credentials, options):
         """
         Lookup a slice membership object for a given member.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_MEMBER', member_urn, ['SLICE_MEMBER'])
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_MEMBER', member_urn, ['SLICE_MEMBER'], {}, {})
 
     def lookup_project_membership_for_member(self, member_urn, certificate, credentials, options):
         """
         Lookup a project membership object for a given member.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_MEMBER', member_urn, ['PROJECT_MEMBER'])
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_MEMBER', member_urn, ['PROJECT_MEMBER'], {}, {})
 

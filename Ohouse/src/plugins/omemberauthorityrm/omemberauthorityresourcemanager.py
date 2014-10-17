@@ -64,7 +64,7 @@ class OMemberAuthorityResourceManager(object):
 
         """
         config = pm.getService('config')
-        hostname = config.get('flask.hostname')
+        hostname = config.get('flask.cbas_hostname')
         return 'urn:publicid:IDN+' + hostname + '+authority+ma'
 
     def implementation(self):
@@ -125,7 +125,7 @@ class OMemberAuthorityResourceManager(object):
         """
         Lookup an a member(s).
         """
-        return self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME,
+        return  self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME,
             'member', match, filter_)
 
     def create_key(self, client_cert, credentials, fields, options):
@@ -185,21 +185,32 @@ class OMemberAuthorityResourceManager(object):
         else:
             public_key = None
 
+        privileges = []
+        if 'privileges' in options:
+            if 'CAN_CREATE_PROJECT' in options['privileges']:
+                privileges = ['PROJECT_CREATE']
+
         geniutil = pm.getService('geniutil')
-        u_urn = geniutil.encode_urn(self.AUTHORITY_NAME, 'user', str(user_name))
+        config = pm.getService('config')
+        hostname = config.get('flask.cbas_hostname')
+
+        u_urn = geniutil.encode_urn(hostname, 'user', str(user_name))
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
 
         if not lookup_result:
 
-            u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_pr, issuer_cert=self._ma_c, email=str(user_email))
-            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_pr, issuer_cert=self._ma_c, privileges_list=[], expiration=self.CRED_EXPIRY)
+            u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_pr,
+                                                        issuer_cert=self._ma_c, email=str(user_email))
+            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_pr,
+                                                   issuer_cert=self._ma_c, privileges_list=privileges, expiration=self.CRED_EXPIRY)
             registration_fields_member = dict( MEMBER_URN = u_urn,
                                                MEMBER_FIRSTNAME = first_name,
                                                MEMBER_LASTNAME 	= last_name,
                                                MEMBER_USERNAME =  user_name ,
                                                MEMBER_EMAIL =user_email,
                                                MEMBER_CERTIFICATE = u_c,
-                                               MEMBER_CREDENTIALS = u_cred)
+                                               MEMBER_CREDENTIALS = u_cred,
+                                               MEMBER_CERTIFICATE_KEY = u_pr)
             self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
 
             #Register public key if provided

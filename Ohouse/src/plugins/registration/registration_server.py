@@ -11,7 +11,7 @@ from registration_utils import *
 KEY_PATH = expand_amsoil_path('test/creds') + '/'
 AUTHORITY_NAME = 'ma'
 
-AUTHORITY="test:fp7-ofelia:eu"
+AUTHORITY="cbas.eict.de"
 MA_CERT_FILE = 'ma-cert.pem'
 MA_KEY_FILE = 'ma-key.pem'
 
@@ -42,7 +42,7 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
 
     geniutil = pm.getService('geniutil')
     resource_manager_tools = pm.getService('resourcemanagertools')
-    urn = geniutil.encode_urn(AUTHORITY_NAME, 'user', str(user_name))
+    urn = geniutil.encode_urn(AUTHORITY, 'user', str(user_name))
     lookup_result = resource_manager_tools.object_lookup(AUTHORITY_NAME, 'key', {'KEY_MEMBER' : urn}, [])
 
     if public_key:
@@ -64,7 +64,8 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
                                        MEMBER_USERNAME =  user_name ,
                                        MEMBER_EMAIL =user_email,
                                        MEMBER_CERTIFICATE = u_c,
-                                       MEMBER_CREDENTIALS = user_cred)
+                                       MEMBER_CREDENTIALS = user_cred,
+                                       MEMBER_CERTIFICATE_KEY = u_pr)
 
             registration_fields_key = dict(KEY_MEMBER= urn,
                                        KEY_TYPE = 'rsa-ssh',
@@ -75,7 +76,6 @@ def register_user(first_name, last_name, user_name, user_email, public_key=None,
             resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_key, 'key')
             resource_manager_tools.object_create(AUTHORITY_NAME, registration_fields_member, 'member')
 
-            registration_fields_member['MEMBER_CERTIFICATE_PRIVATE_KEY'] = u_pr
             return registration_fields_member, registration_fields_key
             #return u_c, u_pr, user_cred
         else:

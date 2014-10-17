@@ -177,17 +177,17 @@ class OSAv2Delegate(GSAv2DelegateBase):
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))
 
-    def lookup_members(self, type_, urn, certificate, credentials, options):
+    def lookup_members(self, type_, urn, certificate, credentials, match, filter_,options):
         """
         Depending on the object type defined in the request, lookup members for
         a given URN using the resource manager.
         """
         if (type_=='SLICE'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SLICE_MEMBER')
-            return self._slice_authority_resource_manager.lookup_slice_membership(urn, certificate, credentials, options)
+            return self._slice_authority_resource_manager.lookup_slice_membership(urn, certificate, credentials, match, filter_,options)
         elif (type_=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'PROJECT_MEMBER')
-            return self._slice_authority_resource_manager.lookup_project_membership(urn, certificate, credentials, options)
+            return self._slice_authority_resource_manager.lookup_project_membership(urn, certificate, credentials, match, filter_, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No member lookup method found for object type: " + str(type_))
 
@@ -197,8 +197,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         a member using the resource manager.
         """
         if (type_=='SLICE'):
-            return self._slice_authority_resource_manager.lookup_slice_membership_for_member(member_urn, certificate, credentials, options)
+            return self._slice_authority_resource_manager.\
+                lookup_slice_membership_for_member(member_urn, certificate, credentials, options)
         elif (type_=='PROJECT'):
-            return self._slice_authority_resource_manager.lookup_project_membership_for_member(member_urn, certificate, credentials, options)
+            return self._slice_authority_resource_manager.\
+                lookup_project_membership_for_member(member_urn, certificate, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup for member method found for object type: " + str(type_))

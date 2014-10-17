@@ -16,6 +16,7 @@ def setup():
     # create default configurations (if they are not already in the database)
     config.install("flask.bind", "0.0.0.0", "IP to bind the Flask RPC to.")
     config.install("flask.hostname", _get_hostname(config.get('flask.bind')), "Hostname of Flask RPC server.")
+    config.install("flask.cbas_hostname", "cbas.eict.de", "Hostname of Flask RPC server.")
     config.install("flask.fcgi_port", 9009, "Port to bind the Flask RPC to (FCGI server).")
     config.install("flask.app_port", 8008, "Port to bind the Flask RPC to (standalone server).")
     config.install("flask.debug", True, "Write logging messages for the Flask RPC server.")

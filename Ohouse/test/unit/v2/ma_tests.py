@@ -159,6 +159,22 @@ class TestGMAv2(unittest.TestCase):
         self._test_update(urn, update_data, 'KEY', 'KEY_ID', 3)
         self._test_delete(urn, 'KEY', 'KEY_ID', 0)
 
+    def _test_lookup(self, match, _filter, object_type, expected_length, expected_code):
+        """
+        Helper method to test object lookup.
+        """
+        options = {}
+        if match:
+            options['match'] = match
+        if _filter:
+            options['filter'] = _filter
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = ma_call('lookup', [object_type, cert, self._credential_list("root"), options], user_name="root")
+        self.assertEqual(code, expected_code)
+        if expected_length:
+            self.assertEqual(len(value), expected_length)
+        return value
+
     def test_member(self):
         """
         Test object type 'MEMBER' methods:
@@ -171,7 +187,8 @@ class TestGMAv2(unittest.TestCase):
         urn = self._test_create(create_data, 'MEMBER', 'MEMBER_URN', 0)
         update_data = {'MEMBER_LASTNAME':'mem11'}
         self._test_update(urn, update_data, 'MEMBER', 'MEMBER_URN', 0)
-
+        lookup_data = {'MEMBER_USERNAME': 'mem1'}
+        lookup_result = self._test_lookup(lookup_data, [], 'MEMBER', 1, 0)
 
     def test_key(self):
         """
@@ -217,21 +234,6 @@ class TestGMAv2(unittest.TestCase):
             for field_key, field_value in fields.iteritems():
                 self.assertEqual(result[urn].get(field_key), field_value)
 
-    def _test_lookup(self, match, _filter, object_type, expected_length, expected_code):
-        """
-        Helper method to test object lookup.
-        """
-        options = {}
-        if match:
-            options['match'] = match
-        if _filter:
-            options['filter'] = _filter
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = ma_call('lookup', [object_type, cert, self._credential_list("root"), options], user_name="root")
-        self.assertEqual(code, expected_code)
-        if expected_length:
-            self.assertEqual(len(value), expected_length)
-        return value
 
     def _test_delete(self, urn, object_type, expected_urn, expected_code):
         """

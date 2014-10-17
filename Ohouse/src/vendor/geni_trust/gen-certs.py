@@ -46,7 +46,7 @@ def write_file(dir_path, filename, str, silent=False):
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = "usage: %prog directory_path")
     parser.add_option("--silent", action="store_true", help="Silence output", default=False)
-    parser.add_option("--authority", help="Authority to use (defaults to 'test.fp7:ofelia:eu)", default="test:fp7-ofelia:eu")
+    parser.add_option("--authority", help="Authority to use (defaults to 'cbas.eict.de)", default="cbas.eict.de")
 
     opts, args = parser.parse_args(sys.argv)
 

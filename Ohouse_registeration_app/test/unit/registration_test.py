@@ -177,32 +177,33 @@ class TestRegApp(unittest.TestCase):
             #Registration should fail for all combinations
             self.assertIsNone(member)
 
-    # def test_create_root_user(self):
-    #     """
-    #     Creates a root user
-    #     :return:
-    #     """
-    #     privileges = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW", "GLOBAL_PROJECTS_WILDCARDS", "MEMBER_REGISTER", "SERVICE_REMOVE", "SERVICE_VIEW", "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
-    #     public_key_value, private_key_value = get_ssh_keys("System", "Root")
-    #     ret_values = self.server.register_user("System",
-    #                                             "Root",
-    #                                             "root",
-    #                                             "root@eisland.de",
-    #                                             public_key_value,
-    #                                             privileges)
-    #     if len(ret_values) == 2:
-    #         member, key = ret_values[:2]
-    #         credentials = member['MEMBER_CREDENTIALS']
-    #         certificate = member['MEMBER_CERTIFICATE']
-    #         private_key_cert = member['MEMBER_CERTIFICATE_PRIVATE_KEY']
-    #     else:
-    #         credentials = None
-    #
-    #     self.assertIsNotNone(credentials)
-    #
-    #     write_file("root-cred.xml", credentials)
-    #     write_file("root-cert.pem", certificate)
-    #     write_file("root-key.pem", private_key_cert)
+    def test_create_root_user(self):
+         """
+         Creates a root user
+         :return:
+         """
+         privileges = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW", "GLOBAL_PROJECTS_WILDCARDS", "MEMBER_REGISTER"]
+         public_key_value, private_key_value = get_ssh_keys("Expedient", "Expedient")
+         ret_values = self.server.register_user("System",
+                                                 "expedient",
+                                                 "expedient",
+                                                 "expedient@eict.de",
+                                                 public_key_value,
+                                                 privileges)
+         print ret_values
+         if len(ret_values) == 2:
+             member, key = ret_values[:2]
+             credentials = member['MEMBER_CREDENTIALS']
+             certificate = member['MEMBER_CERTIFICATE']
+             private_key_cert = member['MEMBER_CERTIFICATE_KEY']
+         else:
+             credentials = None
+    
+         self.assertIsNotNone(credentials)
+    
+         write_file("exp-cred.xml", credentials)
+         write_file("exp-cert.pem", certificate)
+         write_file("exp-key.pem", private_key_cert)
 
 if __name__ == '__main__':
     unittest.main(verbosity=0, exit=True)

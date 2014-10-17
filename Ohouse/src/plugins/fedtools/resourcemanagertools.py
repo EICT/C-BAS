@@ -88,7 +88,7 @@ class ResourceManagerTools(object):
             self._database.update(authority, update_fields, members_dict)
 
     @serviceinterface
-    def member_lookup(self, authority, type_, key, value, extra_fields=None):
+    def member_lookup(self, authority, type_, key, value, extra_fields=None, match={}, filter_={}):
         """
         Lookup membership (SLICE_MEMBERSHIP, PROJECT_MEMBERSHIP) in the database.
 
@@ -104,7 +104,9 @@ class ResourceManagerTools(object):
         """
         if extra_fields is None:
             extra_fields = []
-        result = self._database.lookup(authority, {'type': type_, key : value}, {})
+        match['type'] = type_
+        match[key] = value
+        result = self._database.lookup(authority, match, filter_)
         for member in result:
             member = self._database.prune_result(member, extra_fields)
         return result
