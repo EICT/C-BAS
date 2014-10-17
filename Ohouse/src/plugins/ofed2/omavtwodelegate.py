@@ -89,7 +89,6 @@ class OMAv2Delegate(GMAv2DelegateBase):
         """
         if (type_=='MEMBER'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SYSTEM_MEMBER')
-            print('AuthZ passed...')
             return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(certificate, credentials, match, filter_, options), "MEMBER_URN")
         elif (type_=='KEY'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'KEY')

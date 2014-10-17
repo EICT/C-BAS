@@ -57,7 +57,10 @@ def write_file(name, contents):
     Returns:
         Nothing
     """
+    
     keys_dir_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'keys'))
+    if not os.path.exists(keys_dir_path):
+        os.makedirs(keys_dir_path)
     path = str(keys_dir_path)+ '/' + name
 
     with open(path,"w") as f:
@@ -91,6 +94,8 @@ def get_ssh_keys(user_first_name, user_last_name):
 
     """
     keys_dir_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'keys'))
+    if not os.path.exists(keys_dir_path):
+        os.makedirs(keys_dir_path)
     public_key_file_path = str(keys_dir_path)+ '/' + user_first_name + user_last_name +'.pub'
     private_key_file_path = str(keys_dir_path)+ '/' + user_first_name + user_last_name
 

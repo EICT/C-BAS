@@ -190,7 +190,6 @@ class TestRegApp(unittest.TestCase):
                                                  "expedient@eict.de",
                                                  public_key_value,
                                                  privileges)
-         print ret_values
          if len(ret_values) == 2:
              member, key = ret_values[:2]
              credentials = member['MEMBER_CREDENTIALS']
