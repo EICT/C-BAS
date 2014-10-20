@@ -280,6 +280,13 @@ class TestGSAv2(unittest.TestCase):
             options['filter'] = _filter
         cert = get_creds_file_contents(op_user_name+'-cert.pem')
         code, value, output = sa_call('lookup', [object_type, cert, self._credential_list(op_user_name), options], user_name=op_user_name)
+
+        if not code == expected_code:
+            print 'expected code:'+str(expected_code)
+            print 'code:'+str(code)
+            print 'value:'+str(value)
+            print 'output:'+str(output)
+
         self.assertEqual(code, expected_code)
         if expected_length:
             self.assertEqual(len(value), expected_length)

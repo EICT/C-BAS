@@ -46,7 +46,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'SLICE')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'SLICE', fields=fields)
             return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
         elif (type_=='SLIVER_INFO'):
             self._delegate_tools.object_creation_check(fields, self._sliver_info_whitelist)
@@ -67,7 +67,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         the resource manager.
         """
         if (type_ == 'SLICE') :
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'SLICE')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'SLICE', target_urn=urn)
 
             update_expiration_time = fields.get('SLICE_EXPIRATION')
 
@@ -93,7 +93,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._slice_authority_resource_manager.update_sliver_info(urn, certificate, credentials, fields, options)
         elif (type_=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'PROJECT')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'PROJECT', target_urn=urn)
             update_expiration_time = fields.get('PROJECT_EXPIRATION')
             if update_expiration_time:
                 lookup_result = self._slice_authority_resource_manager.lookup_project(certificate, credentials,
@@ -126,7 +126,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_=='SLIVER_INFO'):
             return self._slice_authority_resource_manager.delete_sliver_info(urn, certificate, credentials, options)
         elif (type_=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'DELETE', 'PROJECT')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'DELETE', 'PROJECT', target_urn=urn)
             return self._slice_authority_resource_manager.delete_project(urn, certificate, credentials,  options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No delete method found for object type: " + str(type_))
@@ -177,16 +177,16 @@ class OSAv2Delegate(GSAv2DelegateBase):
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))
 
-    def lookup_members(self, type_, urn, certificate, credentials, match, filter_,options):
+    def lookup_members(self, type_, urn, certificate, credentials, match, filter_, options):
         """
         Depending on the object type defined in the request, lookup members for
         a given URN using the resource manager.
         """
         if (type_=='SLICE'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SLICE_MEMBER')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
             return self._slice_authority_resource_manager.lookup_slice_membership(urn, certificate, credentials, match, filter_,options)
         elif (type_=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'PROJECT_MEMBER')
+            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'PROJECT_MEMBER', target_urn=urn)
             return self._slice_authority_resource_manager.lookup_project_membership(urn, certificate, credentials, match, filter_, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No member lookup method found for object type: " + str(type_))

@@ -308,6 +308,10 @@ class OSliceAuthorityResourceManager(object):
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
         _, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
 
+        #slice membership can be modified using
+        # (a) System member credentials (b) Slice credentials (c) project credentials
+        #
+
         for option_key, option_value in options.iteritems():
             if option_key in ['members_to_add', 'members_to_change']:
                 for member_dict in option_value:

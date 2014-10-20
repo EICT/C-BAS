@@ -252,7 +252,7 @@ class DelegateTools(object):
             return self.STATIC['AUTHZ'][method_][type_][role_]
 
     @serviceinterface
-    def check_if_authorized(self, credentials, certificate, method, type_, target_urn=None):
+    def check_if_authorized(self, credentials, certificate, method, type_, target_urn=None, fields=None):
         """
         Check if credentials have any of the given privileges
         :param credentials: credential string in SFA format
@@ -266,17 +266,54 @@ class DelegateTools(object):
 
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
+        _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
             geniutil.verify_credential(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+        #If project credentials are used to execute commands on slice then context of such credentials must be verified
+        elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
+            self.verify_project_credentials_context(credentials, certificate, method, fields, target_urn)
+            geniutil.verify_credential(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH)
+        # Finally, slice credentials are used for slice objects or project credentials are used for project object
         else:
             geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
 
         required_privileges = self.get_required_privilege_for(method, type_)
 
         if required_privileges and not set(priv_from_cred).intersection(required_privileges):
-            raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to execute "+ method + " call on "+ type_ + " object")
+            raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")
+
+
+    @serviceinterface
+    def verify_project_credentials_context(self, credentials, certificate, method, fields=None, target_urn=None):
+        """
+        Check if credentials have any of the given privileges
+        :param credentials: credential string in SFA format
+        :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
+        :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
+        """
+
+        geniutil = pm.getService('geniutil')
+        slice_authority_resource_manager = pm.getService('osliceauthorityrm')
+        _, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        verification_passed = True
+
+        if method == 'CREATE':
+            if not fields['SLICE_PROJECT_URN'] == target_urn_from_cred:
+                verification_passed = False
+        elif method == 'UPDATE':
+            lookup_result = slice_authority_resource_manager.lookup_slice(certificate, credentials,
+                                                                        {'SLICE_URN': str(target_urn)}, [], {})
+            if not lookup_result or not lookup_result[0]['SLICE_PROJECT_URN'] == target_urn_from_cred:
+                    verification_passed = False
+        elif method == 'LOOKUP':
+            pass
+        elif method == 'DELETE':
+            pass
+
+        if not verification_passed:
+            raise GFedv2AuthorizationError("Your project credentials do not provide enough privileges to execute "+ method + " call on slice object")
 
     @serviceinterface
     def check_if_modify_membership_authorized(self, credentials, options, type_):
@@ -296,7 +333,7 @@ class DelegateTools(object):
         for option_key, option_value in options.iteritems():
             for member_dict in option_value:
                 #Authorization check for ADMIN and LEAD roles
-                if type_=='PROJECT':
+                if type_ == 'PROJECT':
                     if 'PROJECT_ROLE' in member_dict:
                         if member_dict['PROJECT_ROLE'] == 'ADMIN':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'ADMIN')
@@ -304,7 +341,7 @@ class DelegateTools(object):
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'LEAD')
                         elif member_dict['PROJECT_ROLE'] == 'MONITOR':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'MONITOR')
-                elif type_=='SLICE':
+                elif type_ == 'SLICE':
                     if 'SLICE_ROLE' in member_dict:
                         if member_dict['SLICE_ROLE'] == 'ADMIN':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'ADMIN')
@@ -312,12 +349,13 @@ class DelegateTools(object):
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'LEAD')
 
                 if required_privileges and not set(priv_from_cred).intersection(required_privileges):
-                    raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
+                    raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to modify "+ type_ +
+                                                   " membership\nYour Privileges: "+str(priv_from_cred)+" Required one of following privileges "+str(required_privileges))
 
                 # Only self owned privileges can be assigned to others
                 if 'EXTRA_PRIVILEGES' in member_dict:
                     if not set(priv_from_cred).issuperset(member_dict['EXTRA_PRIVILEGES']):
-                        raise GFedv2AuthenticationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
+                        raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
 
     @serviceinterface
     def check_if_ma_info_update_authorized(self, credentials, certificate, type_, target_urn):
