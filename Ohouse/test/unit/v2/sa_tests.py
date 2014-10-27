@@ -387,6 +387,12 @@ class TestGSAv2(unittest.TestCase):
                                                                  self._credential_list('root')])
         self.assertEquals(code, 101)
 
+        delgatee_cert = get_creds_file_contents('alice-cert.pem')
+        issuer_key = get_creds_file_contents('root-key.pem')
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2018-03-21T11:35:57Z',
+                                                               True, cert, [{"SFA": slice_creds}]])
+
+        self.assertEquals(code, 0)
 
 
     def _test_modify_membership(self, urn, object_type, data, expected_code, op_user_name="admin"):

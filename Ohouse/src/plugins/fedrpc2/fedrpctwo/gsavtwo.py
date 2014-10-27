@@ -170,6 +170,16 @@ class GSAv2Handler(xmlrpc.Dispatcher):
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
+    def delegate_credentials(self, delegetee_cert, issuer_key, privileges_list, expiration,
+                             delegatable, certificate, credentials):
+
+         try:
+              result = self._delegate.delegate_credentials(delegetee_cert, issuer_key, privileges_list,
+                                                           expiration, delegatable, certificate, credentials)
+         except Exception as e:
+             return self._api_tools.form_error_return(logger, e)
+         return self._api_tools.form_success_return(result)
+
 
 class GSAv2DelegateBase(object):
     """

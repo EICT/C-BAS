@@ -402,6 +402,30 @@ class DelegateTools(object):
 
         return priv_from_cred
 
+    def delegate_credentials(self, delegetee_cert, issuer_key, privileges_list, expiration,
+                             delegatable, certificate, credentials):
+        """
+        Creates delegated credentials
+        """
+
+        if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+            raise GFedv2ArgumentError("Passed invalid or no credentials")
+
+        geniutil = pm.getService('geniutil')
+
+        priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+
+        self.verify_credentials(credentials, certificate, target_urn_from_cred)
+
+        if not set(priv_from_cred).issuperset(privileges_list):
+            raise GFedv2AuthorizationError("You cannot delegate privileges that you don't own")
+
+        object_cert = geniutil.extract_object_certificate(credentials)
+
+        return geniutil.create_credential_ex(delegetee_cert, object_cert, issuer_key, certificate, privileges_list,
+                                             expiration, delegatable, credentials)
+
+
     @serviceinterface
     def get_whitelist(self, type_):
         """

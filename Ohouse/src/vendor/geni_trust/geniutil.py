@@ -106,7 +106,6 @@ def create_credential(owner_cert, target_cert, issuer_key, issuer_cert, typ, exp
 
     return ucred.save_to_string()
 
-#<UT>
 def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list,
                          expiration, delegatable=True, parent_creds=None):
     """
@@ -121,7 +120,8 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
 
     #Check if delegated credentials have been requested
     if parent_creds:
-        ucred.set_parent(parent_creds)
+        cred_obj = sfa_cred.Credential(string=parent_creds[0]['SFA'])
+        ucred.set_parent(cred_obj)
 
     privileges_str = ','.join(privileges_list)
     privileges = sfa_rights.Rights(privileges_str)
@@ -153,6 +153,19 @@ def extract_owner_certificate(credentials):
         owner_cert = None
     return owner_cert
 
+def extract_object_certificate(credentials):
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        for child in root:
+            if child.tag == 'credential':
+                object_cert = child[4].text
+                break
+    except:
+        object_cert = None
+    return object_cert
+
+
 def get_privileges_and_target_urn(credentials):
     """
     Provides a list of privileges included in the given credentials
@@ -169,7 +182,6 @@ def get_privileges_and_target_urn(credentials):
             priv_list.append(p.kind)
 
     return priv_list, target_urn
-
 
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""

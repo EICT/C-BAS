@@ -210,3 +210,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Verifies if given credentials are valid and trusted
         """
         return self._delegate_tools.verify_credentials(creds_to_verify, cert_to_verify, target_urn)
+
+    def delegate_credentials(self, delagetee_cert, issuer_key, privileges_list, expiration,
+                             delegatable, certificate, credentials):
+        """
+        Generates delegate credentials
+        """
+        return self._delegate_tools.delegate_credentials(delagetee_cert, issuer_key, privileges_list,
+                                                         expiration, delegatable, certificate, credentials)
