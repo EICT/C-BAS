@@ -161,6 +161,15 @@ class GSAv2Handler(xmlrpc.Dispatcher):
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
+    def verify_credentials(self, creds_to_verify, cert_to_verify, target_urn, certificate, credentials):
+
+         try:
+              result = self._delegate.verify_credentials(creds_to_verify, cert_to_verify,
+                                                         target_urn, certificate, credentials)
+         except Exception as e:
+             return self._api_tools.form_error_return(logger, e)
+         return self._api_tools.form_success_return(result)
+
 
 class GSAv2DelegateBase(object):
     """

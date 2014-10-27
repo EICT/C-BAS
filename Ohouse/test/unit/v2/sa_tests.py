@@ -147,17 +147,17 @@ class TestGSAv2(unittest.TestCase):
         """
 
         create_data_1 = {
-               'SLICE_NAME' : 'TEST-SLICE-1',
+               'SLICE_NAME' : 'TEST-SLICE-1M',
                'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
         create_data_2 = {
-               'SLICE_NAME' : 'TEST-SLICE-3',
+               'SLICE_NAME' : 'TEST-SLICE-3M',
                'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
         urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0, "root")
         urn2 = self._test_create(create_data_2, 'SLICE', 'SLICE_URN', 0, "root")
 
-        lookup_data={'SLICE_URN':[str(urn1),str(urn2)]}
+        lookup_data = {'SLICE_URN': [str(urn1), str(urn2)]}
         self._test_lookup(lookup_data, None, 'SLICE', 0, 2, "root")
 
 
@@ -366,6 +366,28 @@ class TestGSAv2(unittest.TestCase):
         self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', add_data, 1, 0, "root")
         self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', change_data, 1, 0, "root")
         self._test_lookup_for_members(slice_urn, 'test_urn', 'SLICE', remove_data, 0, 0, "root")
+
+    def test_creds(self):
+        """
+        Test slice credentials verification and delegations
+        """
+        create_data = {'SLICE_NAME': 'CREDS-TEST', 'SLICE_DESCRIPTION': 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject123'}
+        cert = get_creds_file_contents('root-cert.pem')
+        code, value, output = sa_call('create', ['SLICE', cert, self._credential_list('root'), {'fields' : create_data}])
+
+        self.assertEquals(code, 0)
+
+        slice_creds = value['SLICE_CREDENTIALS']
+        slice_urn = value['SLICE_URN']
+        code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, slice_urn, cert,
+                                                                 self._credential_list('root')])
+        self.assertEquals(code, 0)
+
+        code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, 'slice_urn', cert,
+                                                                 self._credential_list('root')])
+        self.assertEquals(code, 101)
+
+
 
     def _test_modify_membership(self, urn, object_type, data, expected_code, op_user_name="admin"):
         """

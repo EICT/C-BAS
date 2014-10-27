@@ -176,7 +176,6 @@ class OSliceAuthorityResourceManager(object):
         """
         Lookup a slice object.
         """
-
         return self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'slice', match, filter_)
 
     def create_sliver_info(self, client_cert, credentials, fields, options):
@@ -408,4 +407,5 @@ class OSliceAuthorityResourceManager(object):
         Lookup a project membership object for a given member.
         """
         return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_MEMBER', member_urn, ['PROJECT_MEMBER'], {}, {})
+
 

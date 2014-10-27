@@ -107,7 +107,8 @@ def create_credential(owner_cert, target_cert, issuer_key, issuer_cert, typ, exp
     return ucred.save_to_string()
 
 #<UT>
-def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list, expiration, delegatable=True):
+def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privileges_list,
+                         expiration, delegatable=True, parent_creds=None):
     """
     {expiration} can be a datetime.datetime or a int/float (see http://docs.python.org/2/library/datetime.html#datetime.date.fromtimestamp) or a string with a UTC timestamp in it
     {privileges_list} list of privileges as list
@@ -117,6 +118,10 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
     ucred.set_gid_caller(GID(string=owner_cert))
     ucred.set_gid_object(GID(string=target_cert))
     ucred.set_expiration(expiration)
+
+    #Check if delegated credentials have been requested
+    if parent_creds:
+        ucred.set_parent(parent_creds)
 
     privileges_str = ','.join(privileges_list)
     privileges = sfa_rights.Rights(privileges_str)
@@ -164,6 +169,7 @@ def get_privileges_and_target_urn(credentials):
             priv_list.append(p.kind)
 
     return priv_list, target_urn
+
 
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""

@@ -288,10 +288,9 @@ class DelegateTools(object):
     @serviceinterface
     def verify_project_credentials_context(self, credentials, certificate, method, fields=None, target_urn=None):
         """
-        Check if credentials have any of the given privileges
+        Verify project to slice relationship
         :param credentials: credential string in SFA format
         :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
-        :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
         """
 
         geniutil = pm.getService('geniutil')
@@ -378,6 +377,30 @@ class DelegateTools(object):
         else:
             self.check_if_authorized(credentials=credentials, certificate=certificate, method='UPDATE', type_=type_, target_urn=None)
 
+    def verify_credentials(self, credentials, certificate, target_urn=None):
+        """
+        Verifies if credentials are valid and trusted. If yes, then returns a list of associated privileges
+        :param credentials: credentials to verify
+        :param certificate: certificate of owner of these credentials
+        :param target_urn:  Target object's urn of these credentials
+        :return: If verification passed, the a list of privileges associated with the passed credentials
+        """
+
+        if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+            raise GFedv2ArgumentError("Passed invalid or no credentials")
+
+        geniutil = pm.getService('geniutil')
+
+        priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
+
+        #If given are system member credentials then target_urn cannot be used in verification
+        if user_urn_from_cert == target_urn_from_cred:
+            geniutil.verify_credential(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+        else:
+            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+
+        return priv_from_cred
 
     @serviceinterface
     def get_whitelist(self, type_):
@@ -567,7 +590,7 @@ class DelegateTools(object):
 
                 for value in urns_to_query:
                     match_value_to_decompose_copy=match_value_to_decompose.copy()
-                    match_value_to_decompose['SLICE_URN']=value
+                    match_value_to_decompose_copy['SLICE_URN']=value
                     match_urn_list.append(match_value_to_decompose_copy)
             else:
                 match_urn_list.append(match_value_to_decompose)

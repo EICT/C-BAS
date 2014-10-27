@@ -204,3 +204,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
                 lookup_project_membership_for_member(member_urn, certificate, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup for member method found for object type: " + str(type_))
+
+    def verify_credentials(self, creds_to_verify, cert_to_verify, target_urn, certificate, credentials):
+        """
+        Verifies if given credentials are valid and trusted
+        """
+        return self._delegate_tools.verify_credentials(creds_to_verify, cert_to_verify, target_urn)
