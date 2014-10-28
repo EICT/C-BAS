@@ -371,6 +371,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test slice credentials verification and delegations
         """
+        #Try to create a slice and get slice credentials
         create_data = {'SLICE_NAME': 'CREDS-TEST', 'SLICE_DESCRIPTION': 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject123'}
         cert = get_creds_file_contents('root-cert.pem')
         code, value, output = sa_call('create', ['SLICE', cert, self._credential_list('root'), {'fields' : create_data}])
@@ -379,14 +380,18 @@ class TestGSAv2(unittest.TestCase):
 
         slice_creds = value['SLICE_CREDENTIALS']
         slice_urn = value['SLICE_URN']
+
+        #Try to verify slice credentials with correct slice urn as target urn
         code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, slice_urn, cert,
                                                                  self._credential_list('root')])
         self.assertEquals(code, 0)
 
+        #Try to verify slice credentials with wrong slice urn as target urn
         code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, 'slice_urn', cert,
                                                                  self._credential_list('root')])
         self.assertEquals(code, 101)
 
+        #Try to delegate slice credentials to another member
         delgatee_cert = get_creds_file_contents('alice-cert.pem')
         issuer_key = get_creds_file_contents('root-key.pem')
         code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2018-03-21T11:35:57Z',
