@@ -823,7 +823,8 @@ class Credential(object):
             if self.legacy.object_gid:
                 self.legacy.object_gid.verify_chain(trusted_cert_objects)
             return True
-        
+
+
         # make sure it is not expired
         if self.get_expiration() < datetime.datetime.utcnow():
             raise CredentialNotVerifiable("Credential %s expired at %s" % (self.get_summary_tostring(), self.expiration.isoformat()))
@@ -876,6 +877,7 @@ class Credential(object):
         # Make sure the issuer is the target's authority, and is
         # itself a valid GID
         self.verify_issuer(trusted_cert_objects)
+
         return True
 
     ##
@@ -977,10 +979,10 @@ class Credential(object):
     def verify_parent(self, parent_cred):
         # make sure the rights given to the child are a subset of the
         # parents rights (and check delegate bits)
-        if not parent_cred.get_privileges().is_superset(self.get_privileges()):
-            raise ChildRightsNotSubsetOfParent(("Parent cred ref %s rights " % parent_cred.get_refid()) +
-                self.parent.get_privileges().save_to_string() + (" not superset of delegated cred %s ref %s rights " % (self.get_summary_tostring(), self.get_refid())) +
-                self.get_privileges().save_to_string())
+
+        #<UT> This check is not compatible with C-BAS privileges system
+        # if not parent_cred.get_privileges().is_superset(self.get_privileges()):
+        #     raise ChildRightsNotSubsetOfParent(("Parent cred ref %s rights " % parent_cred.get_refid()) + self.parent.get_privileges().save_to_string() + (" not superset of delegated cred %s ref %s rights " % (self.get_summary_tostring(), self.get_refid())) + self.get_privileges().save_to_string())
 
         # make sure my target gid is the same as the parent's
         if not parent_cred.get_gid_object().save_to_string() == \
@@ -995,11 +997,10 @@ class Credential(object):
         if not parent_cred.get_gid_caller().save_to_string(False) == \
            self.get_signature().get_issuer_gid().save_to_string(False):
             raise CredentialNotVerifiable("Delegated credential %s not signed by parent %s's caller" % (self.get_summary_tostring(), parent_cred.get_summary_tostring()))
-                
+
         # Recurse
         if parent_cred.parent:
             parent_cred.verify_parent(parent_cred.parent)
-
 
     def delegate(self, delegee_gidfile, caller_keyfile, caller_gidfile):
         """

@@ -243,6 +243,7 @@ class Rights:
     # @param child is a rightlist object describing the child
 
     def is_superset(self, child):
+
         for child_right in child.rights:
             allowed = False
             for my_right in self.rights:

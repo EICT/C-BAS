@@ -79,3 +79,23 @@ def print_warnings():
         for msg in WARNINGS:
             print msg
         print COLORS["reset"]
+
+def write_file(name, contents):
+    """
+    Write a file content and place in Keys dir
+
+    Args:
+        name: The name of the file to create
+        contents: Text contents as string
+
+    Returns:
+        Nothing
+    """
+
+    keys_dir_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..', 'creds'))
+    if not os.path.exists(keys_dir_path):
+        os.makedirs(keys_dir_path)
+    path = str(keys_dir_path)+ '/' + name
+
+    with open(path,"w") as f:
+        f.write(contents)

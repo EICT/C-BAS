@@ -270,14 +270,14 @@ class DelegateTools(object):
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
         #If project credentials are used to execute commands on slice then context of such credentials must be verified
         elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
             self.verify_project_credentials_context(credentials, certificate, method, fields, target_urn)
-            geniutil.verify_credential(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH)
         # Finally, slice credentials are used for slice objects or project credentials are used for project object
         else:
-            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
 
         required_privileges = self.get_required_privilege_for(method, type_)
 
@@ -373,7 +373,7 @@ class DelegateTools(object):
 
         #Update is allowed for owner himself. Otherwise, proper credentials should be presented
         if user_urn_from_cert == target_urn:
-            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
         else:
             self.check_if_authorized(credentials=credentials, certificate=certificate, method='UPDATE', type_=type_, target_urn=None)
 
@@ -396,9 +396,9 @@ class DelegateTools(object):
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
         else:
-            geniutil.verify_credential(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
 
         return priv_from_cred
 

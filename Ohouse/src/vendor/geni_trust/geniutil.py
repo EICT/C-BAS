@@ -2,6 +2,7 @@ import tempfile
 import uuid
 import os
 import os.path
+import shutil
 
 from ext.geni.util.urn_util import URN
 from ext.sfa.trust.gid import GID
@@ -13,6 +14,7 @@ import ext.sfa.trust.credential as sfa_cred
 import ext.sfa.trust.rights as sfa_rights
 from ext.sfa.util.faults import SfaFault
 import ext.geni
+import xml.etree.ElementTree as ET
 
 def decode_urn(urn):
     """Returns authority, type and name associated with the URN as string.
@@ -142,28 +144,112 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
 
 #<UT>
 def extract_owner_certificate(credentials):
-    import xml.etree.ElementTree as ET
+    owner_cert = None
     try:
+        #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
         root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
         for child in root:
             if child.tag == 'credential':
                 owner_cert = child[2].text
                 break
     except:
-        owner_cert = None
+        pass
     return owner_cert
 
 def extract_object_certificate(credentials):
-    import xml.etree.ElementTree as ET
+    object_cert = None
     try:
+        #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
         root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
         for child in root:
             if child.tag == 'credential':
                 object_cert = child[4].text
                 break
     except:
-        object_cert = None
+        pass
     return object_cert
+
+def verify_credential_ex(credentials, owner_cert, target_urn, trusted_cert_path, privileges=()):
+
+    if credentials:
+        cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
+        if cred_obj.parent:
+            verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges)
+        else:
+            verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, privileges)
+
+
+def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges=()):
+    """
+    Verified delegated creds by (1) verifying the original creds (2) verifying all included signatures
+    :param credentials:
+    :param owner_cert:
+    :param target_urn:
+    :param trusted_cert_path:
+    :param privileges:
+    :return:
+    """
+    #First verify original creds
+
+    if credentials:
+        ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
+        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        cred_list = []
+        for c in root.iter('credential'):
+            cred_list.append(c)
+
+        signs = root.find('signatures')
+        o_sign = None
+        sign_list = []
+        for s in signs:
+            sign_list.append(s)
+            if 'Sig_ref0' in s.attrib.values():
+                o_sign = s
+
+        #Construct original cred text
+        root.remove(root.find('credential'))
+        root.remove(root.find('signatures'))
+        #Add original creds
+        root.append(cred_list[-1])
+        #Get XML string including only original creds without signature part
+        c_str = ET.tostring(root)
+        #Get XML string for signature
+        s_str = ET.tostring(o_sign)
+        #Combine cred and signature parts to make final XML string
+        d_str = c_str.replace('</signed-credential>', '')+'<signatures>'+s_str+'</signatures></signed-credential>'
+
+        #Verify now the original creds
+        o_cert = cred_list[-1][2].text
+        t_cert = cred_list[-1][4].text
+        urn, _, _ = extract_certificate_info(t_cert)
+        verify_credential([{'SFA': d_str}], o_cert, urn, trusted_cert_path)
+
+        #Add necessary signatures certificates to the trusted path
+        #Create tmp dir for use as trusted_path
+        dir_path = os.path.join(trusted_cert_path, 'tmp')
+        #Remove any existing contents
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)
+        #Make a fresh dir
+        os.mkdir(dir_path)
+
+        #copy existing trusted certificates to that dir
+        src_files = os.listdir(trusted_cert_path)
+        for file_name in src_files:
+            full_file_name = os.path.join(trusted_cert_path, file_name)
+            if os.path.isfile(full_file_name):
+                shutil.copy(full_file_name, dir_path)
+
+        #Copy certificates extracted from delegated creds except the MA/SA certificate
+        name_postfix = 0
+        for s in sign_list:
+            if not 'Sig_ref0' in s.attrib.values():
+                name_postfix += 1
+                path = os.path.join(dir_path, 'tmp'+str(name_postfix)+'-cert.pem')
+                with open(path, "w") as f:
+                    f.write('-----BEGIN CERTIFICATE-----\n'+s[2][0][0].text+'\n-----END CERTIFICATE-----')
+
+        verify_credential(credentials, owner_cert, target_urn, dir_path)
 
 
 def get_privileges_and_target_urn(credentials):

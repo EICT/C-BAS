@@ -80,10 +80,10 @@ class TestGSAv2(unittest.TestCase):
         during creation.
         """
         create_data = {'SLICE_NAME':True, 'SLICE_DESCRIPTION' : 'My Malformed Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
-        self._test_create(create_data, 'SLICE', 'SLICE_URN', 3, "root")
+        self._test_create(create_data, 'SLICE', 'SLICE_URN', 3)
 
         lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0, op_user_name="root"), {})
+        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
 
     def test_invalid_slice_name(self):
         """
@@ -96,11 +96,11 @@ class TestGSAv2(unittest.TestCase):
             create_data = {'SLICE_NAME': invalid_sliceName,
                            'SLICE_DESCRIPTION': 'My Malformed Slice',
                            'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-            self._test_create(create_data, 'SLICE', 'SLICE_URN',3, "root")
+            self._test_create(create_data, 'SLICE', 'SLICE_URN',3)
 
             #Asserting to make sure the invalid slice name was not created
             lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-            self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0, op_user_name="root"), {})
+            self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
 
 
     def test_create_unauthorized_field(self):
@@ -114,17 +114,17 @@ class TestGSAv2(unittest.TestCase):
 
         #Asserting to make sure the unauthorized_field was not created
         lookup_data = {'SLICE_PROJECT_URN': 'urn:publicid:IDN+this_sa+project+myproject'}
-        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0, op_user_name="root"), {})
+        self.assertEqual(self._test_lookup(lookup_data,None,'SLICE',0), {})
 
     def test_update_unauthorized_field(self):
         """
         Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
         """
         create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
+        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
-        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3, "root")
-        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0, "root")
+        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
+        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_update_invalid_expiry(self):
         """
@@ -135,11 +135,11 @@ class TestGSAv2(unittest.TestCase):
                        'PROJECT_NAME' : 'TEST-PROJECT',
                        'PROJECT_DESCRIPTION' : 'Time_Expiry'}
 
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
+        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         update_data = {'PROJECT_EXPIRATION' : '2013-07-29T13:15:30Z'}
-        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3, "root")
-        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0, "root")
+        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
+        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_lookup_multiple_slice_urns(self):
         """
@@ -154,11 +154,11 @@ class TestGSAv2(unittest.TestCase):
                'SLICE_NAME' : 'TEST-SLICE-3M',
                'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
-        urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0, "root")
-        urn2 = self._test_create(create_data_2, 'SLICE', 'SLICE_URN', 0, "root")
+        urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0)
+        urn2 = self._test_create(create_data_2, 'SLICE', 'SLICE_URN', 0)
 
         lookup_data = {'SLICE_URN': [str(urn1), str(urn2)]}
-        self._test_lookup(lookup_data, None, 'SLICE', 0, 2, "root")
+        self._test_lookup(lookup_data, None, 'SLICE', 0, 2)
 
 
     def test_get_credentials(self):
@@ -169,7 +169,7 @@ class TestGSAv2(unittest.TestCase):
                'PROJECT_NAME' : 'TEST-SLICE-CREDENTIALS',
                'PROJECT_DESCRIPTION' : 'TEST_CREDENTIALS'}
 
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
+        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         self._test_get_credentials(urn, TestGSAv2.NOT_IMPLEMENTED)
 
     def test_slice(self):
@@ -198,16 +198,16 @@ class TestGSAv2(unittest.TestCase):
         """
         create_data = {'SLICE_NAME':'AUTHORIZED-CREATION', 'SLICE_DESCRIPTION' : 'My Clean Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
         lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
-        presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None, "root")
+        presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None)
         if len(presence_check) is 1:
             create_code = 5
         else:
             create_code = 0
-        urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', create_code, "root")
+        urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', create_code)
         update_data = {'SLICE_DESCRIPTION' : 'Update Slice'}
         if urn is None:
             urn, _ = presence_check.popitem()
-        self._test_update(urn, update_data, 'SLICE', 'SLICE_URN', 0, "root")
+        self._test_update(urn, update_data, 'SLICE', 'SLICE_URN', 0)
         self._test_delete(urn, 'SLICE', 'SLICE_URN', 100)
 
     def test_sliver_info(self):
@@ -227,12 +227,12 @@ class TestGSAv2(unittest.TestCase):
         Test object type 'PROJECT' methods: create, lookup, update and delete.
         """
         create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
+        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_DESCRIPTION' : 'M. Broadbent Test Project'}
-        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0, "root")
-        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0, "root")
+        self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0)
+        self._test_delete(urn, 'PROJECT', 'PROJECT_URN', 0)
 
-    def _test_create(self, fields, object_type, expected_urn, expected_code, op_user_name="admin"):
+    def _test_create(self, fields, object_type, expected_urn, expected_code, op_user_name="root"):
         """
         Helper method to test object creation.
         """
@@ -255,7 +255,7 @@ class TestGSAv2(unittest.TestCase):
             self.assertIsInstance(urn, str)
             return urn
 
-    def _test_update(self, urn, fields, object_type, expected_urn, expected_code, op_user_name="admin"):
+    def _test_update(self, urn, fields, object_type, expected_urn, expected_code, op_user_name="root"):
         """
         Helper method to test object update.
         """
@@ -265,11 +265,11 @@ class TestGSAv2(unittest.TestCase):
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
-            result = self._test_lookup({expected_urn : urn}, None, object_type, 0, 1, "root")
+            result = self._test_lookup({expected_urn : urn}, None, object_type, 0, 1)
             for field_key, field_value in fields.iteritems():
                 self.assertEqual(result[urn].get(field_key), field_value)
 
-    def _test_lookup(self, match, _filter, object_type, expected_code, expected_length=None, op_user_name="admin"):
+    def _test_lookup(self, match, _filter, object_type, expected_code, expected_length=None, op_user_name="root"):
         """
         Helper method to test object lookup.
         """
@@ -292,7 +292,7 @@ class TestGSAv2(unittest.TestCase):
             self.assertEqual(len(value), expected_length)
         return value
 
-    def _test_delete(self, urn, object_type, expected_urn, expected_code, op_user_name="admin"):
+    def _test_delete(self, urn, object_type, expected_urn, expected_code, op_user_name="root"):
         """
         Helper method to test object deletion.
         """
@@ -302,11 +302,11 @@ class TestGSAv2(unittest.TestCase):
             print code, value, output
         self.assertEqual(code, expected_code)
         self.assertIsNone(value)
-        self._test_lookup({expected_urn : urn}, None, object_type, 0, None, "root")
+        self._test_lookup({expected_urn : urn}, None, object_type, 0, None)
 
     def _test_get_credentials(self, urn, expected_code):
 
-        code, value, output = sa_call('get_credentials', [urn, self._credential_list("admin"), {}], user_name="admin")
+        code, value, output = sa_call('get_credentials', [urn, self._credential_list("root"), {}], user_name="root")
         self.assertEqual(code, expected_code)
 
 
@@ -316,7 +316,7 @@ class TestGSAv2(unittest.TestCase):
         membership call.
         """
         add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'test_role'}]}
-        self._test_lookup_members('urn:publicid:IDN+this.sa+project+SLICE', 'SLICE', add_data, 0, 3, "root")
+        self._test_lookup_members('urn:publicid:IDN+this.sa+project+SLICE', 'SLICE', add_data, 0, 3)
 
     def test_project_membership(self):
         """
@@ -325,19 +325,19 @@ class TestGSAv2(unittest.TestCase):
         """
         #Create a project as it is a prerequisite
         create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'MEMBERSHIP_TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
-        project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0, "root")
+        project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
         add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
         change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
         remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members(project_urn, 'PROJECT', add_data, 2, 0, "root")
-        self._test_lookup_members(project_urn, 'PROJECT', change_data, 2, 0, "root")
-        self._test_lookup_members(project_urn, 'PROJECT', remove_data, 1, 0, "root")
-        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', add_data, 1, 0, "root")
-        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', change_data, 1, 0, "root")
-        self._test_lookup_for_members(project_urn, 'test_urn', 'PROJECT', remove_data, 0, 0, "root")
-        self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0, "root")
+        self._test_lookup_members(project_urn, 'PROJECT', add_data, 2, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', change_data, 2, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', remove_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', add_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', change_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn', 'PROJECT', remove_data, 0, 0)
+        self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_slice_membership(self):
         """
@@ -348,24 +348,24 @@ class TestGSAv2(unittest.TestCase):
         #Create a slice as it is a prerequisite
         create_data = {'SLICE_NAME':'CREATION-MEMBER-TEST', 'SLICE_DESCRIPTION' : 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
         lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
-        presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None, "root")
+        presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None)
         if len(presence_check) is 1:
             create_code = 5
         else:
             create_code = 0
-        slice_urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', create_code, "root")
+        slice_urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', create_code)
 
         #Now perform actual tests
         member_cert = get_creds_file_contents('alice-cert.pem')
         add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
         change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
         remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0, "root")
-        self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0, "root")
-        self._test_lookup_members(slice_urn, 'SLICE', remove_data, 1, 0, "root")
-        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', add_data, 1, 0, "root")
-        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', change_data, 1, 0, "root")
-        self._test_lookup_for_members(slice_urn, 'test_urn', 'SLICE', remove_data, 0, 0, "root")
+        self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', remove_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', add_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', change_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn', 'SLICE', remove_data, 0, 0)
 
     def test_creds(self):
         """
@@ -394,13 +394,36 @@ class TestGSAv2(unittest.TestCase):
         #Try to delegate slice credentials to another member
         delgatee_cert = get_creds_file_contents('alice-cert.pem')
         issuer_key = get_creds_file_contents('root-key.pem')
-        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2018-03-21T11:35:57Z',
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2015-01-21T11:35:57Z',
                                                                True, cert, [{"SFA": slice_creds}]])
+        self.assertEquals(code, 0)
+        write_file("delegated_creds.xml", value)
+
+        #Try to verify slice credentials with correct slice urn as target urn
+        delegated_creds = value
+        code, value, output = sa_call('verify_credentials', [[{"SFA": delegated_creds}], delgatee_cert, slice_urn, cert,
+                                                                 self._credential_list('root')])
+
+        self.assertEquals(code, 0)
+
+        #Try to further delegate delegated credentials
+        delgatee_cert2 = get_creds_file_contents('root-cert.pem')
+        issuer_key2 = get_creds_file_contents('alice-key.pem')
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert2, issuer_key2, ['SLICE_MEMBER_ADD'], '2015-01-21T11:35:57Z',
+                                                               True, delgatee_cert, [{"SFA": delegated_creds}]])
+
+        self.assertEquals(code, 0)
+        write_file("delegated_creds2.xml", value)
+
+        #Try to verify delegated delegated creds with correct slice urn as target urn
+        delegated_creds = value
+        code, value, output = sa_call('verify_credentials', [[{"SFA": delegated_creds}], cert, slice_urn, cert,
+                                                                 self._credential_list('root')])
 
         self.assertEquals(code, 0)
 
 
-    def _test_modify_membership(self, urn, object_type, data, expected_code, op_user_name="admin"):
+    def _test_modify_membership(self, urn, object_type, data, expected_code, op_user_name="root"):
         """
         Helper method to test object membership modification.
         """
@@ -416,7 +439,7 @@ class TestGSAv2(unittest.TestCase):
         self.assertEqual(code, expected_code)
         return code
 
-    def _test_lookup_members(self, urn, object_type, data, expected_length, expected_code, op_user_name="admin"):
+    def _test_lookup_members(self, urn, object_type, data, expected_length, expected_code, op_user_name="root"):
         """
         Helper method to test object membership lookup.
         """
@@ -426,7 +449,7 @@ class TestGSAv2(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertEqual(len(value), expected_length)
 
-    def _test_lookup_for_members(self, urn, member_urn, object_type, data, expected_length, expected_code, op_user_name="admin"):
+    def _test_lookup_for_members(self, urn, member_urn, object_type, data, expected_length, expected_code, op_user_name="root"):
         """
         Helper method to test object membership lookup for a member.
         """

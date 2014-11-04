@@ -16,7 +16,7 @@ MA_KEY_FILE = 'ma-key.pem'
 AM_CERT_FILE = 'am-cert.pem'
 AM_KEY_FILE = 'am-key.pem'
 
-ADMIN_NAME = 'admin'
+ADMIN_NAME = 'root'
 ADMIN_EMAIL = '%s@example.net' %  (ADMIN_NAME,)
 ADMIN_KEY_FILE = '%s-key.pem' %   (ADMIN_NAME,)
 ADMIN_CERT_FILE = '%s-cert.pem' % (ADMIN_NAME,)
@@ -126,7 +126,10 @@ if __name__ == "__main__":
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL)
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, ADMIN_KEY_FILE, a_pr, opts.silent)
-    a_cred = geniutil.create_credential(a_c, a_c, ma_pr, ma_c, "admin", CRED_EXPIRY)
+    p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
+              "GLOBAL_PROJECTS_WILDCARDS", "MEMBER_REGISTER", "SERVICE_REMOVE", "SERVICE_VIEW",
+              "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
+    a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
     write_file(dir_path, ADMIN_CRED_FILE, a_cred, opts.silent)
 
     if not opts.silent:
