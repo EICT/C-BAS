@@ -30,7 +30,7 @@ class RegistrationFrame(Frame):
         """
         Set up the Graphical User Interface
         """
-        self.parent.title("Registration Application For Ohouse")
+        self.parent.title("Registration Application For CBAS")
         self.grid()
 
     #Labels & Areas
@@ -80,31 +80,36 @@ class RegistrationFrame(Frame):
         self.radio_button_provide.grid(row =5, column = 1)
 
     # Text Area
-        self.public_key_label = Label(self, text="Public Key:")
+        self.public_key_label = Label(self, text="Public SSH Key:")
         self.public_key_label.grid(row=6, column=0,  sticky = W)
         self.public_key_text_area = Text(self, height=2, width=100)
         self.public_key_text_area.grid( row = 6, columnspan = 1, column = 1, sticky = W+E)
 
-        self.private_key_label = Label(self, text="Private Key:")
+        self.private_key_label = Label(self, text="Private SSH Key:")
         self.private_key_label.grid(row=7, column=0,  sticky = W)
         self.private_key_text_area = Text(self, height=2, width=100)
         self.private_key_text_area.grid( row = 7, columnspan = 1, column = 1, sticky = W+E)
 
-        self.user_credentials = Label(self, text="User Credentials:")
-        self.user_credentials.grid(row=8, column=0,  sticky = W)
-        self.user_credentials = Text(self, height=2, width=100)
-        self.user_credentials.grid( row = 8, columnspan = 1, column = 1, sticky = W+E)
+        self.user_certificate = Label(self, text="User Certificate:")
+        self.user_certificate.grid(row=8, column=0,  sticky = W)
+        self.user_certificate = Text(self, height=2, width=100)
+        self.user_certificate.grid( row = 8, columnspan = 1, column = 1, sticky = W+E)
+
+        self.user_certificate_key = Label(self, text="User Certificate Key:")
+        self.user_certificate_key.grid(row=9, column=0,  sticky = W)
+        self.user_certificate_key = Text(self, height=2, width=100)
+        self.user_certificate_key.grid( row = 9, columnspan = 1, column = 1, sticky = W+E)
 
     #Buttons
         self.button_register= Button(self, text="Register",
                                      command=self.call_back('register'))
-        self.button_register.grid(row=9, column = 0)
+        self.button_register.grid(row=10, column = 0)
 
         self.button_quit = Button(self, text="Quit", command=quit)
-        self.button_quit.grid(row=9, column = 1)
+        self.button_quit.grid(row=10, column = 1)
 
         self.button_clear = Button(self, text="Clear", command=self.call_back('clear'))
-        self.button_clear.grid(row=9, column = 2)
+        self.button_clear.grid(row=10, column = 2)
 
 
     def call_back (self, function, **kwargs):
@@ -129,16 +134,18 @@ class RegistrationFrame(Frame):
                 public_key_value = self.public_key_text_area.get('0.0', END)
                 if first_name and last_name and user_name and email and public_key_value :
 
-                    member, key, credentials =  server.register_user(self.first_name_entry.get(),
-                                                   self.last_name_entry.get(),
-                                                   self.user_name_entry.get(),
-                                                   self.email_entry.get(),
-                                                   self.public_key_text_area.get('0.0', END))
+                    member, key = server.register_user(self.first_name_entry.get(),
+                                                           self.last_name_entry.get(),
+                                                           self.user_name_entry.get(),
+                                                           self.email_entry.get(),
+                                                           self.public_key_text_area.get('0.0', END))
 
 
-                    credentials_value = credentials['CREDENTIAL_VALUE'] if credentials else "EMPTY_CREDENTIALS"
-                    self.user_credentials.insert(END, credentials_value)
-                    self.raise_tkinter_message('registered')() if credentials else self.raise_tkinter_message('fail')()
+                    certificate_value = member['MEMBER_CERTIFICATE'] if member else "ERROR"
+                    self.user_certificate.insert(END, certificate_value)
+                    certificate_key_value = member['MEMBER_CERTIFICATE_KEY'] if member else "ERROR"
+                    self.user_certificate_key.insert(END, certificate_key_value)
+                    self.raise_tkinter_message('registered')() if member else self.raise_tkinter_message('fail')()
                 else:
                     self.raise_tkinter_message('missing')()
             else:
@@ -155,8 +162,10 @@ class RegistrationFrame(Frame):
                                                        self.email_entry.get(),
                                                        public_key_value)
 
-                    credentials_value = member['MEMBER_CREDENTIALS'] if 'MEMBER_CREDENTIALS' in member else "EMPTY_CREDENTIALS"
-                    self.user_credentials.insert(END, credentials_value)
+                    certificate_value = member['MEMBER_CERTIFICATE'] if member else "ERROR"
+                    self.user_certificate.insert(END, certificate_value)
+                    certificate_key_value = member['MEMBER_CERTIFICATE_KEY'] if member else "ERROR"
+                    self.user_certificate_key.insert(END, certificate_key_value)
                     self.raise_tkinter_message('registered')() if member else self.raise_tkinter_message('fail')()
                 else:
                     self.raise_tkinter_message('missing')()
@@ -167,6 +176,13 @@ class RegistrationFrame(Frame):
         def clear_text():
             self.public_key_text_area.delete('1.0', END)
             self.private_key_text_area.delete('1.0', END)
+            self.user_certificate.delete('1.0', END)
+            self.user_certificate_key.delete('1.0', END)
+            self.user_name_entry.delete(0, END)
+            self.email_entry.delete(0, END)
+            self.first_name_entry.delete(0, END)
+            self.last_name_entry.delete(0, END)
+
 
         #Add call back functions here
         functions = {'register': register,

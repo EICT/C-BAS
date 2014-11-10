@@ -397,7 +397,7 @@ class TestGSAv2(unittest.TestCase):
         code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2015-01-21T11:35:57Z',
                                                                True, cert, [{"SFA": slice_creds}]])
         self.assertEquals(code, 0)
-        write_file("delegated_creds.xml", value)
+        #write_file("delegated_creds.xml", value)
 
         #Try to verify slice credentials with correct slice urn as target urn
         delegated_creds = value
@@ -413,7 +413,7 @@ class TestGSAv2(unittest.TestCase):
                                                                True, delgatee_cert, [{"SFA": delegated_creds}]])
 
         self.assertEquals(code, 0)
-        write_file("delegated_creds2.xml", value)
+        #write_file("delegated_creds2.xml", value)
 
         #Try to verify delegated delegated creds with correct slice urn as target urn
         delegated_creds = value

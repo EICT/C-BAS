@@ -426,6 +426,20 @@ class DelegateTools(object):
                                              expiration, delegatable, credentials)
 
 
+    def verify_certificate(self, certificate):
+        """
+        Verifies if credentials are valid and trusted. If yes, then returns a list of associated privileges
+        :param certificate: certificate to verify
+        """
+
+        if certificate is None or len(certificate) <= 0:
+            raise GFedv2ArgumentError("Passed invalid or no credentials")
+
+        geniutil = pm.getService('geniutil')
+
+        geniutil.verify_certificate(certificate, self.TRUSTED_CERT_PATH)
+
+
     @serviceinterface
     def get_whitelist(self, type_):
         """

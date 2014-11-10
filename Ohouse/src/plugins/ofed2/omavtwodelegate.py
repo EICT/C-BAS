@@ -95,3 +95,9 @@ class OMAv2Delegate(GMAv2DelegateBase):
             return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(certificate, credentials, match, filter_, options), "KEY_ID")
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
+
+    def verify_certificate(self, cert_to_verify, certificate, credentials):
+        """
+        Verifies if given certificate is valid and trusted
+        """
+        return self._delegate_tools.verify_certificate(cert_to_verify)

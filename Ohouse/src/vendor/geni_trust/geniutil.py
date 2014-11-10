@@ -226,7 +226,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
 
         #Add necessary signatures certificates to the trusted path
         #Create tmp dir for use as trusted_path
-        dir_path = os.path.join(trusted_cert_path, 'tmp')
+        dir_path = os.path.normpath(os.path.join(trusted_cert_path, '../', 'tmp'))
         #Remove any existing contents
         if os.path.exists(dir_path):
             shutil.rmtree(dir_path)
