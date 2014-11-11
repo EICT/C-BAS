@@ -145,7 +145,7 @@ class OMemberAuthorityResourceManager(object):
         Update a key object.
         """
         return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
-            fields, 'key', {'KEY_ID':urn})
+            fields, 'key', {'KEY_MEMBER': urn})
 
     def lookup_key(self, client_cert, credentials, match, filter_, options):
         """

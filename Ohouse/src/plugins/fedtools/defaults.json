@@ -298,7 +298,7 @@
             "DESC": "Public key value",
             "MATCH": true,
             "CREATE": "REQUIRED",
-            "UPDATE": false
+            "UPDATE": true
         },
         "KEY_PRIVATE": {
             "TYPE": "KEY",
