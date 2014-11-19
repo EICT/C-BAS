@@ -75,12 +75,13 @@ class GID(Certificate):
     # @param filename If filename!=None, load the GID from a file
     # @param lifeDays life of GID in days - default is 1825==5 years
     # @param email Email address to put in subjectAltName - default is None
-    def __init__(self, create=False, subject=None, string=None, filename=None, uuid=None, hrn=None, urn=None, lifeDays=1825, email=None):
+    def __init__(self, create=False, subject=None, string=None, filename=None, uuid=None, hrn=None, urn=None,
+                 lifeDays=1825, email=None, serial_number=0):
         self.uuid = None
         self.hrn = None
         self.urn = None
         self.email = None # for adding to the SubjectAltName
-        Certificate.__init__(self, lifeDays, create, subject, string, filename)
+        Certificate.__init__(self, lifeDays, create, subject, string, filename, None, serial_number)
 
         if subject:
             logger.debug("Creating GID for subject: %s" % subject)
@@ -137,7 +138,7 @@ class GID(Certificate):
             self.decode()
         _, t = urn_to_hrn(self.urn)
         return t
-    
+
     ##
     # Encode the GID fields and package them into the subject-alt-name field
     # of the X509 certificate. This must be called prior to signing the

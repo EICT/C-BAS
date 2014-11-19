@@ -34,7 +34,7 @@ def encode_urn(authority, typ, name):
     return URN(authority=authority, type=typ, name=name).urn_string()
 
 def create_certificate(urn, issuer_key=None, issuer_cert=None, is_ca=False,
-                       public_key=None, life_days=1825, email=None, uuidarg=None):
+                       public_key=None, life_days=1825, email=None, uuidarg=None, serial_number=0):
     """Creates a certificate.
     {issuer_key} private key of the issuer. can either be a string in pem format or None.
     {issuer_cert} can either be a string in pem format or None.
@@ -59,7 +59,8 @@ def create_certificate(urn, issuer_key=None, issuer_cert=None, is_ca=False,
         fh, issuer_key_param = tempfile.mkstemp(); os.write(fh, issuer_key); os.close(fh)
         fh, issuer_cert_param = tempfile.mkstemp(); os.write(fh, issuer_cert); os.close(fh)
 
-    cert_gid, cert_keys = gcf_cert_util.create_cert(urn, issuer_key_param, issuer_cert_param, is_ca, pub_key_param, life_days, email, uuidarg)
+    cert_gid, cert_keys = gcf_cert_util.create_cert(urn, issuer_key_param, issuer_cert_param, is_ca, pub_key_param,
+                                                    life_days, email, uuidarg, serial_number)
     if pub_key_param:
         os.remove(pub_key_param)
     if issuer_key_param:
@@ -276,6 +277,12 @@ def extract_certificate_info(certificate):
     user_uuid = user_gid.get_uuid()
     user_email = user_gid.get_email()
     return user_urn, user_uuid, user_email
+
+def get_serial_number(certificate):
+    "Returns the serial number of given certificate"
+    user_gid = GID(string=certificate)
+    return user_gid.get_serial_number()
+
 
 def verify_certificate(certificate, trusted_cert_path=None):
     """

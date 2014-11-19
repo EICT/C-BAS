@@ -31,7 +31,7 @@ from ext.sfa.trust.certificate import Keypair
 from ext.geni.util.urn_util import URN
 
 def create_cert(urn, issuer_key=None, issuer_cert=None, ca=False,
-                public_key=None, lifeDays=1825, email=None, uuidarg=None):
+                public_key=None, lifeDays=1825, email=None, uuidarg=None, serial_number=0):
     '''Create a new certificate and return it and the associated keys.
     If issuer cert and key are given, they sign the certificate. Otherwise
     it is a self-signed certificate. 
@@ -80,7 +80,7 @@ def create_cert(urn, issuer_key=None, issuer_cert=None, ca=False,
         if uuidO is not None:
             uuidI = uuidO.int
 
-    newgid = GID(create=True, subject=subject, uuid=uuidI, urn=urn, lifeDays=lifeDays)
+    newgid = GID(create=True, subject=subject, uuid=uuidI, urn=urn, lifeDays=lifeDays, serial_number=serial_number)
     if email:
         newgid.set_email(email)
     

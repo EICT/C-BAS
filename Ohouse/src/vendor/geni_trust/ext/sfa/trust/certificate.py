@@ -304,7 +304,6 @@ class Certificate:
     issuerSubject = None
     parent = None
     isCA = None # will be a boolean once set
-
     separator="-----parent-----"
 
     ##
@@ -318,10 +317,10 @@ class Certificate:
     # @param filename If filename!=None, load the certficiate from the file.
     # @param isCA If !=None, set whether this cert is for a CA
 
-    def __init__(self, lifeDays=1825, create=False, subject=None, string=None, filename=None, isCA=None):
+    def __init__(self, lifeDays=1825, create=False, subject=None, string=None, filename=None, isCA=None, serial_number=0):
         self.data = {}
         if create or subject:
-            self.create(lifeDays)
+            self.create(serial_number, lifeDays)
         if subject:
             self.set_subject(subject)
         if string:
@@ -335,10 +334,10 @@ class Certificate:
 
     # Create a blank X509 certificate and store it in this object.
 
-    def create(self, lifeDays=1825):
+    def create(self, serial_number, lifeDays=1825):
         self.cert = crypto.X509()
         # FIXME: Use different serial #s
-        self.cert.set_serial_number(3)
+        self.cert.set_serial_number(serial_number)
         self.cert.gmtime_adj_notBefore(0) # 0 means now
         self.cert.gmtime_adj_notAfter(lifeDays*60*60*24) # five years is default
         self.cert.set_version(2) # x509v3 so it can have extensions
@@ -485,6 +484,13 @@ class Certificate:
     def get_subject(self, which="CN"):
         x = self.cert.get_subject()
         return getattr(x, which)
+
+    ## <UT>
+    def get_serial_number(self):
+        return self.cert.get_serial_number()
+
+    def set_serial_number(self, serial_number):
+        self.cert.set_serial_number(serial_number)
 
     ##
     # Get a pretty-print subject name of the certificate

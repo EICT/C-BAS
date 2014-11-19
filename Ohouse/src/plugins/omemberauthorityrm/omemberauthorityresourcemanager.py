@@ -9,6 +9,8 @@ from omemberauthorityexceptions import *
 from amsoil.config import  expand_amsoil_path
 import datetime
 from apiexceptionsv2 import *
+import OpenSSL.crypto as crypto
+import datetime as dt
 
 
 class OMemberAuthorityResourceManager(object):
@@ -39,12 +41,17 @@ class OMemberAuthorityResourceManager(object):
         self._resource_manager_tools = pm.getService('resourcemanagertools')
         self._set_unique_keys()
         #<UT>
-        self._ma_c = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+        self._ma_cert_str = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
                                                             OMemberAuthorityResourceManager.MA_CERT_FILE)
-        self._ma_pr = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+        self._ma_cert_key_str = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
                                                              OMemberAuthorityResourceManager.MA_KEY_FILE)
 
-        gfed_ex = pm.getService('apiexceptionsv2')
+        self.gfed_ex = pm.getService('apiexceptionsv2')
+        self._urn = self.urn()
+
+        self._cert_revoke_reasons = crypto.Revoked().all_reasons()
+        self._ma_cert = crypto.load_certificate(crypto.FILETYPE_PEM, self._ma_cert_str)
+        self._ma_cert_key = crypto.load_privatekey(crypto.FILETYPE_PEM, self._ma_cert_key_str)
 
     def _set_unique_keys(self):
         """
@@ -53,6 +60,7 @@ class OMemberAuthorityResourceManager(object):
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_UID')
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_URN')
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_ID')
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'CERT_SERIAL_NUMBER')
 
     #--- 'get_version' methods
     def urn(self):
@@ -161,6 +169,71 @@ class OMemberAuthorityResourceManager(object):
         return self._resource_manager_tools.object_delete(self.AUTHORITY_NAME,
             'key', {'KEY_ID':urn})
 
+    def _issue_cert_serial_num(self):
+        """
+        Issues a unique serial number for member certificate to be generated
+        :return: unique serial number
+        """
+        result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME,
+            'properties', {'URN': self._urn}, ['SERIAL_NUMBER_COUNTER'])
+
+        if result:
+            serial_number = result[0]['SERIAL_NUMBER_COUNTER']
+            self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
+            {'SERIAL_NUMBER_COUNTER': serial_number+1}, 'properties', {'URN': self._urn})
+        else:
+            serial_number = 1
+            self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
+                {'SERIAL_NUMBER_COUNTER': serial_number+1, 'URN': self._urn}, 'properties')
+
+        return serial_number
+
+    def revoke_certificate(self, urn, reason='unspecified'):
+        """
+        Revokes membership by revoking member certificate
+        :param urn: member urn
+        :return:
+        """
+
+        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : urn}, [])
+        if not lookup_result:
+            raise self.gfed_ex.GFedv2ArgumentError("Specified user does not exist")
+
+        if not reason in self._cert_revoke_reasons:
+            raise self.gfed_ex.GFedv2ArgumentError("Unsupported reason for revoking certificate")
+
+        member_cert = crypto.load_certificate(crypto.FILETYPE_PEM, lookup_result[0]['MEMBER_CERTIFICATE'])
+        serial_number = member_cert.get_serial_number()
+        expiration_date = member_cert.get_notAfter()
+        revoke_date = dt.datetime.utcnow().strftime('%Y%m%d%H%M%SZ') #GMT time in UTC format
+        result = self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
+                {'CERT_SERIAL_NUMBER': serial_number, 'REVOKE_REASON': reason, 'REVOKE_DATE': revoke_date,
+                 'CERT_VALID_UNTIL': expiration_date}, 'crl')
+
+    def get_crl(self):
+        """
+        Generates Certificate Revocation List
+        :return: CRL in PEM format
+        """
+
+        lookup_results = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'crl', {}, [])
+        crl = crypto.CRL()
+        now = dt.datetime.utcnow()
+
+        for entry in lookup_results:
+            cert_expiration_date = dt.datetime.strptime(entry['CERT_VALID_UNTIL'], '%Y%m%d%H%M%SZ')
+            if cert_expiration_date > now:
+                revoked_entry = crypto.Revoked()
+                revoked_entry.set_serial(hex(entry['CERT_SERIAL_NUMBER'])[2:])
+                revoked_entry.set_reason(str(entry['REVOKE_REASON']))
+                revoked_entry.set_rev_date(str(entry['REVOKE_DATE']))
+                crl.add_revoked(revoked_entry)
+            else:
+                self._resource_manager_tools.object_delete(self.AUTHORITY_NAME,
+                'crl', {'CERT_SERIAL_NUMBER': entry['CERT_SERIAL_NUMBER']})
+
+        return crl.export(self._ma_cert, self._ma_cert_key, days=1)
+
     def register_member(self, certificate, credentials, fields, options):
         """
         Register user to member authority without any privileges
@@ -176,8 +249,8 @@ class OMemberAuthorityResourceManager(object):
             User generated data such as usrn, credentials, etc.
         """
         first_name = fields['MEMBER_FIRSTNAME']
-        last_name  = fields['MEMBER_LASTNAME']
-        user_name  = fields['MEMBER_USERNAME']
+        last_name = fields['MEMBER_LASTNAME']
+        user_name = fields['MEMBER_USERNAME']
         user_email = fields['MEMBER_EMAIL']
 
         if 'KEY_PUBLIC' in fields:
@@ -198,11 +271,11 @@ class OMemberAuthorityResourceManager(object):
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
 
         if not lookup_result:
-
-            u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_pr,
-                                                        issuer_cert=self._ma_c, email=str(user_email))
-            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_pr,
-                                                   issuer_cert=self._ma_c, privileges_list=privileges, expiration=self.CRED_EXPIRY)
+            u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_cert_key_str,
+                                                        issuer_cert=self._ma_cert_str, email=str(user_email),
+                                                        serial_number= self._issue_cert_serial_num())
+            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
+                                                   issuer_cert=self._ma_cert_str, privileges_list=privileges, expiration=self.CRED_EXPIRY)
             registration_fields_member = dict( MEMBER_URN = u_urn,
                                                MEMBER_FIRSTNAME = first_name,
                                                MEMBER_LASTNAME 	= last_name,
@@ -210,7 +283,7 @@ class OMemberAuthorityResourceManager(object):
                                                MEMBER_EMAIL =user_email,
                                                MEMBER_CERTIFICATE = u_c,
                                                MEMBER_CREDENTIALS = u_cred,
-                                               MEMBER_CERTIFICATE_KEY = u_pr)
+                                               )
             self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
 
             #Register public key if provided
@@ -226,4 +299,4 @@ class OMemberAuthorityResourceManager(object):
                 return registration_fields_member
 
         else:
-            raise gfed_ex.GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")
+            raise self.gfed_ex.GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")
