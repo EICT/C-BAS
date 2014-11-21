@@ -781,7 +781,7 @@ class Credential(object):
     #   must be done elsewhere
     #
     # @param trusted_certs: The certificates of trusted CA certificates
-    def verify(self, trusted_certs=None, schema=None, trusted_certs_required=True):
+    def verify(self, trusted_certs=None, schema=None, trusted_certs_required=True, crl_path=None):
         if not self.xml:
             self.decode()
 
@@ -839,8 +839,8 @@ class Credential(object):
         if trusted_certs is not None:
             # Verify the gids of this cred and of its parents
             for cur_cred in self.get_credential_list():
-                cur_cred.get_gid_object().verify_chain(trusted_cert_objects)
-                cur_cred.get_gid_caller().verify_chain(trusted_cert_objects)
+                cur_cred.get_gid_object().verify_chain(trusted_cert_objects, crl_path)
+                cur_cred.get_gid_caller().verify_chain(trusted_cert_objects, crl_path)
 
         refs = []
         refs.append("Sig_%s" % self.get_refid())

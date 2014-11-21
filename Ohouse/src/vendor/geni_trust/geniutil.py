@@ -170,17 +170,17 @@ def extract_object_certificate(credentials):
         pass
     return object_cert
 
-def verify_credential_ex(credentials, owner_cert, target_urn, trusted_cert_path, privileges=()):
+def verify_credential_ex(credentials, owner_cert, target_urn, trusted_cert_path, privileges=(), crl_path=None):
 
     if credentials:
         cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
         if cred_obj.parent:
-            verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges)
+            verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges, crl_path)
         else:
-            verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, privileges)
+            verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, privileges, crl_path)
 
 
-def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges=()):
+def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges=(), crl_path=None):
     """
     Verified delegated creds by (1) verifying the original creds (2) verifying all included signatures
     :param credentials:
@@ -223,7 +223,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
         o_cert = cred_list[-1][2].text
         t_cert = cred_list[-1][4].text
         urn, _, _ = extract_certificate_info(t_cert)
-        verify_credential([{'SFA': d_str}], o_cert, urn, trusted_cert_path)
+        verify_credential([{'SFA': d_str}], o_cert, urn, trusted_cert_path, crl_path=crl_path)
 
         #Add necessary signatures certificates to the trusted path
         #Create tmp dir for use as trusted_path
@@ -241,7 +241,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
             if os.path.isfile(full_file_name):
                 shutil.copy(full_file_name, dir_path)
 
-        #Copy certificates extracted from delegated creds except the MA/SA certificate
+        #Copy certificates extracted from delegated creds excluding the MA/SA certificate
         name_postfix = 0
         for s in sign_list:
             if not 'Sig_ref0' in s.attrib.values():
@@ -250,7 +250,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
                 with open(path, "w") as f:
                     f.write('-----BEGIN CERTIFICATE-----\n'+s[2][0][0].text+'\n-----END CERTIFICATE-----')
 
-        verify_credential(credentials, owner_cert, target_urn, dir_path)
+        verify_credential(credentials, owner_cert, target_urn, dir_path, privileges, crl_path=crl_path)
 
 
 def get_privileges_and_target_urn(credentials):
@@ -270,6 +270,19 @@ def get_privileges_and_target_urn(credentials):
 
     return priv_list, target_urn
 
+def get_expiration(credentials_str):
+    """
+
+    :param credentials:
+    :return:
+    """
+    if credentials_str:
+        cred_obj = sfa_cred.Credential(string=credentials_str)
+        return cred_obj.get_expiration()
+    else:
+        return None
+
+
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""
     user_gid = GID(string=certificate)
@@ -284,7 +297,7 @@ def get_serial_number(certificate):
     return user_gid.get_serial_number()
 
 
-def verify_certificate(certificate, trusted_cert_path=None):
+def verify_certificate(certificate, trusted_cert_path=None, crl_path=None):
     """
     Taken from ext...gid
     Verifies the chain of authenticity of the GID. First performs the checks of the certificate class (verifying that each parent signs the child, etc).
@@ -299,12 +312,12 @@ def verify_certificate(certificate, trusted_cert_path=None):
             trusted_certs_paths = [os.path.join(os.path.expanduser(trusted_cert_path), name) for name in os.listdir(os.path.expanduser(trusted_cert_path)) if (name != gcf_cred_util.CredentialVerifier.CATEDCERTSFNAME) and (name[0] != '.')]
             trusted_certs = [GID(filename=name) for name in trusted_certs_paths]
         gid = GID(string=certificate)
-        gid.verify_chain(trusted_certs)
+        gid.verify_chain(trusted_certs, crl_path)
     except SfaFault as e:
         raise ValueError("Error verifying certificate: %s" % (str(e),))
     return None
 
-def verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, privileges=()):
+def verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, privileges=(), crl_path=None):
     """
     Give a list of credentials and they will be checked to have the privleges and to be trusted by the trusted_certs.
     The privileges should be tuple.
@@ -340,7 +353,6 @@ def verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, pr
     - user: "refresh", "resolve", "info" (which resolves to the privileges: "remove", "update", "resolve", "list", "getcredential", "listslices", "listnodes", "getpolicy").
     - slice: "refresh", "embed", "bind", "control", "info" (well, do the resolving yourself...)
     """
-
     # if client_cert == None:
     #     # work around if the certificate could not be acquired due to the shortcommings of the werkzeug library
     #     if config.get("flask.debug"):
@@ -353,7 +365,7 @@ def verify_credential(credentials, owner_cert, target_urn, trusted_cert_path, pr
     if len(credentials) > 0 and isinstance(credentials[0], dict):
         creds = [cred.values()[0] for cred in credentials]
     try:
-        cred_verifier = ext.geni.CredentialVerifier(trusted_cert_path)
+        cred_verifier = ext.geni.CredentialVerifier(trusted_cert_path, crl_path)
         cred_verifier.verify_from_strings(owner_cert, creds, target_urn, privileges)
     except Exception as e:
         raise ValueError("Error verifying the credential: %s" % (str(e),))

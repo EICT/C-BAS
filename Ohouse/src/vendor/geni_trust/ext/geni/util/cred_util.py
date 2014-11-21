@@ -58,7 +58,7 @@ class CredentialVerifier(object):
 
     # root_cert_fileordir is a trusted root cert file or directory of
     # trusted roots for verifying credentials
-    def __init__(self, root_cert_fileordir):
+    def __init__(self, root_cert_fileordir, crl_files_path):
         self.logger = logging.getLogger('cred-verifier')
         if root_cert_fileordir is None:
             raise Exception("Missing Root certs argument")
@@ -77,6 +77,7 @@ class CredentialVerifier(object):
         else:
             raise Exception("Couldn't find Root certs in %s" % root_cert_fileordir)
 
+        self.crl_files_path = crl_files_path
 
     @classmethod
     def getCAsFileFromDir(cls, caCerts):
@@ -184,7 +185,6 @@ class CredentialVerifier(object):
         result = True
         privs = credential.get_privileges()
         for priv in privileges:
-            print priv
             if not privs.can_perform(priv):
                 self.logger.debug('Privilege %s not found on credential %s of %s', priv, credential.get_gid_object().get_urn(), credential.get_gid_caller().get_urn())
                 result = False
@@ -224,7 +224,7 @@ class CredentialVerifier(object):
                 continue
             
             try:
-                if not cred.verify(self.root_cert_files):
+                if not cred.verify(self.root_cert_files, crl_path=self.crl_files_path):
                     failure = "Couldn't validate credential for caller %s with target %s with any of %d known root certs" % (cred.get_gid_caller().get_urn(), cred.get_gid_object().get_urn(), len(self.root_cert_files))
                     continue
             except Exception, exc:

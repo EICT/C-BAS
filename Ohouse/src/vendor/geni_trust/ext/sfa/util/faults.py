@@ -240,6 +240,14 @@ class GidInvalidParentHrn(SfaFault):
     def __str__(self):
         return repr(self.value)
 
+class GidRevoked(SfaFault):
+    def __init__(self, value, extra = None):
+        self.value = value
+        faultString = "Provided certificate has been revoked"
+        SfaFault.__init__(self, GENICODE.ERROR, faultString, extra)
+    def __str__(self):
+        return repr(self.value)
+
 class SliverDoesNotExist(SfaFault):
     def __init__(self, value, extra = None):
         self.value = value

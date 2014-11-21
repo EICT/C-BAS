@@ -23,6 +23,9 @@ def setup():
     #<UT>
     config.install("delegatetools.authz_path", "src/plugins/fedtools/authz.json", "JSON file with mapping between privileges and methods", True)
     config.install("delegatetools.roles_path", "src/plugins/fedtools/roles.json", "JSON file with default privileges for CH roles", True)
+    config.install("delegatetools.trusted_cert_path", "deploy/trusted/certs/", "Path to trusted certificates", True)
+    config.install("delegatetools.trusted_cert_keys_path", "deploy/trusted/cert_keys", "Path to trusted certificate keys", True)
+    config.install("delegatetools.trusted_crl_path", "deploy/trusted/crl", "Path to CRLs", True)
 
     delegate_tools = DelegateTools()
     pm.registerService('delegatetools', delegate_tools)

@@ -14,10 +14,9 @@ class OSliceAuthorityResourceManager(object):
 
     Generates neccessary fields when creating a new object.
     """
-    KEY_PATH = expand_amsoil_path('test/creds') + '/'
     SA_CERT_FILE = 'sa-cert.pem'
     SA_KEY_FILE = 'sa-key.pem'
-    CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=100)
+    CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=600)
 
     AUTHORITY_NAME = 'sa' #: The short-name for this authority
     SUPPORTED_SERVICES = ['SLICE', 'SLICE_MEMBER', 'SLIVER_INFO', 'PROJECT', 'PROJECT_MEMBER'] #: The objects supported by this authority
@@ -32,9 +31,16 @@ class OSliceAuthorityResourceManager(object):
         super(OSliceAuthorityResourceManager, self).__init__()
         self._resource_manager_tools = pm.getService('resourcemanagertools')
         self._set_unique_keys()
-        self._sa_c = self._resource_manager_tools.read_file(OSliceAuthorityResourceManager.KEY_PATH +
+
+        #<UT>
+        config = pm.getService("config")
+        cert_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_path"))
+        cert_key_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_keys_path"))
+
+
+        self._sa_c = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OSliceAuthorityResourceManager.SA_CERT_FILE)
-        self._sa_pr = self._resource_manager_tools.read_file(OSliceAuthorityResourceManager.KEY_PATH +
+        self._sa_pr = self._resource_manager_tools.read_file(cert_key_path + '/' +
                                                              OSliceAuthorityResourceManager.SA_KEY_FILE)
 
         #<UT>
@@ -161,7 +167,7 @@ class OSliceAuthorityResourceManager(object):
         ret_values['SLICE_CREDENTIALS'] = slice_cred
 
         #Create SLICE_MEMBER object
-        options = {'members_to_add' : [{'SLICE_MEMBER' : user_urn, 'SLICE_CREDENTIALS': slice_cred, 'SLICE_ROLE': 'LEAD'}]}
+        options = {'members_to_add' : [{'SLICE_MEMBER' : user_urn, 'SLICE_CREDENTIALS': slice_cred, 'SLICE_CERTIFICATE': s_cert, 'SLICE_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, options, 'SLICE_MEMBER', 'SLICE_URN')
 
         return ret_values
@@ -327,6 +333,7 @@ class OSliceAuthorityResourceManager(object):
                     member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
                                                                                      issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                                                      privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+                    member_dict['SLICE_CERTIFICATE'] = slice_cert
                     if member_role == 'LEAD':
                         slice_lookup_result[0]['SLICE_LEAD'] = member_dict['SLICE_MEMBER']
                         self._resource_manager_tools.object_update(self.AUTHORITY_NAME, slice_lookup_result[0], 'slice', {'SLICE_URN':urn})
@@ -348,6 +355,7 @@ class OSliceAuthorityResourceManager(object):
 
         if not len(project_lookup_result):
             raise self.gfed_ex.GFedv2ArgumentError("The specified project does not exist: "+ str(urn))
+
         if len(project_lookup_result) > 1:
             raise self.gfed_ex.GFedv2DuplicateError("There are more than one instance of specified project: "+ str(urn))
 
@@ -383,6 +391,48 @@ class OSliceAuthorityResourceManager(object):
                         raise self.gfed_ex.GFedv2ArgumentError("The specified user is project LEAD and therefore cannot be removed "+ str(urn))
 
         return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
+
+    def update_slice_membership_for_member(self, member_urn, certificate, credentials, options):
+        """
+
+        """
+        member_cert = options['MEMBER_CERTIFICATE']
+        slice_memberships = self.lookup_slice_membership_for_member(member_urn, certificate, credentials, None)
+        geniutil = pm.getService('geniutil')
+
+        for membership in slice_memberships:
+            slice_cert = membership['SLICE_CERTIFICATE']
+            slice_creds_old = membership['SLICE_CREDENTIALS']
+            slice_prvlg, slice_urn = geniutil.get_privileges_and_target_urn([{'SFA': slice_creds_old}])
+            slice_exp = geniutil.get_expiration(slice_creds_old)
+            slice_creds_new = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
+                                                            issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                                                            privileges_list=slice_prvlg, expiration=slice_exp)
+
+            update_data = {'members_to_modify': [{'SLICE_CREDENTIALS': slice_creds_new}]}
+            self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn,
+                                                       update_data, 'SLICE_MEMBER', 'SLICE_URN')
+
+    def update_project_membership_for_member(self, member_urn, certificate, credentials, options):
+        """
+
+        """
+        member_cert = options['MEMBER_CERTIFICATE']
+        project_memberships = self.lookup_project_membership_for_member(member_urn, certificate, credentials, None)
+        geniutil = pm.getService('geniutil')
+
+        for membership in project_memberships:
+            project_cert = membership['PROJECT_CERTIFICATE']
+            project_creds_old = membership['PROJECT_CREDENTIALS']
+            project_prvlg, project_urn = geniutil.get_privileges_and_target_urn([{'SFA': project_creds_old}])
+            project_exp = geniutil.get_expiration(project_creds_old)
+            project_creds_new = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
+                                                              issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                                                              privileges_list=project_prvlg, expiration=project_exp)
+
+            update_data = {'members_to_modify': [{'PROJECT_CREDENTIALS': project_creds_new}]}
+            self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', project_urn,
+                                                       update_data, 'PROJECT_MEMBER', 'PROJECT_URN')
 
     def lookup_slice_membership(self, urn, certificate, credentials, match, filter_, options):
         """

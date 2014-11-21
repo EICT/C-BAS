@@ -7,7 +7,6 @@ import hashlib
 from omemberauthorityexceptions import *
 #<UT>
 from amsoil.config import  expand_amsoil_path
-import datetime
 from apiexceptionsv2 import *
 import OpenSSL.crypto as crypto
 import datetime as dt
@@ -20,11 +19,10 @@ class OMemberAuthorityResourceManager(object):
     Generates neccessary fields when creating a new object.
     """
     #<UT>
-    KEY_PATH = expand_amsoil_path('test/creds') + '/'
     MA_CERT_FILE = 'ma-cert.pem'
     MA_KEY_FILE = 'ma-key.pem'
-    CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=100)
-
+    CERT_VALIDITY_PERIOD = 600 # Days
+    CRL_VALIDITY_PERIOD = 1 # Days
     AUTHORITY_NAME = 'ma' #: The short-name for this authority
 
     SUPPORTED_SERVICES = ['MEMBER', 'KEY'] #: The objects supported by this authority
@@ -41,9 +39,16 @@ class OMemberAuthorityResourceManager(object):
         self._resource_manager_tools = pm.getService('resourcemanagertools')
         self._set_unique_keys()
         #<UT>
-        self._ma_cert_str = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+        config = pm.getService("config")
+        cert_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_path"))
+        cert_key_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_keys_path"))
+        hostname = config.get('flask.cbas_hostname')
+        self._ma_crl_path = expand_amsoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
+                                                    + hostname + '.authority.ma'
+        print self._ma_crl_path
+        self._ma_cert_str = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OMemberAuthorityResourceManager.MA_CERT_FILE)
-        self._ma_cert_key_str = self._resource_manager_tools.read_file(OMemberAuthorityResourceManager.KEY_PATH +
+        self._ma_cert_key_str = self._resource_manager_tools.read_file(cert_key_path + '/' +
                                                              OMemberAuthorityResourceManager.MA_KEY_FILE)
 
         self.gfed_ex = pm.getService('apiexceptionsv2')
@@ -205,12 +210,19 @@ class OMemberAuthorityResourceManager(object):
         member_cert = crypto.load_certificate(crypto.FILETYPE_PEM, lookup_result[0]['MEMBER_CERTIFICATE'])
         serial_number = member_cert.get_serial_number()
         expiration_date = member_cert.get_notAfter()
-        revoke_date = dt.datetime.utcnow().strftime('%Y%m%d%H%M%SZ') #GMT time in UTC format
-        result = self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
-                {'CERT_SERIAL_NUMBER': serial_number, 'REVOKE_REASON': reason, 'REVOKE_DATE': revoke_date,
-                 'CERT_VALID_UNTIL': expiration_date}, 'crl')
+        now = dt.datetime.utcnow()
+        cert_validity = dt.datetime.strptime(expiration_date, '%Y%m%d%H%M%SZ')
 
-    def get_crl(self):
+        if cert_validity > now:
+            revoke_date = dt.datetime.utcnow().strftime('%Y%m%d%H%M%SZ') #GMT time in UTC format
+            self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
+                    {'CERT_SERIAL_NUMBER': serial_number, 'REVOKE_REASON': reason, 'REVOKE_DATE': revoke_date,
+                     'CERT_VALID_UNTIL': expiration_date}, 'crl')
+            crl_pem_text = self.generate_crl()
+            with open(self._ma_crl_path, 'w') as f:
+                f.write(crl_pem_text)
+
+    def generate_crl(self):
         """
         Generates Certificate Revocation List
         :return: CRL in PEM format
@@ -232,7 +244,43 @@ class OMemberAuthorityResourceManager(object):
                 self._resource_manager_tools.object_delete(self.AUTHORITY_NAME,
                 'crl', {'CERT_SERIAL_NUMBER': entry['CERT_SERIAL_NUMBER']})
 
-        return crl.export(self._ma_cert, self._ma_cert_key, days=1)
+        return crl.export(self._ma_cert, self._ma_cert_key, days=self.CRL_VALIDITY_PERIOD)
+
+    def renew_membership(self, urn):
+        """
+        Renew membership through certificate and credential renewal
+        :param urn: user urn
+        :return:
+        """
+        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : urn}, [])
+        if not lookup_result:
+            raise self.gfed_ex.GFedv2ArgumentError("Specified user does not exist")
+
+        member_details = lookup_result[0]
+
+        user_email = member_details['MEMBER_EMAIL']
+
+        geniutil = pm.getService('geniutil')
+        cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
+        u_c,u_pu,u_pr = geniutil.create_certificate(urn=urn, issuer_key=self._ma_cert_key_str,
+                                                    issuer_cert=self._ma_cert_str, email=str(user_email),
+                                                    serial_number= self._issue_cert_serial_num(),
+                                                    life_days=self.CERT_VALIDITY_PERIOD)
+
+        privileges, _ = geniutil.get_privileges_and_target_urn([{'SFA': member_details['MEMBER_CREDENTIALS']}])
+        u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
+                                               issuer_cert=self._ma_cert_str, privileges_list=privileges,
+                                               expiration=cred_expiry)
+
+        self.revoke_certificate(urn, 'superseded')
+        member_details['MEMBER_CERTIFICATE'] = u_c
+        member_details['MEMBER_CREDENTIALS'] = u_cred
+        self.update_member(urn=urn, client_cert=None, credentials=None, fields=member_details, options=None)
+
+        # Add certificate key to return values
+        member_details['MEMBER_CERTIFICATE_KEY'] = u_pr
+
+        return member_details
 
     def register_member(self, certificate, credentials, fields, options):
         """
@@ -271,11 +319,14 @@ class OMemberAuthorityResourceManager(object):
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
 
         if not lookup_result:
+            cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
             u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_cert_key_str,
                                                         issuer_cert=self._ma_cert_str, email=str(user_email),
-                                                        serial_number= self._issue_cert_serial_num())
+                                                        serial_number= self._issue_cert_serial_num(),
+                                                        life_days=self.CERT_VALIDITY_PERIOD)
             u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
-                                                   issuer_cert=self._ma_cert_str, privileges_list=privileges, expiration=self.CRED_EXPIRY)
+                                                   issuer_cert=self._ma_cert_str, privileges_list=privileges,
+                                                   expiration=cred_expiry)
             registration_fields_member = dict( MEMBER_URN = u_urn,
                                                MEMBER_FIRSTNAME = first_name,
                                                MEMBER_LASTNAME 	= last_name,
@@ -286,6 +337,9 @@ class OMemberAuthorityResourceManager(object):
                                                )
             self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
 
+            # Add certificate key to return values
+            registration_fields_member['MEMBER_CERTIFICATE_KEY'] = u_pr
+
             #Register public key if provided
             if public_key:
                 registration_fields_key = dict(KEY_MEMBER= u_urn,
@@ -294,6 +348,7 @@ class OMemberAuthorityResourceManager(object):
                                                KEY_PUBLIC= public_key,
                                                KEY_ID= hashlib.sha224(public_key).hexdigest())
                 self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_key, 'key')
+                self.renew_membership(u_urn)
                 return dict(registration_fields_member, **registration_fields_key)
             else:
                 return registration_fields_member

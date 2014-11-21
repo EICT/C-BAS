@@ -30,9 +30,11 @@ import uuid
 
 from ext.sfa.trust.certificate import Certificate
 
-from ext.sfa.util.faults import GidInvalidParentHrn, GidParentHrn
+from ext.sfa.util.faults import GidInvalidParentHrn, GidParentHrn, GidRevoked
 from ext.sfa.util.sfalogging import logger
 from ext.sfa.util.xrn import hrn_to_urn, urn_to_hrn, hrn_authfor_hrn
+import os.path
+import OpenSSL.crypto as crypto
 
 ##
 # Create a new uuid. Returns the UUID as a string.
@@ -225,7 +227,21 @@ class GID(Certificate):
     # for a principal that is not a member of that authority. For example,
     # planetlab.us.arizona cannot sign a GID for planetlab.us.princeton.foo.
 
-    def verify_chain(self, trusted_certs = None):
+    def verify_chain(self, trusted_certs = None, crl_path=None):
+
+        #<UT>
+        #Certificate revocation check
+        if crl_path:
+            crl_file = os.path.join(crl_path, self.get_issuer())
+            if os.path.isfile(crl_file):
+                with open(crl_file, 'r') as f:
+                    crl_obj = crypto.load_crl(crypto.FILETYPE_PEM, f.read())
+                    revoked_certs = crl_obj.get_revoked()
+                    for rc in revoked_certs:
+                        serial = int(rc.get_serial(), 16) # conversion from hex to dec
+                        if serial == self.get_serial_number():
+                            raise GidRevoked("Certificate for %s has been revoked by %s." % (self.get_subject(), self.get_issuer()))
+
         # do the normal certificate verification stuff
         trusted_root = Certificate.verify_chain(self, trusted_certs)        
        

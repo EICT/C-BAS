@@ -23,7 +23,6 @@ class DelegateTools(object):
     JSON_COMMENT = "__comment" #: delimeter for comments in loaded JSON files (config.json and defaults.json)
     REQUIRED_METHOD_KEYS = ['members_to_add', 'members_to_change', 'members_to_remove'] #: list of valid keys to be passed as 'options' in a 'modify_membership' call
     GET_VERSION_FIELDS = ['URN', 'IMPLEMENTATION', 'SERVICES', 'CREDENTIAL_TYPES', 'ROLES', 'SERVICE_TYPES', 'API_VERSIONS'] #: list of fields possible in a 'get_version' API call response
-    TRUSTED_CERT_PATH = expand_amsoil_path('deploy/trusted') + '/'
 
     def __init__(self):
         """
@@ -32,6 +31,10 @@ class DelegateTools(object):
         self.STATIC = {} #: holds static configuration and settings loaded from JSON files (config.json and defaults.json)
         self._load_files()
         self._combine_fields()
+
+        config = pm.getService("config")
+        self.TRUSTED_CERT_PATH = expand_amsoil_path(config.get("delegatetools.trusted_cert_path")) +'/' #<UT>
+        self.TRUSTED_CRL_PATH = expand_amsoil_path(config.get("delegatetools.trusted_crl_path")) + '/' #<UT>
 
     def _load_files(self):
         """
@@ -104,7 +107,7 @@ class DelegateTools(object):
                 'SUPPLEMENTARY_FIELDS' : expand_amsoil_path(supplemetary_fields_path),
                 'REGISTRY' : expand_amsoil_path(service_registry_path),
                 'AUTHZ' : expand_amsoil_path(authz_path), #<UT>
-                'ROLES' : expand_amsoil_path(roles_path) #<UT>
+                'ROLES' : expand_amsoil_path(roles_path), #<UT>
                 }
 
 
@@ -270,14 +273,14 @@ class DelegateTools(object):
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         #If project credentials are used to execute commands on slice then context of such credentials must be verified
         elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
             self.verify_project_credentials_context(credentials, certificate, method, fields, target_urn)
-            geniutil.verify_credential_ex(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         # Finally, slice credentials are used for slice objects or project credentials are used for project object
         else:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
         required_privileges = self.get_required_privilege_for(method, type_)
 
@@ -373,7 +376,7 @@ class DelegateTools(object):
 
         #Update is allowed for owner himself. Otherwise, proper credentials should be presented
         if user_urn_from_cert == target_urn:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
             self.check_if_authorized(credentials=credentials, certificate=certificate, method='UPDATE', type_=type_, target_urn=None)
 
@@ -396,9 +399,9 @@ class DelegateTools(object):
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH)
+            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
         return priv_from_cred
 
@@ -437,7 +440,7 @@ class DelegateTools(object):
 
         geniutil = pm.getService('geniutil')
 
-        geniutil.verify_certificate(certificate, self.TRUSTED_CERT_PATH)
+        geniutil.verify_certificate(certificate, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
 
     @serviceinterface
