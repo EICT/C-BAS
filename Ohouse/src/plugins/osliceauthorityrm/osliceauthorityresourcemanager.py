@@ -392,11 +392,12 @@ class OSliceAuthorityResourceManager(object):
 
         return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
 
-    def update_slice_membership_for_member(self, member_urn, certificate, credentials, options):
+    def update_slice_credentials_for_member(self, member_urn, certificate, credentials, options):
         """
-
+        updates slice credentials after member certificate update due to membership renewal or revocation
         """
         member_cert = options['MEMBER_CERTIFICATE']
+
         slice_memberships = self.lookup_slice_membership_for_member(member_urn, certificate, credentials, None)
         geniutil = pm.getService('geniutil')
 
@@ -413,9 +414,9 @@ class OSliceAuthorityResourceManager(object):
             self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn,
                                                        update_data, 'SLICE_MEMBER', 'SLICE_URN')
 
-    def update_project_membership_for_member(self, member_urn, certificate, credentials, options):
+    def update_project_credentials_for_member(self, member_urn, certificate, credentials, options):
         """
-
+        updates project credentials after member certificate update due to membership renewal or revocation
         """
         member_cert = options['MEMBER_CERTIFICATE']
         project_memberships = self.lookup_project_membership_for_member(member_urn, certificate, credentials, None)

@@ -269,7 +269,15 @@
             "MATCH": false,
             "CREATE": "NOT ALLOWED",
             "UPDATE": false
+        },
+        "MEMBER_CERTIFICATE": {
+            "TYPE": "STRING",
+            "DESC": "Certificate of the system member",
+            "MATCH": false,
+            "CREATE": "NOT ALLOWED",
+            "UPDATE": true
         }
+
     },
     "KEY": {
         "KEY_MEMBER": {

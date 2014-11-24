@@ -218,3 +218,16 @@ class OSAv2Delegate(GSAv2DelegateBase):
         """
         return self._delegate_tools.delegate_credentials(delagetee_cert, issuer_key, privileges_list,
                                                          expiration, delegatable, certificate, credentials)
+
+    def update_credentials_for_member(self, member_urn, certificate, credentials, options):
+        """
+        updates project and slice credentials after member certificate update due to membership renewal or revocation
+        :param member_urn:
+        :param certificate:
+        :param credentials:
+        :return:
+        """
+        self._slice_authority_resource_manager.\
+                update_slice_credentials_for_member(member_urn, certificate, credentials, options)
+        self._slice_authority_resource_manager.\
+                update_project_credentials_for_member(member_urn, certificate, credentials, options)

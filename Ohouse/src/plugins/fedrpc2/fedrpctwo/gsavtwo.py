@@ -180,6 +180,16 @@ class GSAv2Handler(xmlrpc.Dispatcher):
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
+    def update_credentials_for_member(self, member_urn, certificate, credentials, options):
+        """
+        updates slice and project credentials after member certificate update due to membership renewal or revocation
+        """
+        try:
+              result = self._delegate.update_credentials_for_member(member_urn, certificate, credentials, options)
+        except Exception as e:
+             return self._api_tools.form_error_return(logger, e)
+        return self._api_tools.form_success_return(result)
+
 
 class GSAv2DelegateBase(object):
     """

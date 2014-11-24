@@ -240,7 +240,7 @@ class GID(Certificate):
                     for rc in revoked_certs:
                         serial = int(rc.get_serial(), 16) # conversion from hex to dec
                         if serial == self.get_serial_number():
-                            raise GidRevoked("Certificate for %s has been revoked by %s." % (self.get_subject(), self.get_issuer()))
+                            raise GidRevoked("Certificate with serial number 0x%s for %s has been revoked by %s." % (rc.get_serial(), self.get_subject(), self.get_issuer()))
 
         # do the normal certificate verification stuff
         trusted_root = Certificate.verify_chain(self, trusted_certs)        

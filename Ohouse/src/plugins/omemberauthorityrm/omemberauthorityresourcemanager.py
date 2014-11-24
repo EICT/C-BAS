@@ -45,7 +45,6 @@ class OMemberAuthorityResourceManager(object):
         hostname = config.get('flask.cbas_hostname')
         self._ma_crl_path = expand_amsoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
                                                     + hostname + '.authority.ma'
-        print self._ma_crl_path
         self._ma_cert_str = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OMemberAuthorityResourceManager.MA_CERT_FILE)
         self._ma_cert_key_str = self._resource_manager_tools.read_file(cert_key_path + '/' +
@@ -131,8 +130,11 @@ class OMemberAuthorityResourceManager(object):
         """
         Update a member object.
         """
-        return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
-            fields, 'member', {'MEMBER_URN':urn})
+        if 'MEMBER_CERTIFICATE' in fields.keys():
+            return self.renew_membership(urn)
+        else:
+            return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
+                fields, 'member', {'MEMBER_URN':urn})
 
     def lookup_member(self, client_cert, credentials, match, filter_, options):
         """
@@ -187,7 +189,7 @@ class OMemberAuthorityResourceManager(object):
             self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
             {'SERIAL_NUMBER_COUNTER': serial_number+1}, 'properties', {'URN': self._urn})
         else:
-            serial_number = 1
+            serial_number = 100 # Lower numbers might have been used during test cred generation
             self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
                 {'SERIAL_NUMBER_COUNTER': serial_number+1, 'URN': self._urn}, 'properties')
 
@@ -275,7 +277,7 @@ class OMemberAuthorityResourceManager(object):
         self.revoke_certificate(urn, 'superseded')
         member_details['MEMBER_CERTIFICATE'] = u_c
         member_details['MEMBER_CREDENTIALS'] = u_cred
-        self.update_member(urn=urn, client_cert=None, credentials=None, fields=member_details, options=None)
+        self._resource_manager_tools.object_update(self.AUTHORITY_NAME, member_details, 'member', {'MEMBER_URN': urn})
 
         # Add certificate key to return values
         member_details['MEMBER_CERTIFICATE_KEY'] = u_pr

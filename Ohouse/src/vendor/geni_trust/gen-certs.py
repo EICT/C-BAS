@@ -33,6 +33,12 @@ BAD_USER_CERT_FILE = '%s-cert.pem' % (BAD_USER_NAME,)
 BAD_USER_CRED_FILE = '%s-cred.xml' % (BAD_USER_NAME,)
 SLICE_NAME = 'pizzaslice'
 SLICE_CRED_FILE = 'pizzaslice_cred.xml'
+EXPEDIENT_NAME = 'expedient'
+EXPEDIENT_EMAIL = '%s@felix.eu' %  (EXPEDIENT_NAME,)
+EXPEDIENT_KEY_FILE = '%s-key.pem' %   (EXPEDIENT_NAME,)
+EXPEDIENT_CERT_FILE = '%s-cert.pem' % (EXPEDIENT_NAME,)
+EXPEDIENT_CRED_FILE = '%s-cred.xml' % (EXPEDIENT_NAME,)
+cert_serial_number = 10
 
 CRED_EXPIRY = datetime.datetime.utcnow() + datetime.timedelta(days=100)
 
@@ -70,28 +76,32 @@ if __name__ == "__main__":
     if not opts.silent:
         print "Creating CA certificate"
     urn = geniutil.encode_urn(opts.authority, 'authority', 'ca')
-    ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True)
+    cert_serial_number += 1
+    ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True, serial_number=cert_serial_number)
     write_file(dir_path, CA_CERT_FILE, ca_c, opts.silent)
     write_file(dir_path, CA_KEY_FILE, ca_pr, opts.silent)
 
     if not opts.silent:
         print "Creating SA certificate"
     urn = geniutil.encode_urn(opts.authority, 'authority', 'sa')
-    sa_c, sa_pu, sa_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True)
+    cert_serial_number += 1
+    sa_c, sa_pu, sa_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
     write_file(dir_path, SA_CERT_FILE, sa_c, opts.silent)
     write_file(dir_path, SA_KEY_FILE, sa_pr, opts.silent)
 
     if not opts.silent:
         print "Creating MA certificate"
     urn = geniutil.encode_urn(opts.authority, 'authority', 'ma')
-    ma_c, ma_pu, ma_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True)
+    cert_serial_number += 1
+    ma_c, ma_pu, ma_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
     write_file(dir_path, MA_CERT_FILE, ma_c, opts.silent)
     write_file(dir_path, MA_KEY_FILE, ma_pr, opts.silent)
 
     if not opts.silent:
         print "Creating AM certificate"
     urn = geniutil.encode_urn(opts.authority, 'authority', 'am')
-    am_c, am_pu, am_pr = geniutil.create_certificate(urn, ca_pr, ca_c)
+    cert_serial_number += 1
+    am_c, am_pu, am_pr = geniutil.create_certificate(urn, ca_pr, ca_c, serial_number=cert_serial_number)
     write_file(dir_path, AM_CERT_FILE, am_c, opts.silent)
     write_file(dir_path, AM_KEY_FILE, am_pr, opts.silent)
 
@@ -104,7 +114,8 @@ if __name__ == "__main__":
     if not opts.silent:
         print "Creating test user cert and cred (valid, signed by MA)"
     urn = geniutil.encode_urn(opts.authority, 'user', USER_NAME)
-    u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=USER_EMAIL)
+    cert_serial_number += 1
+    u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=USER_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, USER_CERT_FILE, u_c, opts.silent)
     write_file(dir_path, USER_KEY_FILE, u_pr, opts.silent)
     u_cred = geniutil.create_credential(u_c, u_c, ma_pr, ma_c, "user", CRED_EXPIRY)
@@ -114,7 +125,8 @@ if __name__ == "__main__":
     if not opts.silent:
         print "Creating bad test user cert and cred (invalid, self-signed)"
     urn = geniutil.encode_urn(opts.authority, 'user', BAD_USER_NAME)
-    bu_c,bu_pu,bu_pr = geniutil.create_certificate(urn, email=BAD_USER_EMAIL)
+    cert_serial_number += 1
+    bu_c,bu_pu,bu_pr = geniutil.create_certificate(urn, email=BAD_USER_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, BAD_USER_CERT_FILE, bu_c, opts.silent)
     write_file(dir_path, BAD_USER_KEY_FILE, bu_pr, opts.silent)
     bu_cred = geniutil.create_credential(bu_c, bu_c, ma_pr, ma_c, "user", CRED_EXPIRY)
@@ -123,7 +135,8 @@ if __name__ == "__main__":
     if not opts.silent:
         print "Creating admin cert and cred"
     urn = geniutil.encode_urn(opts.authority, 'user', ADMIN_NAME)
-    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL)
+    cert_serial_number += 1
+    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, ADMIN_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
@@ -131,6 +144,17 @@ if __name__ == "__main__":
               "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
     a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
     write_file(dir_path, ADMIN_CRED_FILE, a_cred, opts.silent)
+
+    urn = geniutil.encode_urn(opts.authority, 'user', EXPEDIENT_NAME)
+    cert_serial_number += 1
+    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL, serial_number=cert_serial_number)
+    write_file(dir_path, EXPEDIENT_CERT_FILE, a_c, opts.silent)
+    write_file(dir_path, EXPEDIENT_KEY_FILE, a_pr, opts.silent)
+    p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
+              "GLOBAL_PROJECTS_WILDCARDS", "MEMBER_REGISTER", "SERVICE_REMOVE", "SERVICE_VIEW",
+              "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
+    a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
+    write_file(dir_path, EXPEDIENT_CRED_FILE, a_cred, opts.silent)
 
     if not opts.silent:
         print "Creating slice credential for valid test user"
