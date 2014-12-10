@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/umartoseef/C-BAS-framework.svg?branch=master)](https://travis-ci.org/umartoseef/C-BAS-framework)
+[![Build Status](https://travis-ci.org/EICT/C-BAS-framework)](https://travis-ci.org/EICT/C-BAS-framework)
 #C-BAS: Certificate-based AAA for SDN Experimental Facilities
 
 ##Description
