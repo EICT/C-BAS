@@ -101,3 +101,12 @@ class OMAv2Delegate(GMAv2DelegateBase):
         Verifies if given certificate is valid and trusted
         """
         return self._delegate_tools.verify_certificate(cert_to_verify)
+
+    def get_crl(self, certificate, credentials):
+        """
+        Generates an updated CRL in PEM format
+        :param certificate:
+        :param credentials:
+        :return:
+        """
+        return self._member_authority.generate_crl()

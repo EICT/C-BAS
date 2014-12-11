@@ -120,6 +120,17 @@ class GMAv2Handler(xmlrpc.Dispatcher):
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
+    def get_crl(self, certificate, credentials):
+        """
+        Returns an updated Certificate Revocation List
+
+        """
+        try:
+             result = self._delegate.get_crl(certificate, credentials)
+        except Exception as e:
+            return self._api_tools.form_error_return(logger, e)
+        return self._api_tools.form_success_return(result)
+
 class GMAv2DelegateBase(object):
     """
     The contract of this class (methods, params and returns) are derived from the GENI Federation MA API (v2).
