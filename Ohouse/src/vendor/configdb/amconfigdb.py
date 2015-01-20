@@ -5,13 +5,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
-from amsoil.config import (CONFIGDB_PATH, CONFIGDB_ENGINE)
+from eisoil.config import (CONFIGDB_PATH, CONFIGDB_ENGINE)
 from amconfigdbexceptions import ConfigDuplicateConfigKey, ConfigUnknownConfigKey
-from amsoil.core import serviceinterface
-import amsoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('configdb')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('configdb')
 
 # initialize sqlalchemy
 db_engine = create_engine(CONFIGDB_ENGINE, pool_recycle=6000) # please see the wiki for more info

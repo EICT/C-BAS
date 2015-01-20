@@ -1,12 +1,12 @@
-import amsoil.core.pluginmanager as pm
-from amsoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('gregistryrpc')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('gregistryrpc')
 
 import gapitools
-# from amsoil.config import ROOT_PATH
-# from amsoil.config import expand_amsoil_path
+# from eisoil.config import ROOT_PATH
+# from eisoil.config import expand_eisoil_path
 
 from exceptions import *
 

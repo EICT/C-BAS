@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from g3rpc.genivthree import GENIv3Handler, GENIv3DelegateBase
 from g3rpc import exceptions as geni_exceptions
 

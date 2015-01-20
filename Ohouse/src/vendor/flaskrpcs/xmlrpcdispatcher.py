@@ -1,10 +1,10 @@
 import os.path
 from flask import request
 
-from amsoil.core import serviceinterface
-import amsoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
 
-from amsoil.config import expand_amsoil_path
+from eisoil.config import expand_eisoil_path
 
 import exceptions
 

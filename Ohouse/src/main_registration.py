@@ -3,13 +3,13 @@ import sys, os
 import getopt
 import threading
 
-from amsoil import config
-from amsoil.core import pluginmanager as pm
+from eisoil import config
+from eisoil.core import pluginmanager as pm
 
 
 def main():
     # set home environment variable to something (needed for apache deployment)
-    os.environ['HOME'] = config.expand_amsoil_path('~')
+    os.environ['HOME'] = config.expand_eisoil_path('~')
 
     # load plugins
     pm.init(config.PLUGINS_PATH)

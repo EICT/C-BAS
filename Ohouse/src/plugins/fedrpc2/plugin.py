@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from fedrpctwo.gregistryvtwo import GRegistryv2Handler, GRegistryv2DelegateBase
 from fedrpctwo.gmavtwo import GMAv2Handler, GMAv2DelegateBase
 from fedrpctwo.gsavtwo import GSAv2Handler, GSAv2DelegateBase

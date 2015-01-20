@@ -1,6 +1,6 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from mongodatabase import MongoDB
-from amsoil.config import (db_ip, db_port, db_name)
+from eisoil.config import (db_ip, db_port, db_name)
 
 
 def setup():

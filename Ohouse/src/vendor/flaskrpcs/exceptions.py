@@ -1,4 +1,4 @@
-from amsoil.core.exception import CoreException
+from eisoil.core.exception import CoreException
 
 class PrivateMethodCalledError(CoreException):
     pass

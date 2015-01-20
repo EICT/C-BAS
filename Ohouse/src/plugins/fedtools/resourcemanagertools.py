@@ -1,9 +1,9 @@
-from amsoil.core import serviceinterface
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
+from eisoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
 from apiexceptionsv2 import *
 
-logger=amsoil.core.log.getLogger('resourcemanagertools')
+logger=eisoil.core.log.getLogger('resourcemanagertools')
 
 class ResourceManagerTools(object):
     """

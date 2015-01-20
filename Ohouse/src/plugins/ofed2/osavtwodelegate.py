@@ -1,6 +1,6 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('ofed')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('ofed')
 
 GSAv2DelegateBase = pm.getService('gsav2delegatebase')
 gfed_ex = pm.getService('apiexceptionsv2')

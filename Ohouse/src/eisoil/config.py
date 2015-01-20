@@ -1,5 +1,5 @@
 """
-This file contains the bare minimum for bootstrapping AMsoil.
+This file contains the bare minimum for bootstrapping eiSoil.
 All (non core) implementations/plugins should use the config service/plugin.
 """
 
@@ -7,7 +7,7 @@ import logging
 import os.path
 import json
 
-from amsoil.core.exception import *
+from eisoil.core.exception import *
 
 
 ##Paths
@@ -18,7 +18,7 @@ PLUGINS_PATH = os.path.join(SRC_PATH, 'plugins')
 ##Logging
 LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = "%(asctime)s [%(levelname)s] - %(message)s"
-LOG_FILE = "%s/log/amsoil.log" % (ROOT_PATH,)
+LOG_FILE = "%s/log/eisoil.log" % (ROOT_PATH,)
 
 ##CONFIGDB
 CONFIGDB_PATH = "%s/deploy/config.db" % (ROOT_PATH,)
@@ -36,8 +36,8 @@ IS_MULTIPROCESS = True
 #IPC_RABBITMQ_PASSWORD="pass"
 
 
-def expand_amsoil_path(path):
-    """If the given path is relative, the path will be made absolute, starting from AMsoil's root."""
+def expand_eisoil_path(path):
+    """If the given path is relative, the path will be made absolute, starting from eiSoil's root."""
     path = os.path.expanduser(path)
     if os.path.isabs(path):
         return path
@@ -45,7 +45,7 @@ def expand_amsoil_path(path):
         return os.path.normpath(os.path.join(ROOT_PATH, path))
 
 
-CONFIG_PATH = expand_amsoil_path('deploy/config.json')
+CONFIG_PATH = expand_eisoil_path('deploy/config.json')
 try:
     CONFIG = json.load(open(CONFIG_PATH))
 except Exception:

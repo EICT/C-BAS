@@ -1,8 +1,8 @@
-import amsoil.core.pluginmanager as pm
-from amsoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('gsarpc')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('gsarpc')
 
 import gapitools
 

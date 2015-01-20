@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 import oregistryexceptions
 
 from oregistryresourcemanager import ORegistryResourceManager

@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from resourcemanagertools import ResourceManagerTools
 from delegatetools import DelegateTools
 from apitools import APITools

@@ -1,7 +1,7 @@
-from amsoil.core import pluginmanager as pm
+from eisoil.core import pluginmanager as pm
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('genitrust')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('genitrust')
 
 import geniutil
 
@@ -30,7 +30,7 @@ def setup():
     #
     # # setup config items
     # # config = pm.getService("config")
-    # # config.install("worker.dbpath", "deploy/worker.db", "Path to the worker's database (if relative, AMsoil's root will be assumed).")
+    # # config.install("worker.dbpath", "deploy/worker.db", "Path to the worker's database (if relative, eiSoil's root will be assumed).")
     # 
     # TMP_PATH = '/Users/motine/Documents/Ofelia/devel/test/cert' # I dont want to use tempfile, so I can look at the files (need persistant files)
     # import os.path
@@ -103,7 +103,7 @@ def setup():
 
     # # get the cert_root
     # config = pm.getService("config")
-    # cert_root = expand_amsoil_path(config.get("geniv3rpc.cert_root"))
+    # cert_root = expand_eisoil_path(config.get("geniv3rpc.cert_root"))
     
 
     # TEST: create cred

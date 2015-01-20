@@ -1,12 +1,12 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('osliceauthorityrm')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('osliceauthorityrm')
 
 import uuid
 import pyrfc3339
 import datetime
 import pytz
-from amsoil.config import  expand_amsoil_path
+from eisoil.config import  expand_eisoil_path
 
 class OSliceAuthorityResourceManager(object):
     """
@@ -34,8 +34,8 @@ class OSliceAuthorityResourceManager(object):
 
         #<UT>
         config = pm.getService("config")
-        cert_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_path"))
-        cert_key_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_keys_path"))
+        cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
+        cert_key_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_keys_path"))
 
 
         self._sa_c = self._resource_manager_tools.read_file(cert_path + '/' +
@@ -66,7 +66,7 @@ class OSliceAuthorityResourceManager(object):
         """
         Get the URN for this Slice Authority.
 
-        Retrieve the hostname from the Flask AMsoil plugin and use this to build
+        Retrieve the hostname from the Flask eiSoil plugin and use this to build
         the URN.
 
         """
@@ -78,7 +78,7 @@ class OSliceAuthorityResourceManager(object):
         """
         Get the implementation details for this Slice Authority.
 
-        Retrieve details from the AMsoil plugin and form them into a dictionary
+        Retrieve details from the eiSoil plugin and form them into a dictionary
         suitable for the API call response.
 
         """
@@ -96,7 +96,7 @@ class OSliceAuthorityResourceManager(object):
 
     def api_versions(self):
         """
-        Get the different endpoints (of type 'ma'), registered with AMsoil.
+        Get the different endpoints (of type 'ma'), registered with eiSoil.
 
         Form these endpoints into a dictionary suitable for the API call response.
 
@@ -120,7 +120,7 @@ class OSliceAuthorityResourceManager(object):
         Create a slice object.
 
         Generate fields for a new object:
-            * SLICE_URN: retrieve the hostname from the Flask AMsoil plugin
+            * SLICE_URN: retrieve the hostname from the Flask eiSoil plugin
                 and form into a valid URN
             * SLICE_UID: generate a new UUID4 value
             * SLICE_CREATION: get the time now and convert it into RFC3339 form
@@ -213,7 +213,7 @@ class OSliceAuthorityResourceManager(object):
         Create a project object.
 
         Generate fields for a new object:
-            * PROJECT_URN: retrieve the hostname from the Flask AMsoil plugin
+            * PROJECT_URN: retrieve the hostname from the Flask eiSoil plugin
                 and form into a valid URN
             * PROJECT_UID: generate a new UUID4 value
             * PROJECT_CREATION: get the time now and convert it into RFC3339 form

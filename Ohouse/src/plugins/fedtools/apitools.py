@@ -1,5 +1,5 @@
-from amsoil.core import serviceinterface
-import amsoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
+import eisoil.core.pluginmanager as pm
 
 import traceback
 from apiexceptionsv2 import GFedv2BaseError, GFedv2ServerError

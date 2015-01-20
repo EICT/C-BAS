@@ -2,8 +2,8 @@
 This module provides logging facilities. More specifically, it provides a way to get to a (configured) python logger.
 Hence the interface of this logger is the same as the python one (so please direct all complaints regarding this to the python people). 
 In order to get such a logger instance, you could insert this code at the beginning of your module:
-    import amsoil.core.log
-    logger=amsoil.core.log.getLogger('SOMENAME')
+    import eisoil.core.log
+    logger=eisoil.core.log.getLogger('SOMENAME')
 whereby SOMENAME represents an optional prefix for the logging messages (e.g. 'xplugin' would yield messages like 'd.a.te [xplugin] message')
 
 Configuration
@@ -18,9 +18,9 @@ when the pluginmanager loads.
 """
 import logging, logging.handlers
 
-from amsoil import config
+from eisoil import config
 
-LOGGER_NAME = 'amsoil'
+LOGGER_NAME = 'eisoil'
 
 def getLogger(prefix=None):
     """Receive a python logger (logging.Logger) which has been configured by AMsoil."""

@@ -1,7 +1,7 @@
-from amsoil.core import serviceinterface
-from amsoil.config import expand_amsoil_path
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
+from eisoil.core import serviceinterface
+from eisoil.config import expand_eisoil_path
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
 
 from delegateexceptions import *
 from apiexceptionsv2 import *
@@ -13,7 +13,7 @@ import uuid
 import pyrfc3339, datetime, pytz
 import re
 
-logger = amsoil.core.log.getLogger('delegatetools')
+logger = eisoil.core.log.getLogger('delegatetools')
 
 class DelegateTools(object):
     """
@@ -33,8 +33,8 @@ class DelegateTools(object):
         self._combine_fields()
 
         config = pm.getService("config")
-        self.TRUSTED_CERT_PATH = expand_amsoil_path(config.get("delegatetools.trusted_cert_path")) +'/' #<UT>
-        self.TRUSTED_CRL_PATH = expand_amsoil_path(config.get("delegatetools.trusted_crl_path")) + '/' #<UT>
+        self.TRUSTED_CERT_PATH = expand_eisoil_path(config.get("delegatetools.trusted_cert_path")) +'/' #<UT>
+        self.TRUSTED_CRL_PATH = expand_eisoil_path(config.get("delegatetools.trusted_crl_path")) + '/' #<UT>
 
     def _load_files(self):
         """
@@ -102,12 +102,12 @@ class DelegateTools(object):
         defaults_path = config.get("delegatetools.defaults_path")
         authz_path = config.get("delegatetools.authz_path") #<UT>
         roles_path = config.get("delegatetools.roles_path") #<UT>
-        return {'CONFIG' : expand_amsoil_path(config_path),
-                'DEFAULTS' : expand_amsoil_path(defaults_path),
-                'SUPPLEMENTARY_FIELDS' : expand_amsoil_path(supplemetary_fields_path),
-                'REGISTRY' : expand_amsoil_path(service_registry_path),
-                'AUTHZ' : expand_amsoil_path(authz_path), #<UT>
-                'ROLES' : expand_amsoil_path(roles_path), #<UT>
+        return {'CONFIG' : expand_eisoil_path(config_path),
+                'DEFAULTS' : expand_eisoil_path(defaults_path),
+                'SUPPLEMENTARY_FIELDS' : expand_eisoil_path(supplemetary_fields_path),
+                'REGISTRY' : expand_eisoil_path(service_registry_path),
+                'AUTHZ' : expand_eisoil_path(authz_path), #<UT>
+                'ROLES' : expand_eisoil_path(roles_path), #<UT>
                 }
 
 

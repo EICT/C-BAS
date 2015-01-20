@@ -2,11 +2,11 @@ from datetime import datetime, timedelta
 import time
 import pickle
 
-from amsoil.core import pluginmanager as pm
-from amsoil.core import serviceinterface
-from amsoil.core.exception import CoreException
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('worker')
+from eisoil.core import pluginmanager as pm
+from eisoil.core import serviceinterface
+from eisoil.core.exception import CoreException
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('worker')
 
 import workerdb
 

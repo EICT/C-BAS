@@ -1,7 +1,7 @@
 
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('dhcpgeniv3delegate')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('dhcpgeniv3delegate')
 
 GENIv3DelegateBase = pm.getService('geniv3delegatebase')
 geni_ex = pm.getService('geniv3exceptions')

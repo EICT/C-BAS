@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
-from amsoil.core import pluginmanager as pm
-from amsoil.core import serviceinterface
-from amsoil.core.exception import CoreException
-from amsoil.config import expand_amsoil_path
+from eisoil.core import pluginmanager as pm
+from eisoil.core import serviceinterface
+from eisoil.core.exception import CoreException
+from eisoil.config import expand_eisoil_path
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('schedule')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('schedule')
 
 import scheduleexceptions as sex
 from attributedict import AttributeDict
@@ -14,13 +14,13 @@ from attributedict import AttributeDict
 class Schedule(object):
     """
     
-    Please see the wiki for more information: https://github.com/motine/AMsoil/wiki/Schedule
+    Please see the wiki for more information: https://github.com/eict/eiSoil/wiki/Schedule
     Please create one instance of this class for each schedule_subject.
     
     NOTE:
     This class will never deliver a Database record to the outside.
     It will copy the contents of the database record, so the plugin user can not accidentally change the database.
-    For problem statement see https://github.com/motine/AMsoil/wiki/Persistence#expunge
+    For problem statement see https://github.com/eict/eiSoil/wiki/Persistence#expunge
     """
     
     @serviceinterface
@@ -159,10 +159,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import and_, or_, not_
 
-from amsoil.config import expand_amsoil_path
+from eisoil.config import expand_eisoil_path
 
 # initialize sqlalchemy
-DB_PATH = expand_amsoil_path(pm.getService('config').get('schedule.dbpath'))
+DB_PATH = expand_eisoil_path(pm.getService('config').get('schedule.dbpath'))
 DB_ENGINE = create_engine("sqlite:///%s" % (DB_PATH,)) # please see the wiki for more info
 DB_SESSION_FACTORY = sessionmaker(autoflush=True, bind=DB_ENGINE, expire_on_commit=False)
 db_session = scoped_session(DB_SESSION_FACTORY)

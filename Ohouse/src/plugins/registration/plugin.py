@@ -1,4 +1,4 @@
-from amsoil.core import pluginmanager as pm
+from eisoil.core import pluginmanager as pm
 
 def setup():
 

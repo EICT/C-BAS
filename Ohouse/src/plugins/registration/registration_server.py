@@ -1,14 +1,14 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 import hashlib, datetime
 
-from amsoil.config import  expand_amsoil_path
-from amsoil.config import (registration_server_ip, registration_server_port)
+from eisoil.config import  expand_eisoil_path
+from eisoil.config import (registration_server_ip, registration_server_port)
 from SocketServer import ThreadingMixIn
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 from registration_utils import *
 
 
-KEY_PATH = expand_amsoil_path('test/creds') + '/'
+KEY_PATH = expand_eisoil_path('test/creds') + '/'
 AUTHORITY_NAME = 'ma'
 
 AUTHORITY="cbas.eict.de"

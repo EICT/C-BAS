@@ -1,6 +1,6 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('oregistryrm')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('oregistryrm')
 
 from oregistryexceptions import *
 
@@ -32,7 +32,7 @@ class ORegistryResourceManager(object):
         """
         Get the URN for this Federation Registry.
 
-        Retrieve the hostname from the Flask AMsoil plugin and use this to build
+        Retrieve the hostname from the Flask eiSoil plugin and use this to build
         the URN.
 
         """
@@ -44,7 +44,7 @@ class ORegistryResourceManager(object):
         """
         Get the implementation details for this Federation Registry.
 
-        Retrieve details from the AMsoil plugin and form them into a dictionary
+        Retrieve details from the eiSoil plugin and form them into a dictionary
         suitable for the API call response.
 
         """

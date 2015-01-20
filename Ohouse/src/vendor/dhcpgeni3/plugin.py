@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from dhcpgenithreedelegate import DHCPGENI3Delegate
 
 def setup():

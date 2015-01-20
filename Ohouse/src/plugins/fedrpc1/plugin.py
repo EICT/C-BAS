@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from fedrpcone.gregistryvone import GRegistryv1Handler, GRegistryv1DelegateBase
 from fedrpcone.gmavone import GMAv1Handler, GMAv1DelegateBase
 from fedrpcone.gsavone import GSAv1Handler, GSAv1DelegateBase

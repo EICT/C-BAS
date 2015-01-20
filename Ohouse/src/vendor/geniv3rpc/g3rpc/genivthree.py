@@ -10,13 +10,13 @@ from lxml.builder import ElementMaker
 import ext.geni
 import ext.sfa.trust.gid as gid
 
-import amsoil.core.pluginmanager as pm
-from amsoil.core import serviceinterface
-from amsoil.config import ROOT_PATH
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('geniv3rpc')
+import eisoil.core.pluginmanager as pm
+from eisoil.core import serviceinterface
+from eisoil.config import ROOT_PATH
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('geniv3rpc')
 
-from amsoil.config import expand_amsoil_path
+from eisoil.config import expand_eisoil_path
 
 from exceptions import *
 
@@ -216,10 +216,10 @@ class GENIv3Handler(xmlrpc.Dispatcher):
 
 class GENIv3DelegateBase(object):
     """
-    Please find more information about the concept of Handlers and Delegates via the wiki (e.g. https://github.com/motine/AMsoil/wiki/GENI).
+    Please find more information about the concept of Handlers and Delegates via the wiki (e.g. https://github.com/eict/eiSoil/wiki/GENI).
     
     The GENIv3 handler (see above) assumes that this class uses RSpec version 3 when interacting with the client.
-    For creating new a new RSpec type/extension, please see the wiki via https://github.com/motine/AMsoil/wiki/RSpec.
+    For creating new a new RSpec type/extension, please see the wiki via https://github.com/eict/eiSoil/wiki/RSpec.
     
     General parameters for all following methods:
     {client_cert} The client's certificate. See [flaskrpcs]XMLRPCDispatcher.requestCertificate(). Also see http://groups.geni.net/geni/wiki/GeniApiCertificates
@@ -480,7 +480,7 @@ class GENIv3DelegateBase(object):
 
         # get the cert_root
         config = pm.getService("config")
-        cert_root = expand_amsoil_path(config.get("geniv3rpc.cert_root"))
+        cert_root = expand_eisoil_path(config.get("geniv3rpc.cert_root"))
 
         if client_cert == None:
             raise GENIv3ForbiddenError("Could not determine the client SSL certificate")

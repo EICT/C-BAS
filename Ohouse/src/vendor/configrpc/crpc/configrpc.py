@@ -1,6 +1,6 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('configrpc')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('configrpc')
 
 xmlrpc = pm.getService('xmlrpc')
 config = pm.getService("config")

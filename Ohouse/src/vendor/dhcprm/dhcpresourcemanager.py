@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('dhcpresourcemanager')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('dhcpresourcemanager')
 
 from ip import IP
 from dhcpexceptions import *

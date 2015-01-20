@@ -1,10 +1,10 @@
 from flask import Flask, request, request_started, request_finished
 
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('flaskrpcs')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('flaskrpcs')
 
-from amsoil.core import serviceinterface
+from eisoil.core import serviceinterface
 
 from werkzeug import serving
 from OpenSSL import SSL, crypto

@@ -374,10 +374,10 @@ def infer_client_cert(client_cert, credentials):
     """Returns client_cert if it is not None. It returns the first cert of the credentials if one is given.
     This is only needed to work around if the certificate could not be acquired due to the shortcommings of the werkzeug library.
     """
-    import amsoil.core.log
-    logger=amsoil.core.log.getLogger('geni_trust')
+    import eisoil.core.log
+    logger=eisoil.core.log.getLogger('geni_trust')
 
-    import amsoil.core.pluginmanager as pm
+    import eisoil.core.pluginmanager as pm
     config = pm.getService('config')
 
     if client_cert != None:

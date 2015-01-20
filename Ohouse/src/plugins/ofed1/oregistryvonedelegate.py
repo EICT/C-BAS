@@ -1,6 +1,6 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('ofed')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('ofed')
 
 GRegistryv1DelegateBase = pm.getService('gregistryv1delegatebase')
 gfed_ex = pm.getService('gfedv1exceptions')

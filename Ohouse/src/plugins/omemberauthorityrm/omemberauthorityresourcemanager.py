@@ -1,12 +1,12 @@
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('omemberauthorityrm')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('omemberauthorityrm')
 
 import hashlib
 
 from omemberauthorityexceptions import *
 #<UT>
-from amsoil.config import  expand_amsoil_path
+from eisoil.config import  expand_eisoil_path
 from apiexceptionsv2 import *
 import OpenSSL.crypto as crypto
 import datetime as dt
@@ -40,10 +40,10 @@ class OMemberAuthorityResourceManager(object):
         self._set_unique_keys()
         #<UT>
         config = pm.getService("config")
-        cert_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_path"))
-        cert_key_path = expand_amsoil_path(config.get("delegatetools.trusted_cert_keys_path"))
+        cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
+        cert_key_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_keys_path"))
         hostname = config.get('flask.cbas_hostname')
-        self._ma_crl_path = expand_amsoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
+        self._ma_crl_path = expand_eisoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
                                                     + hostname + '.authority.ma'
         self._ma_cert_str = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OMemberAuthorityResourceManager.MA_CERT_FILE)
@@ -74,7 +74,7 @@ class OMemberAuthorityResourceManager(object):
         """
         Get the URN for this Member Authority.
 
-        Retrieve the hostname from the Flask AMsoil plugin and use this to build
+        Retrieve the hostname from the Flask eiSoil plugin and use this to build
         the URN.
 
         """
@@ -86,7 +86,7 @@ class OMemberAuthorityResourceManager(object):
         """
         Get the implementation details for this Member Authority.
 
-        Retrieve details from the AMsoil plugin and form them into a dictionary
+        Retrieve details from the eiSoil plugin and form them into a dictionary
         suitable for the API call response.
 
         """
@@ -104,7 +104,7 @@ class OMemberAuthorityResourceManager(object):
 
     def api_versions(self):
         """
-        Get the different endpoints (of type 'ma'), registered with AMsoil.
+        Get the different endpoints (of type 'ma'), registered with eiSoil.
 
         Form these endpoints into a dictionary suitable for the API call response.
 

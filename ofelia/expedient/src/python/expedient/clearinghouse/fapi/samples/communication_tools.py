@@ -1,7 +1,3 @@
-"""
-This code is copied from Ohouse testtools https://github.com/motine/Ohouse/blob/development/test/unit/v2/testtools.py
-"""
-
 import sys
 import os.path
 import pprint

@@ -6,13 +6,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('worker')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('worker')
 
-from amsoil.config import expand_amsoil_path
+from eisoil.config import expand_eisoil_path
 
-WORKERDB_PATH = expand_amsoil_path(pm.getService('config').get('worker.dbpath'))
+WORKERDB_PATH = expand_eisoil_path(pm.getService('config').get('worker.dbpath'))
 WORKERDB_ENGINE = "sqlite:///%s" % (WORKERDB_PATH,)
 
 # initialize sqlalchemy

@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 import osliceauthorityexceptions
 
 from osliceauthorityresourcemanager import OSliceAuthorityResourceManager

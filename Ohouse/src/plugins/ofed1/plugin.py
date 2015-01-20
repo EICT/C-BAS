@@ -1,9 +1,9 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 from oregistryvonedelegate import ORegistryv1Delegate
 from omavonedelegateguard import OMAv1DelegateGuard
 
 """
-The delegate concept (introduced by AMsoil) was extended here.
+The delegate concept (introduced by eiSoil) was extended here.
 Now there is the delegate which does the actual work (either itself or delegates to a Resource Manager).
 The delegate may be wrapped in a guard.
 This guard derives from the original delegate and checks the incoming/outgoing values with respect to authorization.

@@ -115,5 +115,5 @@ http {
     #    }
     #}
 
-    include /Users/motine/Documents/Ofelia/devel/amsoil/deploy/am.nginx.conf;
+    include /Users/motine/Documents/Ofelia/devel/eisoil/deploy/am.nginx.conf;
 }

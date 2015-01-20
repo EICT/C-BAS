@@ -1,4 +1,4 @@
-import amsoil.core.pluginmanager as pm
+import eisoil.core.pluginmanager as pm
 
 """
 Configuration Provider
@@ -8,7 +8,7 @@ Please see the following code for creating defaults and retrieving them ("flask.
 The type / class of the value is preserved. Pickle is used to serialize the values.
 
 Example code:
-    import amsoil.core.pluginmanager as pm
+    import eisoil.core.pluginmanager as pm
     config = pm.getService("config")
 
     # create default configuration (if they are not already in the database, e.g. during setup of the plugin)

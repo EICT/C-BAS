@@ -1,11 +1,11 @@
 import smtplib
 from email.mime.text import MIMEText
 
-from amsoil.core import pluginmanager as pm
-from amsoil.core import serviceinterface
-from amsoil.core.exception import CoreException
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('mailer')
+from eisoil.core import pluginmanager as pm
+from eisoil.core import serviceinterface
+from eisoil.core.exception import CoreException
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('mailer')
 
 """
 Currently only unsecure connections to smtp servers are supported.

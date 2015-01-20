@@ -1,12 +1,12 @@
 """
-The pluginmanager is the core of AMsoil.
+The pluginmanager is the core of eiSoil.
 The module is responsible for bootstrapping all plugins.
 
 Services
 The pluginmanager provides a service registry for plugins. Each plugin can register services on setup.
 These services are references to e.g. objects, classes, dicts and even python modules via the registerService(...) method.
 Other plugins can retrieve these services via calling getService(...).
-Currently, the actual setup of AMsoil may only include only one plugin which defines a certain service.
+Currently, the actual setup of eiSoil may only include only one plugin which defines a certain service.
 In other word there may not be two plugins which register a service called the same.
 
 Plugin requirements
@@ -41,11 +41,11 @@ import os, os.path
 import json
 import imp
 
-from amsoil import config
-from amsoil.core.exception import CoreException
+from eisoil import config
+from eisoil.core.exception import CoreException
 
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('pluginmanager')
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('pluginmanager')
 
 class PluginException(CoreException):
     def __init__(self, name):

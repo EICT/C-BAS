@@ -1,7 +1,7 @@
-from amsoil.config import expand_amsoil_path
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('ofed')
+from eisoil.config import expand_eisoil_path
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('ofed')
 
 from omavonedelegate import OMAv1Delegate
 gfed_ex = pm.getService('gfedv1exceptions')
@@ -28,7 +28,7 @@ class OMAv1DelegateGuard(OMAv1Delegate):
     def _authorize_dict_list(self, client_cert, credentials, result, options):
         client_cert = geniutil.infer_client_cert(client_cert, credentials)
         try:
-            trusted_cert_path = expand_amsoil_path(config.get("ofed.cert_root"))
+            trusted_cert_path = expand_eisoil_path(config.get("ofed.cert_root"))
             geniutil.verify_certificate(client_cert, trusted_cert_path)
             # TODO remove this (only for testing)
             # BEGING REMOVE

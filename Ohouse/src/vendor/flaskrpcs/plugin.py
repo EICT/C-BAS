@@ -1,9 +1,9 @@
 """
 Please see the documentation in FlaskXMLRPC.
 """
-import amsoil.core.pluginmanager as pm
-import amsoil.core.log
-logger=amsoil.core.log.getLogger('flaskrpcs')
+import eisoil.core.pluginmanager as pm
+import eisoil.core.log
+logger=eisoil.core.log.getLogger('flaskrpcs')
 
 from flaskxmlrpc import FlaskXMLRPC
 from flaskserver import FlaskServer

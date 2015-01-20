@@ -6,7 +6,7 @@ Ohouse is a reference implementation of the [Federation Service API](http://grou
 
 Ohouse consists of three main components: Federation Registry (FR), Slice Authority (SA) and Member Authority (MA). These are illustrated below:
 
-![image](https://raw.githubusercontent.com/motine/Ohouse/development/docs/ohouse_high_level.png)
+![image](./ohouse_high_level.png)
 
 **Note:** Bold text indicates a components currently under development. Effort is currently concentrated on [v2 of the Federation Service API](http://groups.geni.net/geni/wiki/CommonFederationAPIv2). However, a partial implementation of [v1 of the Federation Service API](http://groups.geni.net/geni/wiki/CommonFederationAPIv1) is included, although it is unmaintained and incomplete.
 
@@ -14,9 +14,9 @@ Ohouse consists of three main components: Federation Registry (FR), Slice Author
 
 #### Ohouse
 
-Ohouse is built using the [AMsoil](https://github.com/motine/AMsoil) framework, with functionality spread amongst a number of plugins and services. These are illustrated below:
+Ohouse is built using the [eiSoil](https://github.com/eict/eiSoil) framework, with functionality spread amongst a number of plugins and services. These are illustrated below:
 
-![image](https://raw.githubusercontent.com/motine/Ohouse/development/docs/ohouse_technical.png)
+![image](./ohouse_technical.png)
 
 Handler and delegate base classes are realised in two plugins (`fedrpc1` and `fedrpc2`), each supporting a different version of the Federation Service API. Within each plugin, a number of services are used to support calls to the different supported entities (FR, MA, SA).
 
@@ -24,7 +24,7 @@ The Delegates are structured similarly in the `ofed1` and `ofed2` plugins. These
 
 A number of individual plugins are used as resource managers for the different supported entities (FR, MA, SA). These are realised in `oregistryrm`, `omemberauthorityrm`, and `osliceauthorityrm` plugins respectively.
 
-The `fedtools` plugin provides help to all of the above mentioned elements. In general they provide helper methods for common operations. The plugin is divided into three services, each corresponding to one of the [three layers of the architecture](https://github.com/motine/Ohouse/docs/ohouse_high_level.png).
+The `fedtools` plugin provides help to all of the above mentioned elements. In general they provide helper methods for common operations. The plugin is divided into three services, each corresponding to one of the [three layers of the architecture](./ohouse_high_level.png).
 
 #### MongoDB
 
@@ -44,7 +44,7 @@ Each document (entry) includes a 'type' field, which denotes the object type it 
 
 #### Configuration 
 
-Configuration in Ohouse is achieved through the use of a JSON-format configuration file. An example is given at [`deploy/config.json.example`](https://github.com/motine/Ohouse/deploy/config.json.example). To use this example, simply copy the example to `deploy/config.json`.
+Configuration in Ohouse is achieved through the use of a JSON-format configuration file. An example is given at [`deploy/config.json.example`](https://github.com/eict/Ohouse/deploy/config.json.example). To use this example, simply copy the example to `deploy/config.json`.
 
 This file is used to define supplementary fields for each of the object types supported in Ohouse (`SERVICE`, `SLICE`, `SLIVER_INFO`, `PROJECT`, `MEMBER`, `KEY`). See the `SLICE` and `MEMBER` entries in [`deploy/config.json.example`](https://github.com/motine/Ohouse/deploy/config.json.example) for more details. As an example, the following JSON can be used to define a custom field, describing an OFELIA island name field for a `MEMBER` object:
 

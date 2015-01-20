@@ -3,7 +3,7 @@ from flaskext.xmlrpc import XMLRPCHandler, Fault
 
 from xmlrpcdispatcher import XMLRPCDispatcher
 
-from amsoil.core import serviceinterface
+from eisoil.core import serviceinterface
 
 class FlaskXMLRPC(object):
     """
