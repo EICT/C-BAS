@@ -65,44 +65,6 @@ class TestRegApp(unittest.TestCase):
             self.assertIsNotNone(member)
 
 
-    def test_register_with_non_unique_public_key(self):
-        '''
-        User registration should fail if non-unique public is provided
-        '''
-
-        first_name = ['TestFirstName_300', 'TestFirstName_301']
-        last_name =  ['TestLastName_300', 'TestLastName_301']
-        user_name =  ['test_username_300', 'test_username_301']
-        email =      ['test_300@test.de', 'test_301@test.de']
-        public_key_value = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDLpbEIycnsX7/pm1cC3TonZLU/AIlFujPvPL+68d3VShw1QkBNBJgqIRo9wPqz6B31HzkBpwkmdFkZQqhWUbvbnllgEK8sIvZ4a9u2ZsRI5qvoc9qDTS/kpRLajivBGH5quNAFBE5LSmkV29/pOOzJTO4XLMp8xAfCwq8s4hNdbZWpmX9/1GrC9yUckmchpD2YKVDrVqneCH3PlbB2XLmE1UIP98ic/Y3FXAwX5bS/i+k27N8TWlPSWV4I9MZkN4sVAIt99yjxJZtimWBm0fYZAEfDS57G58fpPTamQV2RWq1iNl6X9DxufxRQqHVRlo9ixKp1TTfkvCvH//PSLi+r test@test.de'
-        ret_values = self.server.register_user(first_name[0],
-                                               last_name[0],
-                                               user_name[0],
-                                               email[0],
-                                               public_key_value)
-
-        if len(ret_values) == 2:
-            member, key = ret_values[:2]
-        else:
-            member = None
-
-        #Registration should succeed for unique public key
-        self.assertIsNotNone(member)
-
-        ret_values = None
-        try:
-            ret_values = self.server.register_user(first_name[1],
-                                                   last_name[1],
-                                                   user_name[1],
-                                                   email[1],
-                                                   public_key_value)
-        except Exception:
-            pass
-
-        #Registration should fail for non-unique public key
-        self.assertIsNone(ret_values)
-
-
     def test_register_with_first_and_last_name_combinations(self):
         """
         User registration should be possible for any combination of First and Last names as long as

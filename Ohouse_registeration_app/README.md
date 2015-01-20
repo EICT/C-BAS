@@ -20,7 +20,7 @@ Furthermore, the method that is currently used to generate SSH keys is ssh-keyge
 
 To Configure the Registration App, follow these steps: 
 - cp registation_app_config.json.example registation_app_config.json 
-- Open registation_app_config.json and configure it with the registration server IP and Port defined [here](https://github.com/motine/Ohouse)
+- Open registation_app_config.json and configure it with the registration server IP and Port defined [here](https://github.com/eict/Ohouse)
 
 An example can be found [here](https://gist.github.com/zanetworker/ee4fedbeab782d797d0b) 
 
