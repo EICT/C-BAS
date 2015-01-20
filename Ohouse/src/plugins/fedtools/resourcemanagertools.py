@@ -17,7 +17,7 @@ class ResourceManagerTools(object):
         self._database = pm.getService('mongodb')
 
     @serviceinterface
-    def set_index(self, collection, index):
+    def set_index(self, collection, index, unique=True):
         """
         Set a unique key for a given collection.
 
@@ -26,7 +26,7 @@ class ResourceManagerTools(object):
             key: unique key to set
 
         """
-        self._database.set_index(collection, index)
+        self._database.set_index(collection, index, unique)
 
     @serviceinterface
     def member_modify(self, authority, type_, urn, options, member_key, urn_key):

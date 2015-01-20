@@ -61,10 +61,13 @@ class OMemberAuthorityResourceManager(object):
         """
         Set the required unique keys in the database for a Member Authority.
         """
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_UID')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_URN')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_ID')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'CERT_SERIAL_NUMBER')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_UID')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_URN')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_ID')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'CERT_SERIAL_NUMBER')
+        #<UT> Let's add username and key member
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_USERNAME')
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_MEMBER')
 
     #--- 'get_version' methods
     def urn(self):
@@ -318,9 +321,10 @@ class OMemberAuthorityResourceManager(object):
         hostname = config.get('flask.cbas_hostname')
 
         u_urn = geniutil.encode_urn(hostname, 'user', str(user_name))
-        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : u_urn}, [])
-
+        #lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': u_urn}, [])
+        lookup_result = False
         if not lookup_result:
+
             cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
             u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_cert_key_str,
                                                         issuer_cert=self._ma_cert_str, email=str(user_email),
@@ -350,7 +354,6 @@ class OMemberAuthorityResourceManager(object):
                                                KEY_PUBLIC= public_key,
                                                KEY_ID= hashlib.sha224(public_key).hexdigest())
                 self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_key, 'key')
-                self.renew_membership(u_urn)
                 return dict(registration_fields_member, **registration_fields_key)
             else:
                 return registration_fields_member

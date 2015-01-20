@@ -53,14 +53,14 @@ class OSliceAuthorityResourceManager(object):
         """
         Set the required unique keys in the database for a Slice Authority.
         """
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_UID')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_UID')
         #<UT> According to new structure SLICE_URN cannot be a unique key
-        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_URN')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLIVER_INFO_URN')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_UID')
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLICE_URN', unique=False)
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'SLIVER_INFO_URN')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_UID')
 
         #<UT> According to new structure PROJECT_URN cannot be a unique key
-        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_URN')
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'PROJECT_URN', unique=False)
 
     def urn(self):
         """

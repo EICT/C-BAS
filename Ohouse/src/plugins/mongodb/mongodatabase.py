@@ -25,7 +25,7 @@ class MongoDB(object):
         self._database = client[database_name]
 
     @serviceinterface
-    def set_index(self, collection, index):
+    def set_index(self, collection, index, unique=True):
         """
         Set a unique index in a collection.
 
@@ -37,7 +37,7 @@ class MongoDB(object):
             index: name of index ('SLICE_URN' for example)
 
         """
-        self._database[collection].ensure_index(index, unique=True, sparse=True)
+        self._database[collection].ensure_index(index, unique=unique, sparse=True)
 
     @serviceinterface
     def create(self, collection, document):
