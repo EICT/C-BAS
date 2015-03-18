@@ -11,7 +11,6 @@ install:
   - "pip install -r requirements.txt"
 # setup environment and start Ohouse
 before_script:
-  - "cd cbas"
   - "cp deploy/config.json.example deploy/config.json"
   - "cp deploy/registry.json.example deploy/registry.json"
   - "cp deploy/supplementary_fields.json.example deploy/supplementary_fields.json"
