@@ -25,4 +25,4 @@ script:
 # notify result of build to email address
 notifications:
   email:
-    - matt@matthewbroadbent.net
+    - umar.toseef@eict.de
