@@ -257,7 +257,7 @@ class OSliceAuthorityResourceManager(object):
         ret_values['PROJECT_CREDENTIALS'] = p_creds
 
         #Create PROJECT_MEMBER object
-        options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_ROLE': 'LEAD'}]}
+        options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_CERTIFICATE': p_cert, 'PROJECT_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
 
         return ret_values
@@ -381,6 +381,7 @@ class OSliceAuthorityResourceManager(object):
                     member_dict['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
                                                                                        issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                                                        privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+                    member_dict['PROJECT_CERTIFICATE'] = project_cert
                     if member_role == 'LEAD':
                         project_lookup_result[0]['PROJECT_LEAD'] = member_dict['PROJECT_MEMBER']
                         self._resource_manager_tools.object_update(self.AUTHORITY_NAME, project_lookup_result[0], 'project', {'PROJECT_URN':urn})
@@ -410,7 +411,7 @@ class OSliceAuthorityResourceManager(object):
                                                             issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                             privileges_list=slice_prvlg, expiration=slice_exp)
 
-            update_data = {'members_to_modify': [{'SLICE_CREDENTIALS': slice_creds_new}]}
+            update_data = {'members_to_change': [{'SLICE_CREDENTIALS': slice_creds_new}]}
             self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn,
                                                        update_data, 'SLICE_MEMBER', 'SLICE_URN')
 
@@ -431,7 +432,7 @@ class OSliceAuthorityResourceManager(object):
                                                               issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                               privileges_list=project_prvlg, expiration=project_exp)
 
-            update_data = {'members_to_modify': [{'PROJECT_CREDENTIALS': project_creds_new}]}
+            update_data = {'members_to_change': [{'PROJECT_CREDENTIALS': project_creds_new}]}
             self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', project_urn,
                                                        update_data, 'PROJECT_MEMBER', 'PROJECT_URN')
 
