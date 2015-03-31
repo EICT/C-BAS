@@ -42,17 +42,17 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'create' call; if valid, create this object using
         the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
             self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'SLICE', fields=fields)
             return self._slice_authority_resource_manager.create_slice(certificate, credentials, fields, options)
-        elif (type_=='SLIVER_INFO'):
+        elif (type_.upper()=='SLIVER_INFO'):
             self._delegate_tools.object_creation_check(fields, self._sliver_info_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._slice_authority_resource_manager.create_sliver_info(certificate, credentials, fields, options)
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.object_creation_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'PROJECT')
@@ -66,7 +66,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'update' call; if valid, update this object using
         the resource manager.
         """
-        if (type_ == 'SLICE') :
+        if (type_.upper() == 'SLICE') :
             self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'SLICE', target_urn=urn)
 
             update_expiration_time = fields.get('SLICE_EXPIRATION')
@@ -88,11 +88,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_update_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._slice_authority_resource_manager.update_slice(urn, certificate, credentials, fields, options)
-        elif (type_=='SLIVER_INFO'):
+        elif (type_.upper()=='SLIVER_INFO'):
             self._delegate_tools.object_update_check(fields, self._sliver_info_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._slice_authority_resource_manager.update_sliver_info(urn, certificate, credentials, fields, options)
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'PROJECT', target_urn=urn)
             update_expiration_time = fields.get('PROJECT_EXPIRATION')
             if update_expiration_time:
@@ -121,11 +121,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, delete this object
         using the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             raise gfed_ex.GFedv2NotImplementedError("No authoritative way to know that there aren't live slivers associated with a slice.")
-        elif (type_=='SLIVER_INFO'):
+        elif (type_.upper()=='SLIVER_INFO'):
             return self._slice_authority_resource_manager.delete_sliver_info(urn, certificate, credentials, options)
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'DELETE', 'PROJECT', target_urn=urn)
             return self._slice_authority_resource_manager.delete_project(urn, certificate, credentials,  options)
         else:
@@ -136,7 +136,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SLICE')
 
             match_urn_list=self._delegate_tools.decompose_slice_urns(match)
@@ -147,9 +147,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
 
             return self._delegate_tools.to_keyed_dict(result_list, "SLICE_URN")
 
-        elif (type_=='SLIVER_INFO'):
+        elif (type_.upper()=='SLIVER_INFO'):
             return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_sliver_info(certificate, credentials, match, filter_, options), "SLIVER_INFO_URN")
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'PROJECT')
             return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_project(certificate, credentials, match, filter_, options), "PROJECT_URN")
         else:
@@ -162,14 +162,14 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'modify_membership' call; if valid, modify the
         membership for the given URN using the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'SLICE_MEMBER', urn)
             self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
 
             self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
             return self._slice_authority_resource_manager.modify_slice_membership(urn, certificate, credentials, options)
 
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'UPDATE', 'PROJECT_MEMBER', urn)
             self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
             self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
@@ -182,10 +182,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup members for
         a given URN using the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
             return self._slice_authority_resource_manager.lookup_slice_membership(urn, certificate, credentials, match, filter_,options)
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'PROJECT_MEMBER', target_urn=urn)
             return self._slice_authority_resource_manager.lookup_project_membership(urn, certificate, credentials, match, filter_, options)
         else:
@@ -196,10 +196,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup details for
         a member using the resource manager.
         """
-        if (type_=='SLICE'):
+        if (type_.upper()=='SLICE'):
             return self._slice_authority_resource_manager.\
                 lookup_slice_membership_for_member(member_urn, certificate, credentials, options)
-        elif (type_=='PROJECT'):
+        elif (type_.upper()=='PROJECT'):
             return self._slice_authority_resource_manager.\
                 lookup_project_membership_for_member(member_urn, certificate, credentials, options)
         else:
