@@ -1,0 +1,262 @@
+{
+    "key": {
+        "methods": ["create", "update", "delete", "lookup"],
+        "access_fields": ["match", "creation", "update"],
+        "request_template": [{
+            "name": "KEY_MEMBER",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "KEY_ID",
+            "type": "STRING",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "KEY_TYPE",
+            "type": "STRING",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "KEY_PUBLIC",
+            "type": "KEY",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "KEY_PRIVATE",
+            "type": "KEY",
+            "match": true,
+            "creation": "allowed",
+            "update": false
+        }, {
+            "name": "KEY_DESCRIPTION",
+            "type": "STRING",
+            "match": false,
+            "creation": "allowed",
+            "update": true
+        }]
+    },
+    "member": {
+        "methods": ["update", "lookup"],
+        "request_template": [{
+            "name": "MEMBER_URN",
+            "type": "URN",
+            "match": true,
+            "update" : false,
+            "protection": "public"
+        }, {
+            "name": "MEMBER_UID",
+            "type": "UID",
+            "match": true,
+            "update" : true,
+            "protection": "public"
+        }, {
+            "name": "MEMBER_FIRST_NAME",
+            "type": "STRING",
+            "match": true,
+            "update" : true,
+            "protection": "identifying"
+        }, {
+            "name": "MEMBER_LAST_NAME",
+            "type": "STRING",
+            "match": true,
+            "update" : true,
+            "protection": "identifying"
+        }, {
+            "name": "MEMBER_USER_NAME",
+            "type": "STRING",
+            "match": true,
+            "update" : true,
+            "protection": "public"
+        }, {
+            "name": "MEMBER_EMAIL",
+            "type": "STRING",
+            "match": true,
+            "update" : true,
+            "protection": "identifying"
+        }]
+    },
+    "project": {
+        "methods": ["create", "update", "delete", "lookup"],
+        "request_template": [{
+            "name": "PROJECT_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "PROJECT_UID",
+            "type": "UID",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "PROJECT_CREATION",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "PROJECT_EXPIRATION",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "required",
+            "update": true
+        }, {
+            "name": "PROJECT_EXPIRED",
+            "type": "BOOLEAN",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "PROJECT_NAME",
+            "type": "STRING",
+            "match": false,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "PROJECT_DESCRIPTION",
+            "type": "STRING",
+            "match": false,
+            "creation": "allowed",
+            "update": true
+        }]
+    },
+
+    "sliver_info": {
+        "methods": ["create", "update", "delete", "lookup"],
+        "request_template": [{
+            "name": "SLIVER_INFO_SLICE_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "SLIVER_INFO_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "SLIVER_INFO_AGGREGATE_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "SLIVER_INFO_CREATOR_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "SLIVER_INFO_EXPIRATION",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "required",
+            "update": true
+        }, {
+            "name": "SLIVER_INFO_CREATION",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "allowed",
+            "update": false
+        }]
+
+    },
+    "slice": {
+        "methods": ["create", "update", "lookup"],
+        "request_template": [{
+            "name": "SLICE_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "SLICE_UID",
+            "type": "UID",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "SLICE_creation",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "SLICE_EXPIRATION",
+            "type": "DATETIME",
+            "match": false,
+            "creation": "allowed",
+            "update": true
+        }, {
+            "name": "SLICE_EXPIRED",
+            "type": "BOOLEAN",
+            "match": true,
+            "creation": "no",
+            "update": false
+        }, {
+            "name": "SLICE_NAME",
+            "type": "STRING",
+            "match": false,
+            "creation": "required",
+            "update": false
+        }, {
+            "name": "SLICE_DESCRIPTION",
+            "type": "STRING",
+            "match": false,
+            "creation": "allowed",
+            "update": true
+        }, {
+            "name": "SLICE_PROJECT_URN",
+            "type": "URN",
+            "match": true,
+            "creation": "required",
+            "update": false
+        }]
+    },
+    "service": {
+        "methods": ["lookup"],
+        "request_template": [{
+            "name": "SERVICE_URN",
+            "type": "URN",
+            "required": true,
+            "match": true
+        }, {
+            "name": "SERVICE_URL",
+            "type": "URL",
+            "required": true,
+            "match": true
+        }, {
+            "name": "SERVICE_NAME",
+            "type": "STRING",
+            "required": true,
+            "match": true
+        }, {
+            "name": "SERVICE_CERT",
+            "type": "CERT",
+            "required": false,
+            "match": true
+        }, {
+            "name": "SERVICE_NAME",
+            "type": "STRING",
+            "required": true,
+            "match": false
+        }, {
+            "name": "SERVICE_DESCRIPTION",
+            "type": "STRING",
+            "required": false,
+            "match": false
+        }, {
+            "name": "SERVICE_PEERS",
+            "type": "LIST",
+            "required": false,
+            "match": false
+        }]
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "reg": {
+        "endpoint": "reg/2",
+        "methods": ["get_version", "get_trust_roots", "lookup_authorities_for_urns"],
+        "supported_object_types": [{
+            "name": "SLICE_AUTHORITY",
+            "required": false,
+            "object": "service"
+        }, {
+            "name": "MEMBER_AUTHORITY",
+            "required": false,
+            "object": "service"
+        }, {
+            "name": "AGGREGATE_MANAGER",
+            "required": false,
+            "object": "service"
+        }, {
+            "name": "STITCHING_COMPUTATION_SERVICE",
+            "required": false,
+            "object": "service"
+        }, {
+            "name": "CREDENTIAL_STORE",
+            "required": false,
+            "object": "service"
+        }, {
+            "name": "LOGGING_SERVICE",
+            "required": false,
+            "object": "service"
+        }]
+    },
+    "ma": {
+        "endpoint": "ma/2",
+        "methods": ["get_version", "get_credentials"],
+        "supported_object_types": [{
+            "name": "MEMBER",
+            "required": true,
+            "object": "member"
+        }, {
+            "name": "KEY",
+            "required": false,
+            "object": "key"
+        }]
+    },
+    "sa": {
+        "endpoint": "sa/2",
+        "methods": ["get_version", "get_credentials", "modify_membership", "lookup_members", "lookup_for_member",
+            "modify_membership", "lookup_members", "lookup_for_member"
+        ],
+
+        "supported_object_types": [{
+            "name": "SLICE",
+            "required": true,
+            "object": "slice"
+        }, {
+            "name": "SLICE_MEMBER",
+            "required": false
+        }, {
+            "name": "SLIVER_INFO",
+            "required": false,
+            "object": "sliver_info"
+        }, {
+            "name": "PROJECT",
+            "required": false,
+            "object": "project"
+        }, {
+            "name": "PROJECT_MEMBER",
+            "required": false
+        }]
+    }
+}
