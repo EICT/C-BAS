@@ -39,7 +39,7 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
-        if (type_=='SERVICE'):
+        if (type_.upper()=='SERVICE'):
              return self._delegate_tools.match_and_filter(self._federation_registry_resource_manager.lookup_services(), filter_, match)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))

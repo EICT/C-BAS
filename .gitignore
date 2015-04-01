@@ -10,3 +10,6 @@ _deployment
 rmpyc.sh
 count_lines.sh
 Ohouse/log/eisoil.log
+*.pem
+*.xml
+report.csv
