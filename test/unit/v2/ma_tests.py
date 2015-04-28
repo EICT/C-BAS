@@ -168,8 +168,11 @@ class TestGMAv2(unittest.TestCase):
             options['match'] = match
         if _filter:
             options['filter'] = _filter
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = ma_call('lookup', [object_type, cert, self._credential_list("root"), options], user_name="root")
+
+        code, value, output = ma_call('lookup', [object_type, self._credential_list("root"), options], user_name="root")
+        if not code == expected_code:
+            print code, value, output
+
         self.assertEqual(code, expected_code)
         if expected_length:
             self.assertEqual(len(value), expected_length)
@@ -204,8 +207,8 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object creation.
         """
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = ma_call('create', [object_type, cert, self._credential_list("root"), {'fields' : fields}], user_name="root")
+
+        code, value, output = ma_call('create', [object_type, self._credential_list("root"), {'fields' : fields}], user_name="root")
         if code != expected_code:
             print str(code)+':'+str(expected_code)
             print str(value)
@@ -225,8 +228,8 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object update.
         """
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = ma_call('update', [object_type, urn, cert, self._credential_list("root"), {'fields' : fields}], user_name="root")
+
+        code, value, output = ma_call('update', [object_type, urn, self._credential_list("root"), {'fields' : fields}], user_name="root")
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
@@ -239,21 +242,21 @@ class TestGMAv2(unittest.TestCase):
         """
         Helper method to test object deletion.
         """
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = ma_call('delete', [object_type, urn, cert, self._credential_list("root"), {}], user_name="root")
+
+        code, value, output = ma_call('delete', [object_type, urn, self._credential_list("root"), {}], user_name="root")
         self.assertEqual(code, expected_code)
         self.assertIsNone(value)
         self._test_lookup({expected_urn : urn}, None, object_type, None, 0)
 
     def _user_credentail_list(self):
         """Returns the _user_ credential for alice."""
-        return [{"SFA" : get_creds_file_contents('alice-cred.xml')}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value' : get_creds_file_contents('alice-cred.xml')}]
     def _bad_user_credentail_list(self):
         """Returns the _user_ credential for malcom."""
-        return [{"SFA" : get_creds_file_contents('malcom-cred.xml')}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value' : get_creds_file_contents('malcom-cred.xml')}]
     def _credential_list(self, user_name):
         """Returns the _user_ credential for the given user_name."""
-        return [{"SFA" : get_creds_file_contents('%s-cred.xml' % (user_name,))}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value' : get_creds_file_contents('%s-cred.xml' % (user_name,))}]
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

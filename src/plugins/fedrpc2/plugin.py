@@ -19,6 +19,9 @@ def setup():
     pm.registerService('gmav2delegatebase', GMAv2DelegateBase)
     xmlrpc.registerXMLRPC('gmav2', gma_handler, '/ma/2') # name, handlerObj, endpoint
     api_tools.register_endpoint(name='gmav2', type='ma', version='2', url='/ma/2')
+    #For compatibility with MONI we must support CreateUserCredential method
+    #xmlrpc.registerXMLRPC('rpcv2', gma_handler, '/RPC2') # name, handlerObj, endpoint
+    #api_tools.register_endpoint(name='rpcv2', type='ma', version='2', url='/RPC2')
 
     gsa_handler = GSAv2Handler()
     pm.registerService('gsav2handler', gsa_handler)

@@ -1,5 +1,7 @@
 import eisoil.core.pluginmanager as pm
 import eisoil.core.log
+import uuid
+
 logger=eisoil.core.log.getLogger('omemberauthorityrm')
 
 import hashlib
@@ -129,7 +131,7 @@ class OMemberAuthorityResourceManager(object):
         return self._resource_manager_tools.supplementary_fields(self.SUPPLEMENTARY_FIELDS)
 
     #--- object methods
-    def update_member(self, urn, client_cert, credentials, fields, options):
+    def update_member(self, urn, credentials, fields, options):
         """
         Update a member object.
         """
@@ -139,14 +141,14 @@ class OMemberAuthorityResourceManager(object):
             return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
                 fields, 'member', {'MEMBER_URN':urn})
 
-    def lookup_member(self, client_cert, credentials, match, filter_, options):
+    def lookup_member(self, credentials, match, filter_, options):
         """
         Lookup an a member(s).
         """
         return  self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME,
             'member', match, filter_)
 
-    def create_key(self, client_cert, credentials, fields, options):
+    def create_key(self, credentials, fields, options):
         """
         Create a key object.
 
@@ -158,21 +160,23 @@ class OMemberAuthorityResourceManager(object):
         return self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
             fields, 'key')
 
-    def update_key(self, urn, client_cert, credentials, fields, options):
+    def update_key(self, urn, credentials, fields, options):
         """
         Update a key object.
         """
+        fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
         return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
             fields, 'key', {'KEY_MEMBER': urn})
 
-    def lookup_key(self, client_cert, credentials, match, filter_, options):
+    def lookup_key(self, credentials, match, filter_, options):
         """
         Lookup a key object.
         """
+
         return self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME,
             'key', match, filter_)
 
-    def delete_key(self, urn, client_cert, credentials, options):
+    def delete_key(self, urn, credentials, options):
         """
         Delete a key object.
         """
@@ -264,15 +268,16 @@ class OMemberAuthorityResourceManager(object):
         member_details = lookup_result[0]
 
         user_email = member_details['MEMBER_EMAIL']
+        user_uuid = member_details['MEMBER_UID']
 
         geniutil = pm.getService('geniutil')
         cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
         u_c,u_pu,u_pr = geniutil.create_certificate(urn=urn, issuer_key=self._ma_cert_key_str,
                                                     issuer_cert=self._ma_cert_str, email=str(user_email),
-                                                    serial_number= self._issue_cert_serial_num(),
+                                                    uuidarg=str(user_uuid), serial_number= self._issue_cert_serial_num(),
                                                     life_days=self.CERT_VALIDITY_PERIOD)
 
-        privileges, _ = geniutil.get_privileges_and_target_urn([{'SFA': member_details['MEMBER_CREDENTIALS']}])
+        privileges, _ = geniutil.get_privileges_and_target_urn([{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': member_details['MEMBER_CREDENTIALS']}])
         u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
                                                issuer_cert=self._ma_cert_str, privileges_list=privileges,
                                                expiration=cred_expiry)
@@ -287,7 +292,7 @@ class OMemberAuthorityResourceManager(object):
 
         return member_details
 
-    def register_member(self, certificate, credentials, fields, options):
+    def register_member(self, credentials, fields, options):
         """
         Register user to member authority without any privileges
 
@@ -305,6 +310,7 @@ class OMemberAuthorityResourceManager(object):
         last_name = fields['MEMBER_LASTNAME']
         user_name = fields['MEMBER_USERNAME']
         user_email = fields['MEMBER_EMAIL']
+        user_uuid = str(uuid.uuid4())
 
         if 'KEY_PUBLIC' in fields:
             public_key = fields['KEY_PUBLIC']
@@ -313,8 +319,7 @@ class OMemberAuthorityResourceManager(object):
 
         privileges = []
         if 'privileges' in options:
-            if 'CAN_CREATE_PROJECT' in options['privileges']:
-                privileges = ['PROJECT_CREATE']
+             privileges = options['privileges']
 
         geniutil = pm.getService('geniutil')
         config = pm.getService('config')
@@ -328,7 +333,7 @@ class OMemberAuthorityResourceManager(object):
             cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
             u_c,u_pu,u_pr = geniutil.create_certificate(urn=u_urn, issuer_key=self._ma_cert_key_str,
                                                         issuer_cert=self._ma_cert_str, email=str(user_email),
-                                                        serial_number= self._issue_cert_serial_num(),
+                                                        uuidarg=str(user_uuid), serial_number= self._issue_cert_serial_num(),
                                                         life_days=self.CERT_VALIDITY_PERIOD)
             u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
                                                    issuer_cert=self._ma_cert_str, privileges_list=privileges,
@@ -340,6 +345,7 @@ class OMemberAuthorityResourceManager(object):
                                                MEMBER_EMAIL =user_email,
                                                MEMBER_CERTIFICATE = u_c,
                                                MEMBER_CREDENTIALS = u_cred,
+                                               MEMBER_UID = user_uuid,
                                                )
             self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
 
@@ -360,3 +366,76 @@ class OMemberAuthorityResourceManager(object):
 
         else:
             raise self.gfed_ex.GFedv2DuplicateError("User already registered, try looking up the user with his URN instead !!")
+
+    def get_credentials(self, member_urn, credentials, options):
+        """
+        Provide list of credentials (signed statements) for given member
+        This is member-specific information suitable for passing as credentials in
+         an AM API call for aggregate authorization.
+        Arguments:
+           member_urn: URN of member for which to retrieve credentials
+           options: Potentially contains 'speaking_for' key indicating a speaks-for
+               invocation (with certificate of the accountable member in the credentials argument)
+
+        Return:
+            List of credential in 'CREDENTIALS' format, i.e. a list of credentials with
+               type information suitable for passing to aggregates speaking AM API V3.
+        """
+        if not member_urn:
+            if options:
+                first_name = options['MEMBER_FIRSTNAME']
+                last_name = options['MEMBER_LASTNAME']
+                user_name = options['MEMBER_USERNAME']
+                user_email = options['MEMBER_EMAIL']
+
+                u_c = options['MEMBER_CERTIFICATE']
+                if 'KEY_PUBLIC' in options:
+                    public_key = options['KEY_PUBLIC']
+                else:
+                    public_key = None
+
+                geniutil = pm.getService('geniutil')
+                cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
+                u_urn,_,_ = geniutil.extract_certificate_info(u_c)
+                privileges = ["PROJECT_MEMBER_ADD", "PROJECT_MEMBER_REMOVE", "PROJECT_MEMBER_UPDATE", "PROJECT_MEMBER_VIEW", "PROJECT_MONITOR", "PROJECT_SET_ADMIN_ROLE", "PROJECT_UPDATE", "PROJECT_SLICES_WILDCARDS", "PROJECT_VIEW", "PROJECT_SET_MONITOR_ROLE", "SLICE_CREATE"]
+                u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
+                                                       issuer_cert=self._ma_cert_str, privileges_list=privileges,
+                                                       expiration=cred_expiry)
+
+                registration_fields_member = dict( MEMBER_URN = u_urn,
+                                                   MEMBER_FIRSTNAME = first_name,
+                                                   MEMBER_LASTNAME 	= last_name,
+                                                   MEMBER_USERNAME =  user_name,
+                                                   MEMBER_EMAIL = user_email,
+                                                   MEMBER_CERTIFICATE = u_c,
+                                                   MEMBER_CREDENTIALS = u_cred,
+                                                   MEMBER_UID = str(uuid.uuid4())
+                                                   )
+                self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
+
+                #Register public key if provided
+                if public_key:
+                    registration_fields_key = dict(KEY_MEMBER= u_urn,
+                                                   KEY_TYPE = 'rsa-ssh',
+                                                   KEY_DESCRIPTION='SSH key for user ' + user_name,
+                                                   KEY_PUBLIC= public_key,
+                                                   KEY_ID= hashlib.sha224(public_key).hexdigest())
+                    self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_key, 'key')
+
+                return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': u_cred}]
+            else:
+                raise self.gfed_ex.GFedv2ArgumentError("Member URN is unspecified")
+
+        if member_urn:
+            member_lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': member_urn}, [])
+            if member_lookup_result:
+                member_creds = [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': member_lookup_result[0]['MEMBER_CREDENTIALS']}]
+                slice_authority_resource_manager = pm.getService('osliceauthorityrm')
+                project_memberships = slice_authority_resource_manager.lookup_project_membership_for_member(member_urn, credentials=None, options=None)
+
+                for membership in project_memberships:
+                    member_creds.append({'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': membership['PROJECT_CREDENTIALS']})
+                print len(member_creds)
+                return member_creds
+            else:
+                raise self.gfed_ex.GFedv2ArgumentError("Specified user does not exist")

@@ -130,7 +130,9 @@ class DelegateTools(object):
             maximum_expansion_duration = self.STATIC['CONFIG'][type_]['max_%s_extension_time' %type_.lower()]
             configuration_delta = datetime.timedelta(days=maximum_expansion_duration)
             delta_time_days =  parsed_value_in_question - parsed_original_value
-
+            print parsed_original_value
+            print parsed_value_in_question
+            print delta_time_days
             return True if parsed_original_value < parsed_value_in_question and delta_time_days < configuration_delta  else False
         else:
             return parsed_original_value < parsed_value_in_question
@@ -255,41 +257,51 @@ class DelegateTools(object):
             return self.STATIC['AUTHZ'][method_][type_][role_]
 
     @serviceinterface
-    def check_if_authorized(self, credentials, certificate, method, type_, target_urn=None, fields=None):
+    def check_if_authorized(self, credentials, method, type_, target_urn=None, fields=None):
         """
         Check if credentials have any of the given privileges
         :param credentials: credential string in SFA format
         :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
         :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
         """
-        if credentials is None or len(credentials) <= 0 or not isinstance(credentials[0], dict):
+        if credentials is None or len(credentials) <= 0:
             raise GFedv2ArgumentError("Passed invalid or no credentials")
 
-        geniutil = pm.getService('geniutil')
-
-        priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
-        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
-        _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
-
-        #If given are system member credentials then target_urn cannot be used in verification
-        if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
-        #If project credentials are used to execute commands on slice then context of such credentials must be verified
-        elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
-            self.verify_project_credentials_context(credentials, certificate, method, fields, target_urn)
-            geniutil.verify_credential_ex(credentials, certificate, target_urn_from_cred, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
-        # Finally, slice credentials are used for slice objects or project credentials are used for project object
-        else:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
-
-        required_privileges = self.get_required_privilege_for(method, type_)
-
-        if required_privileges and not set(priv_from_cred).intersection(required_privileges):
-            raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")
+        # required_privileges = self.get_required_privilege_for(method, type_)
+        # geniutil = pm.getService('geniutil')
+        # cred_accepted = False
+        # for cred in credentials:
+        #     try:
+        #         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn([cred])
+        #         owner_cert = geniutil.extract_owner_certificate([cred])
+        #         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
+        #         _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
+        #         #If given are system member credentials then target_urn cannot be used in verification
+        #         if user_urn_from_cert == target_urn_from_cred:
+        #             geniutil.verify_credential_ex([cred], user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+        #         #If project credentials are used to execute commands on slice then context of such credentials must be verified
+        #         elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
+        #             self.verify_project_credentials_context([cred], method, fields, target_urn)
+        #             geniutil.verify_credential_ex([cred], target_urn_from_cred, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+        #         # Finally, slice credentials are used for slice objects or project credentials are used for project object
+        #         else:
+        #             geniutil.verify_credential_ex([cred], target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+        #
+        #         print required_privileges
+        #         print priv_from_cred
+        #         if not required_privileges or set(priv_from_cred).intersection(required_privileges):
+        #             cred_accepted = True
+        #             break
+        #     except Exception as e:
+        #         print e.message
+        #         pass
+        #
+        # if not cred_accepted:
+        #     raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")
 
 
     @serviceinterface
-    def verify_project_credentials_context(self, credentials, certificate, method, fields=None, target_urn=None):
+    def verify_project_credentials_context(self, credentials, method, fields=None, target_urn=None):
         """
         Verify project to slice relationship
         :param credentials: credential string in SFA format
@@ -305,7 +317,7 @@ class DelegateTools(object):
             if not fields['SLICE_PROJECT_URN'] == target_urn_from_cred:
                 verification_passed = False
         elif method == 'UPDATE':
-            lookup_result = slice_authority_resource_manager.lookup_slice(certificate, credentials,
+            lookup_result = slice_authority_resource_manager.lookup_slice(credentials,
                                                                         {'SLICE_URN': str(target_urn)}, [], {})
             if not lookup_result or not lookup_result[0]['SLICE_PROJECT_URN'] == target_urn_from_cred:
                     verification_passed = False
@@ -360,7 +372,7 @@ class DelegateTools(object):
                         raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
 
     @serviceinterface
-    def check_if_ma_info_update_authorized(self, credentials, certificate, type_, target_urn):
+    def check_if_ma_info_update_authorized(self, credentials, type_, target_urn):
         """
         Performs authorization check on member/key info update
         :param credentials:
@@ -372,19 +384,20 @@ class DelegateTools(object):
             raise GFedv2ArgumentError("Passed invalid or no credentials")
 
         geniutil = pm.getService('geniutil')
-        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
+        owner_cert = geniutil.extract_owner_certificate(credentials)
+        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
 
         #Update is allowed for owner himself. Otherwise, proper credentials should be presented
         if user_urn_from_cert == target_urn:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
-            self.check_if_authorized(credentials=credentials, certificate=certificate, method='UPDATE', type_=type_, target_urn=None)
+            self.check_if_authorized(credentials=credentials, method='UPDATE', type_=type_, target_urn=None)
 
-    def verify_credentials(self, credentials, certificate, target_urn=None):
+
+    def verify_credentials(self, credentials, target_urn=None):
         """
         Verifies if credentials are valid and trusted. If yes, then returns a list of associated privileges
         :param credentials: credentials to verify
-        :param certificate: certificate of owner of these credentials
         :param target_urn:  Target object's urn of these credentials
         :return: If verification passed, the a list of privileges associated with the passed credentials
         """
@@ -395,18 +408,19 @@ class DelegateTools(object):
         geniutil = pm.getService('geniutil')
 
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
-        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(certificate)
+        owner_cert = geniutil.extract_owner_certificate(credentials)
+        user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential_ex(credentials, certificate, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
-            geniutil.verify_credential_ex(credentials, certificate, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
         return priv_from_cred
 
     def delegate_credentials(self, delegetee_cert, issuer_key, privileges_list, expiration,
-                             delegatable, certificate, credentials):
+                             delegatable, credentials):
         """
         Creates delegated credentials
         """
@@ -417,8 +431,9 @@ class DelegateTools(object):
         geniutil = pm.getService('geniutil')
 
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        certificate = geniutil.extract_owner_certificate(credentials)
 
-        self.verify_credentials(credentials, certificate, target_urn_from_cred)
+        self.verify_credentials(credentials, target_urn_from_cred)
 
         if not set(priv_from_cred).issuperset(privileges_list):
             raise GFedv2AuthorizationError("You cannot delegate privileges that you don't own")
@@ -522,11 +537,12 @@ class DelegateTools(object):
         for method_key, method_value in options.iteritems():
             if method_key in DelegateTools.REQUIRED_METHOD_KEYS:
                 for item in  method_value:
-                    for field_key in item.iterkeys():
-                        if not field_key in required_field_keys:
-                            raise GFedv2ArgumentError("Member key to modify not of required type. Offending key is: " +
-                                                      str(field_key) + ". Should be one of these types: " +
-                                                      str(required_field_keys))
+                    if type(item) is dict: #For compatability with OMNI which send list type for remove_member
+                        for field_key in item.iterkeys():
+                            if not field_key in required_field_keys:
+                                raise GFedv2ArgumentError("Member key to modify not of required type. Offending key is: " +
+                                                          str(field_key) + ". Should be one of these types: " +
+                                                          str(required_field_keys))
             else:
                 raise GFedv2ArgumentError("Member method key not found. Offending key is: " + str(method_key) +
                                                          ". Should be one of these types: " +

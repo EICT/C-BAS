@@ -49,7 +49,7 @@ class GSAv2Handler(xmlrpc.Dispatcher):
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def create(self, type_, certificate, credentials, options):
+    def create(self, type_, credentials, options):
         """
         Create object of given type with fields given in options.
 
@@ -60,12 +60,12 @@ class GSAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.create(type_, certificate, credentials, fields, options)
+            result = self._delegate.create(type_, credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def update(self, type_, urn, certificate, credentials, options):
+    def update(self, type_, urn, credentials, options):
         """
         Update object of given type and URN with fields given in options.
 
@@ -76,12 +76,12 @@ class GSAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.update(type_, urn,  certificate, credentials, fields, options)
+            result = self._delegate.update(type_, urn,  credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def delete(self, type_, urn, certificate, credentials, options):
+    def delete(self, type_, urn, credentials, options):
         """
         Delete object of given type and URN.
 
@@ -89,12 +89,12 @@ class GSAv2Handler(xmlrpc.Dispatcher):
 
         """
         try:
-            result = self._delegate.delete(type_, urn,  certificate, credentials, options)
+            result = self._delegate.delete(type_, urn,  credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def lookup(self, type_,  certificate, credentials, options):
+    def lookup(self, type_,  credentials, options):
         """
         Lookup objects with given type.
 
@@ -104,14 +104,14 @@ class GSAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             match, filter_ = self._api_tools.fetch_match_and_filter(options)
-            result = self._delegate.lookup(type_, certificate, credentials, match, filter_, options)
+            result = self._delegate.lookup(type_, credentials, match, filter_, options)
 
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
     # ---- Slice Member Service Methods and Project Member Service Methods
-    def modify_membership(self, type_, urn, certificate, credentials, options):
+    def modify_membership(self, type_, urn, credentials, options):
         """
         Modify information for members that belong to a particular PROJECT or SLICE with given URN.
 
@@ -119,12 +119,12 @@ class GSAv2Handler(xmlrpc.Dispatcher):
 
         """
         try:
-            result = self._delegate.modify_membership(type_, urn, certificate, credentials, options)
+            result = self._delegate.modify_membership(type_, urn, credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def lookup_members(self, type_, urn, certificate, credentials, options):
+    def lookup_members(self, type_, urn, credentials, options):
         """
         Lookup information for members that belong to a particular PROJECT or SLICE with given URN.
 
@@ -133,19 +133,19 @@ class GSAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             match, filter_ = self._api_tools.fetch_match_and_filter(options)
-            result = self._delegate.lookup_members(type_, urn, certificate, credentials, match, filter_,  options)
+            result = self._delegate.lookup_members(type_, urn, credentials, match, filter_,  options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def lookup_for_member(self, type_, member_urn, certificate, credentials, options):
+    def lookup_for_member(self, type_, member_urn, credentials, options):
         """
         Lookup information for a individual member with given URN.
 
         Call delegate method and return result or exception.
         """
         try:
-            result = self._delegate.lookup_for_member(type_, member_urn,  certificate, credentials, options)
+            result = self._delegate.lookup_for_member(type_, member_urn,  credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
@@ -161,31 +161,61 @@ class GSAv2Handler(xmlrpc.Dispatcher):
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
-    def verify_credentials(self, creds_to_verify, cert_to_verify, target_urn, certificate, credentials):
+    def verify_credentials(self, creds_to_verify, target_urn, credentials):
 
          try:
-              result = self._delegate.verify_credentials(creds_to_verify, cert_to_verify,
-                                                         target_urn, certificate, credentials)
+              result = self._delegate.verify_credentials(creds_to_verify,
+                                                         target_urn, credentials)
          except Exception as e:
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
     def delegate_credentials(self, delegetee_cert, issuer_key, privileges_list, expiration,
-                             delegatable, certificate, credentials):
+                             delegatable, credentials):
 
          try:
               result = self._delegate.delegate_credentials(delegetee_cert, issuer_key, privileges_list,
-                                                           expiration, delegatable, certificate, credentials)
+                                                           expiration, delegatable, credentials)
          except Exception as e:
              return self._api_tools.form_error_return(logger, e)
          return self._api_tools.form_success_return(result)
 
-    def update_credentials_for_member(self, member_urn, certificate, credentials, options):
+    def update_credentials_for_member(self, member_urn, credentials, options):
         """
         updates slice and project credentials after member certificate update due to membership renewal or revocation
         """
         try:
-              result = self._delegate.update_credentials_for_member(member_urn, certificate, credentials, options)
+              result = self._delegate.update_credentials_for_member(member_urn, credentials, options)
+        except Exception as e:
+             return self._api_tools.form_error_return(logger, e)
+        return self._api_tools.form_success_return(result)
+
+    def get_credentials(self, slice_urn, credentials, options):
+        """
+        Provide list of credentials for the caller relative to the given slice.
+        If the invocation is in a speaks-for context, the credentials will be for the
+        'spoken-for' member, not the invoking tool.
+
+        For example, this call may return a standard SFA Slice Credential and some
+        ABAC credentials indicating the role of the member with respect to the slice.
+
+        Note: When creating an SFA-style Slice Credential, the following roles
+        typically allow users to operate at known GENI-compatible
+        aggregates: "*" (asterisk)  or the list of "refresh", "embed",
+           "bind", "control" "info".
+
+        Arguments:
+          slice_urn: URN of slice for which to get member's credentials
+          options: Potentially contains 'speaking_for' key indicating a speaks-for
+             invocation (with certificate of the accountable member
+             in the credentials argument)
+
+        Return:
+          List of credential in 'CREDENTIALS' format, i.e. a list of credentials with
+        type information suitable for passing to aggregates speaking AM API V3.
+        """
+        try:
+              result = self._delegate.get_credentials(slice_urn, credentials, options)
         except Exception as e:
              return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)

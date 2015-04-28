@@ -34,7 +34,7 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         version['FIELDS'] =  self._delegate_tools.get_supplementary_fields(['SERVICE'])
         return version
 
-    def lookup(self, type_, match, filter_, options):
+    def lookup(self, type_, match, filter_, options=None):
         """
         Depending on the object type defined in the request, lookup this object
         using the resource manager.

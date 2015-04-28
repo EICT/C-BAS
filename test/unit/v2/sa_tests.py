@@ -120,7 +120,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
         """
-        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
@@ -132,7 +132,7 @@ class TestGSAv2(unittest.TestCase):
         Note: We are only testing projects here because otherwise we would end up with slices left over (we can not remove slices).
         """
         create_data = {
-                       'PROJECT_NAME' : 'TEST-PROJECT',
+                       'PROJECT_NAME' : 'TEST-PROJECT-12',
                        'PROJECT_DESCRIPTION' : 'Time_Expiry'}
 
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
@@ -147,11 +147,11 @@ class TestGSAv2(unittest.TestCase):
         """
 
         create_data_1 = {
-               'SLICE_NAME' : 'TEST-SLICE-1M',
+               'SLICE_NAME' : 'TEST-SLICE-1M', 'SLICE_PROJECT_URN': 'urn:publicid:IDN+cbas.eict.de+project+default',
                'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
         create_data_2 = {
-               'SLICE_NAME' : 'TEST-SLICE-3M',
+               'SLICE_NAME' : 'TEST-SLICE-3M', 'SLICE_PROJECT_URN': 'urn:publicid:IDN+cbas.eict.de+project+default',
                'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
         urn1 = self._test_create(create_data_1, 'SLICE', 'SLICE_URN', 0)
@@ -165,12 +165,12 @@ class TestGSAv2(unittest.TestCase):
         """
         Test to see whether the get_credentials method is working or not
         """
-        create_data= {
-               'PROJECT_NAME' : 'TEST-SLICE-CREDENTIALS',
-               'PROJECT_DESCRIPTION' : 'TEST_CREDENTIALS'}
+        create_data = {
+               'SLICE_NAME' : 'TEST-SLICE-1MX', 'SLICE_PROJECT_URN': 'urn:publicid:IDN+cbas.eict.de+project+default',
+               'SLICE_DESCRIPTION' : 'Time_Expiry'}
 
-        urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
-        self._test_get_credentials(urn, TestGSAv2.NOT_IMPLEMENTED)
+        urn = self._test_create(create_data, 'SLICE', 'SLICE_URN', 0)
+        self._test_get_credentials(urn, 0)
 
     def test_slice(self):
         """
@@ -216,9 +216,9 @@ class TestGSAv2(unittest.TestCase):
         """
         create_data = { 'SLIVER_INFO_SLICE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLIVER_INFO_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE',
             'SLIVER_INFO_AGGREGATE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLIVER_INFO_CREATOR_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE',
-            'SLIVER_INFO_EXPIRATION' : '2014-03-21T11:35:57Z', 'SLIVER_INFO_CREATION' : '2014-03-21T11:35:57Z'}
+            'SLIVER_INFO_EXPIRATION' : '2019-03-21T11:35:57Z', 'SLIVER_INFO_CREATION' : '2015-03-21T11:35:57Z'}
         urn = self._test_create(create_data, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
-        update_data = {'SLIVER_INFO_EXPIRATION' : '2014-04-21T11:35:57Z'}
+        update_data = {'SLIVER_INFO_EXPIRATION' : '2019-04-21T11:35:57Z'}
         self._test_update(urn, update_data, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
         self._test_delete(urn, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
 
@@ -226,7 +226,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test object type 'PROJECT' methods: create, lookup, update and delete.
         """
-        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_DESCRIPTION' : 'M. Broadbent Test Project'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0)
@@ -236,8 +236,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object creation.
         """
-        cert = get_creds_file_contents(op_user_name+'-cert.pem')
-        code, value, output = sa_call('create', [object_type, cert, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+        code, value, output = sa_call('create', [object_type, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
 
         if not code == expected_code:
             print 'expected code:'+str(expected_code)
@@ -260,7 +259,9 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object update.
         """
         cert = get_creds_file_contents(op_user_name+'-cert.pem')
-        code, value, output = sa_call('update', [object_type, urn, cert, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+        code, value, output = sa_call('update', [object_type, urn, self._credential_list(op_user_name), {'fields' : fields}], user_name=op_user_name)
+        if not code == expected_code:
+            print code, value, output
 
         self.assertEqual(code, expected_code)
         if code is 0:
@@ -279,7 +280,7 @@ class TestGSAv2(unittest.TestCase):
         if _filter:
             options['filter'] = _filter
         cert = get_creds_file_contents(op_user_name+'-cert.pem')
-        code, value, output = sa_call('lookup', [object_type, cert, self._credential_list(op_user_name), options], user_name=op_user_name)
+        code, value, output = sa_call('lookup', [object_type, self._credential_list(op_user_name), options], user_name=op_user_name)
 
         if not code == expected_code:
             print 'expected code:'+str(expected_code)
@@ -296,8 +297,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object deletion.
         """
-        cert = get_creds_file_contents(op_user_name+'-cert.pem')
-        code, value, output = sa_call('delete', [object_type, urn, cert, self._credential_list(op_user_name), {}], user_name=op_user_name)
+
+        code, value, output = sa_call('delete', [object_type, urn, self._credential_list(op_user_name), {}], user_name=op_user_name)
         if code != expected_code:
             print code, value, output
         self.assertEqual(code, expected_code)
@@ -307,6 +308,8 @@ class TestGSAv2(unittest.TestCase):
     def _test_get_credentials(self, urn, expected_code):
 
         code, value, output = sa_call('get_credentials', [urn, self._credential_list("root"), {}], user_name="root")
+        if code != expected_code:
+            print code, value, output
         self.assertEqual(code, expected_code)
 
 
@@ -324,7 +327,7 @@ class TestGSAv2(unittest.TestCase):
         object.
         """
         #Create a project as it is a prerequisite
-        create_data = {'PROJECT_EXPIRATION':'2014-03-21T11:35:57Z', 'PROJECT_NAME': 'MEMBERSHIP_TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'kajsdh', 'PROJECT_DESCRIPTION':'My test project'}
         project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
@@ -373,8 +376,8 @@ class TestGSAv2(unittest.TestCase):
         """
         #Try to create a slice and get slice credentials
         create_data = {'SLICE_NAME': 'CREDS-TEST', 'SLICE_DESCRIPTION': 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject123'}
-        cert = get_creds_file_contents('root-cert.pem')
-        code, value, output = sa_call('create', ['SLICE', cert, self._credential_list('root'), {'fields' : create_data}])
+
+        code, value, output = sa_call('create', ['SLICE', self._credential_list('root'), {'fields' : create_data}])
 
         self.assertEquals(code, 0)
 
@@ -382,26 +385,26 @@ class TestGSAv2(unittest.TestCase):
         slice_urn = value['SLICE_URN']
 
         #Try to verify slice credentials with correct slice urn as target urn
-        code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, slice_urn, cert,
+        code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}], slice_urn,
                                                                  self._credential_list('root')])
         self.assertEquals(code, 0)
 
         #Try to verify slice credentials with wrong slice urn as target urn
-        code, value, output = sa_call('verify_credentials', [[{"SFA": slice_creds}], cert, 'slice_urn', cert,
+        code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}], 'slice_urn',
                                                                  self._credential_list('root')])
         self.assertEquals(code, 101)
 
         #Try to delegate slice credentials to another member
         delgatee_cert = get_creds_file_contents('alice-cert.pem')
         issuer_key = get_creds_file_contents('root-key.pem')
-        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2015-01-21T11:35:57Z',
-                                                               True, cert, [{"SFA": slice_creds}]])
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2016-10-21T11:35:57Z',
+                                                               True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}]])
         self.assertEquals(code, 0)
         #write_file("delegated_creds.xml", value)
 
         #Try to verify slice credentials with correct slice urn as target urn
         delegated_creds = value
-        code, value, output = sa_call('verify_credentials', [[{"SFA": delegated_creds}], delgatee_cert, slice_urn, cert,
+        code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': delegated_creds}], slice_urn,
                                                                  self._credential_list('root')])
 
         self.assertEquals(code, 0)
@@ -409,15 +412,15 @@ class TestGSAv2(unittest.TestCase):
         #Try to further delegate delegated credentials
         delgatee_cert2 = get_creds_file_contents('root-cert.pem')
         issuer_key2 = get_creds_file_contents('alice-key.pem')
-        code, value, output = sa_call('delegate_credentials', [delgatee_cert2, issuer_key2, ['SLICE_MEMBER_ADD'], '2015-01-21T11:35:57Z',
-                                                               True, delgatee_cert, [{"SFA": delegated_creds}]])
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert2, issuer_key2, ['SLICE_MEMBER_ADD'], '2016-10-21T11:35:57Z',
+                                                               True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': delegated_creds}]])
 
         self.assertEquals(code, 0)
         #write_file("delegated_creds2.xml", value)
 
         #Try to verify delegated delegated creds with correct slice urn as target urn
         delegated_creds = value
-        code, value, output = sa_call('verify_credentials', [[{"SFA": delegated_creds}], cert, slice_urn, cert,
+        code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': delegated_creds}], slice_urn,
                                                                  self._credential_list('root')])
 
         self.assertEquals(code, 0)
@@ -427,8 +430,8 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object membership modification.
         """
-        cert = get_creds_file_contents(op_user_name+'-cert.pem')
-        code, value, output = sa_call('modify_membership', [object_type, urn, cert, self._credential_list(op_user_name), data], user_name=op_user_name)
+
+        code, value, output = sa_call('modify_membership', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
 
         if not code == expected_code:
             print 'expected code:'+str(expected_code)
@@ -444,8 +447,8 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object membership lookup.
         """
         if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
-            cert = get_creds_file_contents(op_user_name+'-cert.pem')
-            code, value, output = sa_call('lookup_members', [object_type, urn, cert, self._credential_list(op_user_name), data], user_name=op_user_name)
+
+            code, value, output = sa_call('lookup_members', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
             self.assertEqual(code, 0)
             self.assertEqual(len(value), expected_length)
 
@@ -454,20 +457,20 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object membership lookup for a member.
         """
         if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
-            cert = get_creds_file_contents(op_user_name+'-cert.pem')
-            code, value, output = sa_call('lookup_for_member', [object_type, member_urn, cert, self._credential_list(op_user_name), data])
+
+            code, value, output = sa_call('lookup_for_member', [object_type, member_urn, self._credential_list(op_user_name), data])
             self.assertEqual(code, 0)
             self.assertEqual(len(value), expected_length)
 
     def _user_credentail_list(self):
         """Returns the _user_ credential for alice."""
-        return [{"SFA" : get_creds_file_contents('alice-cred.xml')}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': get_creds_file_contents('alice-cred.xml')}]
     def _bad_user_credentail_list(self):
         """Returns the _user_ credential for malcom."""
-        return [{"SFA" : get_creds_file_contents('malcom-cred.xml')}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': get_creds_file_contents('malcom-cred.xml')}]
     def _credential_list(self, user_name):
         """Returns the _user_ credential for the given user_name."""
-        return [{"SFA" : get_creds_file_contents('%s-cred.xml' % (user_name,))}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': get_creds_file_contents('%s-cred.xml' % (user_name,))}]
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

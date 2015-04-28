@@ -47,7 +47,7 @@ class GMAv2Handler(xmlrpc.Dispatcher):
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def create(self, type_, certificate, credentials, options):
+    def create(self, type_, credentials, options):
         """
         Create object of given type with fields given in options.
 
@@ -58,12 +58,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.create(type_, certificate, credentials, fields, options)
+            result = self._delegate.create(type_, credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def update(self, type_, urn, certificate, credentials, options):
+    def update(self, type_, urn, credentials, options):
         """
         Update object of given type and URN with fields given in options.
 
@@ -74,12 +74,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             fields = self._api_tools.pop_fields(options)
-            result = self._delegate.update(type_, urn, certificate, credentials, fields, options)
+            result = self._delegate.update(type_, urn, credentials, fields, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def delete(self, type_, urn, certificate, credentials, options):
+    def delete(self, type_, urn, credentials, options):
         """
         Delete object of given type and URN.
 
@@ -87,12 +87,12 @@ class GMAv2Handler(xmlrpc.Dispatcher):
 
         """
         try:
-            result = self._delegate.delete(type_, urn, certificate, credentials, options)
+            result = self._delegate.delete(type_, urn, credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def lookup(self, type_, certificate, credentials, options):
+    def lookup(self, type_, credentials, options):
         """
         Lookup objects with given type.
 
@@ -103,30 +103,49 @@ class GMAv2Handler(xmlrpc.Dispatcher):
         """
         try:
             match, filter_ = self._api_tools.fetch_match_and_filter(options)
-            result = self._delegate.lookup(type_, certificate, credentials, match, filter_, options)
+            result = self._delegate.lookup(type_, credentials, match, filter_, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def verify_certificate(self, cert_to_verify, certificate, credentials):
+    def verify_certificate(self, cert_to_verify, credentials):
         """
         Verifies if given certificate is valid and Trusted
         :param cert_to_verify: certificate to verify
         """
         try:
-             result = self._delegate.verify_certificate(cert_to_verify,
-                                                         certificate, credentials)
+             result = self._delegate.verify_certificate(cert_to_verify, credentials)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
-    def get_crl(self, certificate, credentials):
+    def get_crl(self, credentials):
         """
         Returns an updated Certificate Revocation List
 
         """
         try:
-             result = self._delegate.get_crl(certificate, credentials)
+             result = self._delegate.get_crl(credentials)
+        except Exception as e:
+            return self._api_tools.form_error_return(logger, e)
+        return self._api_tools.form_success_return(result)
+
+    def get_credentials(self, member_urn, credentials, options):
+        """
+        Provide list of credentials (signed statements) for given member
+        This is member-specific information suitable for passing as credentials in
+         an AM API call for aggregate authorization.
+        Arguments:
+           member_urn: URN of member for which to retrieve credentials
+           options: Potentially contains 'speaking_for' key indicating a speaks-for
+               invocation (with certificate of the accountable member in the credentials argument)
+
+        Return:
+            List of credential in 'CREDENTIALS' format, i.e. a list of credentials with
+               type information suitable for passing to aggregates speaking AM API V3.
+        """
+        try:
+             result = self._delegate.get_credentials(member_urn, credentials, options)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)

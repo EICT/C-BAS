@@ -35,78 +35,100 @@ class OMAv2Delegate(GMAv2DelegateBase):
         version['FIELDS'] = self._delegate_tools.get_supplementary_fields(['MEMBER', 'KEY'])
         return version
 
-    def create(self, type_, certificate, credentials, fields, options):
+    def create(self, type_, credentials, fields, options):
         """
         Depending on the object type defined in the request, check the validity
         of passed fields for a 'create' call; if valid, create this object using
         the resource manager.
         """
         if (type_.upper()=='KEY'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'KEY')
+            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'KEY')
             self._delegate_tools.object_creation_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.create_key(certificate, credentials, fields, options)
+            return self._member_authority_resource_manager.create_key(credentials, fields, options)
         elif (type_.upper() =='MEMBER'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'CREATE', 'SYSTEM_MEMBER')
-            return self._member_authority_resource_manager.register_member(certificate, credentials, fields, options)
+            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SYSTEM_MEMBER')
+            return self._member_authority_resource_manager.register_member(credentials, fields, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
 
-    def update(self, type_, urn, certificate, credentials, fields, options):
+    def update(self, type_, urn, credentials, fields, options):
         """
         Depending on the object type defined in the request, check the validity
         of passed fields for a 'update' call; if valid, update this object using
         the resource manager.
         """
         if (type_.upper()=='MEMBER'):
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, certificate, 'SYSTEM_MEMBER', urn)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, 'SYSTEM_MEMBER', urn)
             self._delegate_tools.object_update_check(fields, self._member_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.update_member(urn, certificate, credentials, fields, options)
+            return self._member_authority_resource_manager.update_member(urn, credentials, fields, options)
         elif (type_.upper()=='KEY'):
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, certificate, type_, urn)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
             self._delegate_tools.object_update_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.update_key(urn, certificate, credentials, fields, options)
+            return self._member_authority_resource_manager.update_key(urn, credentials, fields, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No update method found for object type: " + str(type_))
 
-    def delete(self, type_, urn, certificate, credentials, options):
+    def delete(self, type_, urn, credentials, options):
         """
         Depending on the object type defined in the request, delete this object
         using the resource manager.
         """
         if (type_.upper()=='KEY'):
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, certificate, type_, urn)
-            return self._member_authority_resource_manager.delete_key(urn, certificate, credentials, options)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
+            return self._member_authority_resource_manager.delete_key(urn, credentials, options)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No delete method found for object type: " + str(type_))
 
-    def lookup(self, type_, certificate, credentials, match, filter_, options):
+    def lookup(self, type_, credentials, match, filter_, options):
         """
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
         if (type_.upper()=='MEMBER'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'SYSTEM_MEMBER')
-            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(certificate, credentials, match, filter_, options), "MEMBER_URN")
+            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
+
+            if filter_ and 'MEMBER_URN' not in filter_:
+                filter_.append('MEMBER_URN')
+            x = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
+            print x
+            return x
         elif (type_.upper()=='KEY'):
-            self._delegate_tools.check_if_authorized(credentials, certificate, 'LOOKUP', 'KEY')
-            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(certificate, credentials, match, filter_, options), "KEY_ID")
+            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'KEY')
+            if filter_ and 'KEY_ID' not in filter_:
+                filter_.append('KEY_ID')
+            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
 
-    def verify_certificate(self, cert_to_verify, certificate, credentials):
+    def verify_certificate(self, cert_to_verify, credentials):
         """
         Verifies if given certificate is valid and trusted
         """
         return self._delegate_tools.verify_certificate(cert_to_verify)
 
-    def get_crl(self, certificate, credentials):
+    def get_crl(self, credentials):
         """
         Generates an updated CRL in PEM format
-        :param certificate:
         :param credentials:
         :return:
         """
-        return self._member_authority.generate_crl()
+        return self._member_authority_resource_manager.generate_crl()
+
+    def get_credentials(self, member_urn, credentials, options):
+        """
+        Provide list of credentials (signed statements) for given member
+        This is member-specific information suitable for passing as credentials in
+         an AM API call for aggregate authorization.
+        Arguments:
+           member_urn: URN of member for which to retrieve credentials
+           options: Potentially contains 'speaking_for' key indicating a speaks-for
+               invocation (with certificate of the accountable member in the credentials argument)
+
+        Return:
+            List of credential in 'CREDENTIALS' format, i.e. a list of credentials with
+               type information suitable for passing to aggregates speaking AM API V3.
+        """
+        return self._member_authority_resource_manager.get_credentials(member_urn, credentials, options)

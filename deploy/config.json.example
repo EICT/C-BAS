@@ -17,12 +17,12 @@
 
     "PROJECT": {
         "description" : "Maximum possible time a project expiration date can be extended, the extension time can be configured in days e.g., 30 days",
-        "max_project_extension_time" : 30
+        "max_project_extension_time" : 90
         },
 
     "SLICE": {
         "description" : "Maximum possible time a slice expiration date can be extended, the extension time can be configured in days e.g., 30 days",
-        "max_slice_extension_time" : 30
+        "max_slice_extension_time" : 90
       }
 
 }

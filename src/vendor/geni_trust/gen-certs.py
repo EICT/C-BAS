@@ -49,10 +49,18 @@ def write_file(dir_path, filename, str, silent=False):
     if not silent:
         print "  Wrote file %s" % (path,)
 
+def read_file(dir_path, filename):
+    path = os.path.join(dir_path, filename)
+    contents = None
+    with open(path, 'r') as f:
+        contents = f.read()
+    return contents
+
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = "usage: %prog directory_path")
     parser.add_option("--silent", action="store_true", help="Silence output", default=False)
-    parser.add_option("--authority", help="Authority to use (defaults to 'cbas.eict.de)", default="cbas.eict.de")
+    parser.add_option("--authority", help="Authority to use", default="")
+    parser.add_option("--ca_cert_path", help="Path to CA certificate files ca-cert.pem and ca-key.pem (defaults to None)", default=None)
 
     opts, args = parser.parse_args(sys.argv)
 
@@ -73,17 +81,37 @@ if __name__ == "__main__":
         raise ValueError("The given path does not exist.")
 
     #<UT>
-    if not opts.silent:
-        print "Creating CA certificate"
-    urn = geniutil.encode_urn(opts.authority, 'authority', 'ca')
-    cert_serial_number += 1
-    ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True, serial_number=cert_serial_number)
-    write_file(dir_path, CA_CERT_FILE, ca_c, opts.silent)
-    write_file(dir_path, CA_KEY_FILE, ca_pr, opts.silent)
+    if not opts.authority:
+        var = raw_input("Please enter CBAS authority/hostname (default: cbas.eict.de) ")
+        if not var:
+            authority= 'cbas.eict.de'
+        else:
+            authority = var
+    else:
+        authority = opts.authority
+    print authority
+    sys.exit(0)
+    if not opts.ca_cert_path:
+        if not opts.silent:
+            print "Creating CA certificate"
+        urn = geniutil.encode_urn(authority, 'authority', 'ca')
+        cert_serial_number += 1
+        ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True, serial_number=cert_serial_number)
+        write_file(dir_path, CA_CERT_FILE, ca_c, opts.silent)
+        write_file(dir_path, CA_KEY_FILE, ca_pr, opts.silent)
+    else:
+        if not os.path.isdir(opts.ca_cert_path):
+            raise ValueError("The given path for CA certificate files does not exist.")
+        ca_c  = read_file(dir_path, CA_CERT_FILE)
+        ca_pr = read_file(dir_path, CA_KEY_FILE)
+        autority_urn, _, _ = geniutil.extract_certificate_info(ca_c)
+        authority = geniutil.decode_urn(autority_urn)[0]
+        if not opts.silent:
+            print "Using CA certificate from "+authority
 
     if not opts.silent:
         print "Creating SA certificate"
-    urn = geniutil.encode_urn(opts.authority, 'authority', 'sa')
+    urn = geniutil.encode_urn(authority, 'authority', 'sa')
     cert_serial_number += 1
     sa_c, sa_pu, sa_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
     write_file(dir_path, SA_CERT_FILE, sa_c, opts.silent)
@@ -91,7 +119,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating MA certificate"
-    urn = geniutil.encode_urn(opts.authority, 'authority', 'ma')
+    urn = geniutil.encode_urn(authority, 'authority', 'ma')
     cert_serial_number += 1
     ma_c, ma_pu, ma_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
     write_file(dir_path, MA_CERT_FILE, ma_c, opts.silent)
@@ -99,7 +127,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating AM certificate"
-    urn = geniutil.encode_urn(opts.authority, 'authority', 'am')
+    urn = geniutil.encode_urn(authority, 'authority', 'am')
     cert_serial_number += 1
     am_c, am_pu, am_pr = geniutil.create_certificate(urn, ca_pr, ca_c, serial_number=cert_serial_number)
     write_file(dir_path, AM_CERT_FILE, am_c, opts.silent)
@@ -113,7 +141,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating test user cert and cred (valid, signed by MA)"
-    urn = geniutil.encode_urn(opts.authority, 'user', USER_NAME)
+    urn = geniutil.encode_urn(authority, 'user', USER_NAME)
     cert_serial_number += 1
     u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=USER_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, USER_CERT_FILE, u_c, opts.silent)
@@ -124,7 +152,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating bad test user cert and cred (invalid, self-signed)"
-    urn = geniutil.encode_urn(opts.authority, 'user', BAD_USER_NAME)
+    urn = geniutil.encode_urn(authority, 'user', BAD_USER_NAME)
     cert_serial_number += 1
     bu_c,bu_pu,bu_pr = geniutil.create_certificate(urn, email=BAD_USER_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, BAD_USER_CERT_FILE, bu_c, opts.silent)
@@ -134,7 +162,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating admin cert and cred"
-    urn = geniutil.encode_urn(opts.authority, 'user', ADMIN_NAME)
+    urn = geniutil.encode_urn(authority, 'user', ADMIN_NAME)
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
@@ -145,7 +173,7 @@ if __name__ == "__main__":
     a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
     write_file(dir_path, ADMIN_CRED_FILE, a_cred, opts.silent)
 
-    urn = geniutil.encode_urn(opts.authority, 'user', EXPEDIENT_NAME)
+    urn = geniutil.encode_urn(authority, 'user', EXPEDIENT_NAME)
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL, serial_number=cert_serial_number)
     write_file(dir_path, EXPEDIENT_CERT_FILE, a_c, opts.silent)
@@ -158,7 +186,7 @@ if __name__ == "__main__":
 
     if not opts.silent:
         print "Creating slice credential for valid test user"
-    urn = geniutil.encode_urn(opts.authority, 'slice', SLICE_NAME)
+    urn = geniutil.encode_urn(authority, 'slice', SLICE_NAME)
     s_c = geniutil.create_slice_certificate(urn, sa_pr, sa_c, CRED_EXPIRY)
     s_cred = geniutil.create_credential(u_c, s_c, sa_pr, sa_c, "slice", CRED_EXPIRY)
     write_file(dir_path, SLICE_CRED_FILE, s_cred, opts.silent)
