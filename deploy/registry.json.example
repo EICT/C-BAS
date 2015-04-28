@@ -20,37 +20,19 @@
             "_ofelia_island_name" : "island 2"
         }, {
             "service_type" : "SLICE_AUTHORITY",
-            "service_url" : "https://localhost:8008/SA",
+            "service_url" : "https://localhost:8008/sa/2",
             "service_cert" : "<certificate>foo_sa</certificate>",
             "service_name" : "chapI-SA",
             "service_description" : "CHAPI Service Authority",
-            "service_urn" : "urn:publicid:IDN+foo.com+authority+sa",
-            "_ofelia_island_name" : "island 3"
-        }, {
-            "service_type" : "SLICE_AUTHORITY",
-            "service_url" : "https://localhost:8002/SA",
-            "service_cert" : "<certificate>bar_sa</certificate>",
-            "service_name" : "chapI-SA2",
-            "service_description" : "CHAPI Service Authority (BACKUP)",
-            "service_urn" : "urn:publicid:IDN+bar.com+authority+sa",
-            "_ofelia_island_name" : "island 4"
+            "service_urn" : "urn:publicid:IDN+cbas.eict.de+authority+sa"
         }, {
             "service_type" : "MEMBER_AUTHORITY",
-            "service_url" : "https://localhost:8008/MA",
+            "service_url" : "https://localhost:8008/ma/2",
             "service_cert" : "<certificate>foo_ma</certificate>",
-            "service_name" : "CHAPI-MA",
+            "service_name" : "CHAPI-MAv2",
             "service_description" : "CHAPI Member Authority",
-            "service_urn" : "urn:publicid:IDN+foo.com+authority+ma",
-            "_ofelia_island_name" : "island 5"
-        }, {
-            "service_type" : "MEMBER_AUTHORITY",
-            "service_url" : "https://localhost:8002/MA",
-            "service_cert" : "<certificate>bar_ma</certificate>",
-            "service_name" : "chapI-MA2",
-            "service_description" : "CHAPI Member Authority (BACKUP)",
-            "service_urn" : "urn:publicid:IDN+bar.com+authority+ma",
-            "_ofelia_island_name" : "island 6"
-        }
+            "service_urn" : "urn:publicid:IDN+cbas.eict.de+authority+ma"
+        } 
     ],
     "TRUST_ROOTS" : [
         "__comment: may contain certificates as strings. if there is an entry 'INFER_SAs' the certificates from the slice authorities in 'services' will be included. Same goes for 'INFER_MAs'",
