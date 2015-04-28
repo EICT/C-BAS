@@ -24,14 +24,19 @@ def decode_urn(urn):
     urn = URN(urn=str(urn))
     return urn.getAuthority(), urn.getType(), urn.getName()
 
-def encode_urn(authority, typ, name):
+def encode_urn(authority, typ, name, project=None):
     """
     Returns a URN string with the given {authority}, {typ}e and {name}.
     {typ} shall be either of the following: authority, slice, user, sliver, (project or meybe others: http://groups.geni.net/geni/wiki/GeniApiIdentifiers#Type)
     example call:
       urn_str = encode_urn("eict.de", "user", "motine")
     """
-    return URN(authority=authority, type=typ, name=name).urn_string()
+    if project and typ == 'slice':
+        authority_ = authority+':'+project
+    else:
+        authority_ = authority
+
+    return URN(authority=authority_, type=typ, name=name).urn_string()
 
 def create_certificate(urn, issuer_key=None, issuer_cert=None, is_ca=False,
                        public_key=None, life_days=1825, email=None, uuidarg=None, serial_number=0):
@@ -123,7 +128,7 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
 
     #Check if delegated credentials have been requested
     if parent_creds:
-        cred_obj = sfa_cred.Credential(string=parent_creds[0]['SFA'])
+        cred_obj = sfa_cred.Credential(string=parent_creds[0]['geni_value'])
         ucred.set_parent(cred_obj)
 
     privileges_str = ','.join(privileges_list)
@@ -148,7 +153,7 @@ def extract_owner_certificate(credentials):
     owner_cert = None
     try:
         #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
-        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        root = ET.fromstring(credentials[0]['geni_value']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
         for child in root:
             if child.tag == 'credential':
                 owner_cert = child[2].text
@@ -161,7 +166,7 @@ def extract_object_certificate(credentials):
     object_cert = None
     try:
         #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
-        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        root = ET.fromstring(credentials[0]['geni_value']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
         for child in root:
             if child.tag == 'credential':
                 object_cert = child[4].text
@@ -170,10 +175,11 @@ def extract_object_certificate(credentials):
         pass
     return object_cert
 
-def verify_credential_ex(credentials, owner_cert, target_urn, trusted_cert_path, privileges=(), crl_path=None):
+def verify_credential_ex(credentials, target_urn, trusted_cert_path, privileges=(), crl_path=None):
 
     if credentials:
-        cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
+        cred_obj = sfa_cred.Credential(string=credentials[0]['geni_value'])
+        owner_cert = extract_owner_certificate(credentials)
         if cred_obj.parent:
             verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges, crl_path)
         else:
@@ -194,7 +200,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
 
     if credentials:
         ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
-        root = ET.fromstring(credentials[0]['SFA']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
+        root = ET.fromstring(credentials[0]['geni_value']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
         cred_list = []
         for c in root.iter('credential'):
             cred_list.append(c)
@@ -223,7 +229,7 @@ def verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_ce
         o_cert = cred_list[-1][2].text
         t_cert = cred_list[-1][4].text
         urn, _, _ = extract_certificate_info(t_cert)
-        verify_credential([{'SFA': d_str}], o_cert, urn, trusted_cert_path, crl_path=crl_path)
+        verify_credential([{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': d_str}], o_cert, urn, trusted_cert_path, crl_path=crl_path)
 
         #Add necessary signatures certificates to the trusted path
         #Create tmp dir for use as trusted_path
@@ -262,7 +268,7 @@ def get_privileges_and_target_urn(credentials):
     priv_list = []
     target_urn = None
     if credentials:
-        cred_obj = sfa_cred.Credential(string=credentials[0]['SFA'])
+        cred_obj = sfa_cred.Credential(string=credentials[0]['geni_value'])
         target_urn = cred_obj.get_gid_object().get_urn()
         privileges = cred_obj.get_privileges().rights
         for p in privileges:
