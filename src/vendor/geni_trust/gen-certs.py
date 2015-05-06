@@ -89,8 +89,6 @@ if __name__ == "__main__":
             authority = var
     else:
         authority = opts.authority
-    print authority
-    sys.exit(0)
     if not opts.ca_cert_path:
         if not opts.silent:
             print "Creating CA certificate"
