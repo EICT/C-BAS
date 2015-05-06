@@ -88,15 +88,13 @@ class OMAv2Delegate(GMAv2DelegateBase):
         using the resource manager.
         """
         if (type_.upper()=='MEMBER'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
 
             if filter_ and 'MEMBER_URN' not in filter_:
                 filter_.append('MEMBER_URN')
-            x = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
-            print x
-            return x
+            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
         elif (type_.upper()=='KEY'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'KEY')
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'KEY')
             if filter_ and 'KEY_ID' not in filter_:
                 filter_.append('KEY_ID')
             return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")

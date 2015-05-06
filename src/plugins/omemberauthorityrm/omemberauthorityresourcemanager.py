@@ -435,7 +435,6 @@ class OMemberAuthorityResourceManager(object):
 
                 for membership in project_memberships:
                     member_creds.append({'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': membership['PROJECT_CREDENTIALS']})
-                print len(member_creds)
                 return member_creds
             else:
                 raise self.gfed_ex.GFedv2ArgumentError("Specified user does not exist")

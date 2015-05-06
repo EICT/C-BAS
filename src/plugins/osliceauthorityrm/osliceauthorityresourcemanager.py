@@ -146,11 +146,16 @@ class OSliceAuthorityResourceManager(object):
         fields['SLICE_UID'] = str(uuid.uuid4())
         fields['SLICE_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['SLICE_EXPIRED'] = False
-        if 'SLICE_EXPIRATION' not in fields:
+
+        if 'SLICE_EXPIRATION' in fields:
+            expDate = datetime.datetime.strptime(fields['SLICE_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
+            if expDate > self.CRED_EXPIRY:
+                fields['SLICE_EXPIRATION'] = pyrfc3339.generate(self.CRED_EXPIRY.replace(tzinfo=pytz.utc))
+        else:
             fields['SLICE_EXPIRATION'] = pyrfc3339.generate(self.CRED_EXPIRY.replace(tzinfo=pytz.utc))
 
         #Generating Slice certificate
-        s_cert, s_pu, s_pr = geniutil.create_certificate(slice_urn, self._sa_pr, self._sa_c)
+        s_cert, s_pu, s_pr = geniutil.create_certificate(slice_urn, self._sa_pr, self._sa_c, life_days=3650)
         fields['SLICE_CERTIFICATE'] = s_cert
 
         #Try to get the user credentials for use as owner
@@ -161,11 +166,12 @@ class OSliceAuthorityResourceManager(object):
 
         #Get the privileges user would get as owner in the slice credential
         user_pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='SLICE')
+
         #For compatability with GAPI
         user_pri.extend(['*', 'refresh', 'embed', 'bind', 'control', 'info'])
         #Create slice cred for owner
         slice_cred = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=s_cert, issuer_key=self._sa_pr,
-                                                   issuer_cert=self._sa_c, privileges_list=user_pri, expiration=self.CRED_EXPIRY)
+                                                   issuer_cert=self._sa_c, privileges_list=user_pri, expiration=fields['SLICE_EXPIRATION'])
 
         #Let's make the owner as LEAD
         fields['SLICE_LEAD'] = user_urn
@@ -186,6 +192,13 @@ class OSliceAuthorityResourceManager(object):
         """
         Update a slice object.
         """
+        if 'SLICE_EXPIRATION' in fields:
+            lookup_results = self.lookup_slice_membership(urn, credentials, {}, {}, options)
+            for entry in lookup_results:
+                newCred = self._update_cred_expiry(cred=entry['SLICE_CREDENTIALS'], obj_cert=entry['SLICE_CERTIFICATE'], expiry=fields['SLICE_EXPIRATION'])
+                opt = {'members_to_change': [{'SLICE_MEMBER' : entry['SLICE_MEMBER'], 'SLICE_CREDENTIALS': newCred}]}
+                self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, opt, 'SLICE_MEMBER', 'SLICE_URN')
+
         return self._resource_manager_tools.object_update(self.AUTHORITY_NAME, fields, 'slice', {'SLICE_URN':urn})
 
     def lookup_slice(self, credentials, match, filter_, options):
@@ -376,6 +389,22 @@ class OSliceAuthorityResourceManager(object):
         else:
             raise self.gfed_ex.GFedv2ArgumentError("The specified user does not exist"+ str(member_urn))
 
+    def _update_cred_expiry(self, cred, obj_cert, expiry):
+        """
+        Helper function to update expiry of credentials
+        :param cred:
+        :param obj_cert:
+        :param expiry:
+        :return:
+        """
+        geniutil = pm.getService('geniutil')
+        owner_cert = geniutil.extract_owner_certificate(cred)
+        priv, _ = geniutil.get_privileges_and_target_urn(cred)
+        return geniutil.create_credential_ex(owner_cert=owner_cert, target_cert=obj_cert,
+                                             issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                                             privileges_list=priv, expiration=expiry)
+
+
     def modify_project_membership(self, urn, credentials, options):
         """
         Modify a project membership object.
@@ -441,7 +470,7 @@ class OSliceAuthorityResourceManager(object):
         for membership in slice_memberships:
             slice_cert = membership['SLICE_CERTIFICATE']
             slice_creds_old = membership['SLICE_CREDENTIALS']
-            slice_prvlg, slice_urn = geniutil.get_privileges_and_target_urn([{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds_old}])
+            slice_prvlg, slice_urn = geniutil.get_privileges_and_target_urn(slice_creds_old)
             slice_exp = geniutil.get_expiration(slice_creds_old)
             slice_creds_new = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
                                                             issuer_key=self._sa_pr, issuer_cert=self._sa_c,

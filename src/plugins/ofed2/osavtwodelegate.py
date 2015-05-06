@@ -148,7 +148,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         using the resource manager.
         """
         if (type_.upper()=='SLICE'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE')
+            # Temporarily lookup call are not authorized
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE')
 
             match_urn_list=self._delegate_tools.decompose_slice_urns(match)
 
@@ -163,7 +164,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_.upper()=='SLIVER_INFO'):
             return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_sliver_info( credentials, match, filter_, options), "SLIVER_INFO_URN")
         elif (type_.upper()=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT')
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT')
             return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_project(credentials, match, filter_, options), "PROJECT_URN")
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
@@ -195,12 +196,12 @@ class OSAv2Delegate(GSAv2DelegateBase):
         a given URN using the resource manager.
         """
         if (type_.upper()=='SLICE'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
             if 'SLICE_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store SLICE_EXPIRED in slice creds
                 match.pop('SLICE_EXPIRED')
             return self._slice_authority_resource_manager.lookup_slice_membership(urn, credentials, match, filter_,options)
         elif (type_.upper()=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT_MEMBER', target_urn=urn)
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT_MEMBER', target_urn=urn)
             if 'PROJECT_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store PROJECT_EXPIRED in project creds
                 match.pop('PROJECT_EXPIRED')
             return  self._slice_authority_resource_manager.lookup_project_membership(urn, credentials, match, filter_, options)

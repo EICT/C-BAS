@@ -15,6 +15,7 @@ import ext.sfa.trust.rights as sfa_rights
 from ext.sfa.util.faults import SfaFault
 import ext.geni
 import xml.etree.ElementTree as ET
+from types import StringTypes
 
 def decode_urn(urn):
     """Returns authority, type and name associated with the URN as string.
@@ -151,28 +152,17 @@ def create_credential_ex(owner_cert, target_cert, issuer_key, issuer_cert, privi
 #<UT>
 def extract_owner_certificate(credentials):
     owner_cert = None
-    try:
-        #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
-        root = ET.fromstring(credentials[0]['geni_value']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
-        for child in root:
-            if child.tag == 'credential':
-                owner_cert = child[2].text
-                break
-    except:
-        pass
+    if credentials:
+        cred_obj = sfa_cred.Credential(string=credentials if isinstance(credentials, StringTypes) else credentials[0]['geni_value'])
+        owner_cert = cred_obj.get_gid_caller().save_to_string(save_parents=True)
+
     return owner_cert
 
 def extract_object_certificate(credentials):
     object_cert = None
-    try:
-        #ET.register_namespace('', "http://www.w3.org/2000/09/xmldsig#")
-        root = ET.fromstring(credentials[0]['geni_value']) #FIXME: short-term solution to fix string handling, take first credential of SFA format
-        for child in root:
-            if child.tag == 'credential':
-                object_cert = child[4].text
-                break
-    except:
-        pass
+    if credentials:
+        cred_obj = sfa_cred.Credential(string=credentials if isinstance(credentials, StringTypes) else credentials[0]['geni_value'])
+        object_cert = cred_obj.get_gid_object().save_to_string(save_parents=True)
     return object_cert
 
 def verify_credential_ex(credentials, target_urn, trusted_cert_path, privileges=(), crl_path=None):
@@ -265,10 +255,11 @@ def get_privileges_and_target_urn(credentials):
     :param credentials: SFA formatted string
     :return: list of privileges
     """
+    from types import StringTypes
     priv_list = []
     target_urn = None
     if credentials:
-        cred_obj = sfa_cred.Credential(string=credentials[0]['geni_value'])
+        cred_obj = sfa_cred.Credential(string=credentials if isinstance(credentials, StringTypes) else credentials[0]['geni_value'])
         target_urn = cred_obj.get_gid_object().get_urn()
         privileges = cred_obj.get_privileges().rights
         for p in privileges:
