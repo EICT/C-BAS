@@ -6,6 +6,7 @@ import optparse
 import geniutil
 import datetime
 import subprocess
+import uuid
 
 CA_CERT_FILE = 'ca-cert.pem'
 CA_KEY_FILE = 'ca-key.pem'
@@ -141,7 +142,8 @@ if __name__ == "__main__":
         print "Creating test user cert and cred (valid, signed by MA)"
     urn = geniutil.encode_urn(authority, 'user', USER_NAME)
     cert_serial_number += 1
-    u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=USER_EMAIL, serial_number=cert_serial_number)
+    u_c,u_pu,u_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=USER_EMAIL,
+                                                serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
     write_file(dir_path, USER_CERT_FILE, u_c, opts.silent)
     write_file(dir_path, USER_KEY_FILE, u_pr, opts.silent)
     u_cred = geniutil.create_credential(u_c, u_c, ma_pr, ma_c, "user", CRED_EXPIRY)
@@ -152,7 +154,8 @@ if __name__ == "__main__":
         print "Creating bad test user cert and cred (invalid, self-signed)"
     urn = geniutil.encode_urn(authority, 'user', BAD_USER_NAME)
     cert_serial_number += 1
-    bu_c,bu_pu,bu_pr = geniutil.create_certificate(urn, email=BAD_USER_EMAIL, serial_number=cert_serial_number)
+    bu_c,bu_pu,bu_pr = geniutil.create_certificate(urn, email=BAD_USER_EMAIL, serial_number=cert_serial_number,
+                                                   uuidarg=str(uuid.uuid4()))
     write_file(dir_path, BAD_USER_CERT_FILE, bu_c, opts.silent)
     write_file(dir_path, BAD_USER_KEY_FILE, bu_pr, opts.silent)
     bu_cred = geniutil.create_credential(bu_c, bu_c, ma_pr, ma_c, "user", CRED_EXPIRY)
@@ -162,7 +165,8 @@ if __name__ == "__main__":
         print "Creating admin cert and cred"
     urn = geniutil.encode_urn(authority, 'user', ADMIN_NAME)
     cert_serial_number += 1
-    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL, serial_number=cert_serial_number)
+    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL,
+                                                serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, ADMIN_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
@@ -173,7 +177,8 @@ if __name__ == "__main__":
 
     urn = geniutil.encode_urn(authority, 'user', EXPEDIENT_NAME)
     cert_serial_number += 1
-    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL, serial_number=cert_serial_number)
+    a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL,
+                                                serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
     write_file(dir_path, EXPEDIENT_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, EXPEDIENT_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
