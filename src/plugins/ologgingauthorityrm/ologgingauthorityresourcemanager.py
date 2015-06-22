@@ -29,15 +29,15 @@ class OLoggingAuthorityResourceManager(object):
         """
         super(OLoggingAuthorityResourceManager, self).__init__()
         self._resource_manager_tools = pm.getService('resourcemanagertools')
-        # self._set_unique_keys()
+        self._set_unique_keys()
         # self._urn = self.urn()
 
-    # def _set_unique_keys(self):
-    #     """
-    #     Set the required unique keys in the database.
-    #     """
-    #     # self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_URN')
-    #
+    def _set_unique_keys(self):
+        """
+        Set the required unique keys in the database.
+        """
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'TIMESTAMP')
+
     # --- 'get_version' methods
     # def urn(self):
     #     """
@@ -124,6 +124,4 @@ class OLoggingAuthorityResourceManager(object):
                 results = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, typ, match, filters)
                 if results:
                     collective_results = collective_results + results
-
-            print len(collective_results)
             return collective_results
