@@ -164,7 +164,8 @@ class OMemberAuthorityResourceManager(object):
         """
         Update a key object.
         """
-        fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
+        if 'KEY_PUBLIC' in fields.keys():
+            fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
         return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
             fields, 'key', {'KEY_MEMBER': urn})
 
@@ -413,7 +414,7 @@ class OMemberAuthorityResourceManager(object):
                                                    )
                 self._resource_manager_tools.object_create(self.AUTHORITY_NAME, registration_fields_member, 'member')
 
-                #Register public key if provided
+                # Register public key if provided
                 if public_key:
                     registration_fields_key = dict(KEY_MEMBER= u_urn,
                                                    KEY_TYPE = 'rsa-ssh',

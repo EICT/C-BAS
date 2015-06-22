@@ -1,6 +1,7 @@
 import eisoil.core.pluginmanager as pm
 import eisoil.core.log
 import pyrfc3339
+import copy
 
 logger=eisoil.core.log.getLogger('ofed')
 
@@ -24,6 +25,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         self._slice_authority_resource_manager = pm.getService('osliceauthorityrm')
         self._delegate_tools = pm.getService('delegatetools')
         self._api_tools = pm.getService('apitools')
+        self._logging_authority_resource_manager = pm.getService('ologgingauthorityrm')
         self._slice_whitelist = self._delegate_tools.get_whitelist('SLICE')
         self._sliver_info_whitelist = self._delegate_tools.get_whitelist('SLIVER_INFO')
         self._project_whitelist = self._delegate_tools.get_whitelist('PROJECT')
@@ -44,12 +46,17 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'create' call; if valid, create this object using
         the resource manager.
         """
+        fields_copy = copy.copy(fields) if fields else None
+        options_copy = copy.copy(options) if options else None
         if (type_.upper()=='SLICE'):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
             self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SLICE', fields=fields)
-            return self._slice_authority_resource_manager.create_slice(credentials, fields, options)
+            ret_values = self._slice_authority_resource_manager.create_slice(credentials, fields, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, credentials=ret_values['SLICE_CREDENTIALS'])
+            return ret_values
         elif (type_.upper()=='SLIVER_INFO'):
             self._delegate_tools.object_creation_check(fields, self._sliver_info_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -58,7 +65,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_creation_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'PROJECT')
-            return self._slice_authority_resource_manager.create_project(credentials, fields, options)
+            ret_values =  self._slice_authority_resource_manager.create_project(credentials, fields, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, credentials=credentials)
+            return ret_values
+
         else:
             raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
 
@@ -68,6 +79,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'update' call; if valid, update this object using
         the resource manager.
         """
+        fields_copy = copy.copy(fields) if fields else None
+        options_copy = copy.copy(options) if options else None
+
         if (type_.upper() == 'SLICE'):
             self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'SLICE', target_urn=urn)
 
@@ -97,7 +111,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
 
             self._delegate_tools.object_update_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._slice_authority_resource_manager.update_slice(urn, credentials, fields, options)
+            ret_values = self._slice_authority_resource_manager.update_slice(urn, credentials, fields, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='update', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
+
         elif (type_.upper()=='SLIVER_INFO'):
             self._delegate_tools.object_update_check(fields, self._sliver_info_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -121,7 +139,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
 
             self._delegate_tools.object_update_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._slice_authority_resource_manager.update_project(urn, credentials, fields, options)
+            ret_values = self._slice_authority_resource_manager.update_project(urn, credentials, fields, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='update', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
 
         else:
             raise gfed_ex.GFedv2NotImplementedError("No update method found for object type: " + str(type_))
@@ -131,6 +152,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, delete this object
         using the resource manager.
         """
+        options_copy = copy.copy(options) if options else None
+
         if (type_.upper()=='SLICE'):
             raise gfed_ex.GFedv2NotImplementedError("No authoritative way to know that there aren't live slivers associated with a slice.")
         elif (type_.upper()=='SLIVER_INFO'):
@@ -138,7 +161,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_.upper()=='PROJECT'):
 
             self._delegate_tools.check_if_authorized(credentials,  'DELETE', 'PROJECT', target_urn=urn)
-            return self._slice_authority_resource_manager.delete_project(urn, credentials,  options)
+            ret_values = self._slice_authority_resource_manager.delete_project(urn, credentials,  options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='delete', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
+
         else:
             raise gfed_ex.GFedv2NotImplementedError("No delete method found for object type: " + str(type_))
 
@@ -147,6 +174,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
+        options_copy = copy.copy(options) if options else None
+
         if (type_.upper()=='SLICE'):
             # Temporarily lookup call are not authorized
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE')
@@ -155,9 +184,12 @@ class OSAv2Delegate(GSAv2DelegateBase):
 
             result_list = []
             for urn in match_urn_list:
-                if 'SLICE_EXPIRED' in urn: # Compatability issue with OMNI which passes 'f' as it value. However CBAS stores it as bool
+                if 'SLICE_EXPIRED' in urn: # Compatability issue with OMNI which passes 'f' as its value. However CBAS stores it as bool
                     urn.pop('SLICE_EXPIRED')
                 result_list =  result_list + self._slice_authority_resource_manager.lookup_slice(credentials, urn, filter_, options)
+
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=match, credentials=credentials)
 
             return self._delegate_tools.to_keyed_dict(result_list, "SLICE_URN")
 
@@ -165,7 +197,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
             return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_sliver_info( credentials, match, filter_, options), "SLIVER_INFO_URN")
         elif (type_.upper()=='PROJECT'):
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT')
-            return self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_project(credentials, match, filter_, options), "PROJECT_URN")
+            ret_values = self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_project(credentials, match, filter_, options), "PROJECT_URN")
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=match, credentials=credentials)
+            return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
 
@@ -176,17 +211,25 @@ class OSAv2Delegate(GSAv2DelegateBase):
         of passed fields for a 'modify_membership' call; if valid, modify the
         membership for the given URN using the resource manager.
         """
+        options_copy = copy.deepcopy(options) if options else None
+
         if (type_.upper()=='SLICE'):
             self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'SLICE_MEMBER', urn)
             #self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
             self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
-            return self._slice_authority_resource_manager.modify_slice_membership(urn, credentials, options)
+            ret_values = self._slice_authority_resource_manager.modify_slice_membership(urn, credentials, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='modify_membership', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
 
         elif (type_.upper()=='PROJECT'):
             self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'PROJECT_MEMBER', urn)
             self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
             self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
-            return self._slice_authority_resource_manager.modify_project_membership(urn, credentials, options)
+            ret_values = self._slice_authority_resource_manager.modify_project_membership(urn, credentials, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='modify_membership', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No membership modification method found for object type: " + str(type_))
 
@@ -195,16 +238,25 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup members for
         a given URN using the resource manager.
         """
+        options_copy = list(options) if options else None
+
         if (type_.upper()=='SLICE'):
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
             if 'SLICE_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store SLICE_EXPIRED in slice creds
                 match.pop('SLICE_EXPIRED')
-            return self._slice_authority_resource_manager.lookup_slice_membership(urn, credentials, match, filter_,options)
+            ret_values = self._slice_authority_resource_manager.lookup_slice_membership(urn, credentials, match, filter_,options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
+
         elif (type_.upper()=='PROJECT'):
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT_MEMBER', target_urn=urn)
             if 'PROJECT_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store PROJECT_EXPIRED in project creds
                 match.pop('PROJECT_EXPIRED')
-            return  self._slice_authority_resource_manager.lookup_project_membership(urn, credentials, match, filter_, options)
+            ret_values = self._slice_authority_resource_manager.lookup_project_membership(urn, credentials, match, filter_, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No member lookup method found for object type: " + str(type_))
 
@@ -213,12 +265,20 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup details for
         a member using the resource manager.
         """
+        options_copy = list(options) if options else None
+
         if (type_.upper()=='SLICE'):
-            return self._slice_authority_resource_manager.\
-                lookup_slice_membership_for_member(member_urn, credentials, options)
+            ret_values = self._slice_authority_resource_manager.lookup_slice_membership_for_member(member_urn, credentials, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
+            return ret_values
+
         elif (type_.upper()=='PROJECT'):
-            return self._slice_authority_resource_manager.\
+            ret_values = self._slice_authority_resource_manager.\
                 lookup_project_membership_for_member(member_urn, credentials, options)
+            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
+            return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup for member method found for object type: " + str(type_))
 
@@ -233,8 +293,14 @@ class OSAv2Delegate(GSAv2DelegateBase):
         """
         Generates delegate credentials
         """
-        return self._delegate_tools.delegate_credentials(delagetee_cert, issuer_key, privileges_list,
+        ret_values = self._delegate_tools.delegate_credentials(delagetee_cert, issuer_key, privileges_list,
                                                          expiration, delegatable, credentials)
+        #Logging of the action
+        geniutil = pm.getService('geniutil')
+        delegatee_urn,_,_ = geniutil.extract_certificate_info(delagetee_cert)
+        self._logging_authority_resource_manager.append_event_log(authority='sa', method='delegate_credentials', target_type='SLICE',
+                    fields={'Delegatee URN':delegatee_urn}, options= {'Privileges':privileges_list}, credentials=credentials)
+        return ret_values
 
     def update_credentials_for_member(self, member_urn, credentials, options):
         """

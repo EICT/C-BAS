@@ -267,6 +267,23 @@ def get_privileges_and_target_urn(credentials):
 
     return priv_list, target_urn
 
+def get_owner_and_target_urn(credentials):
+    """
+    Provides a list of privileges included in the given credentials
+    :param credentials: SFA formatted string
+    :return: list of privileges
+    """
+    from types import StringTypes
+    owner_urn = None
+    target_urn = None
+    if credentials:
+        cred_obj = sfa_cred.Credential(string=credentials if isinstance(credentials, StringTypes) else credentials[0]['geni_value'])
+        owner_urn = cred_obj.get_gid_caller().get_urn()
+        target_urn = cred_obj.get_gid_object().get_urn()
+
+    return owner_urn, target_urn
+
+
 def get_expiration(credentials_str):
     """
 

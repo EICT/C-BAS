@@ -511,7 +511,8 @@ class OSliceAuthorityResourceManager(object):
         """
         Lookup a project membership object.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'], {}, filter_)
+
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'], match, filter_)
 
     def lookup_slice_membership_for_member(self, member_urn, credentials, options):
         """

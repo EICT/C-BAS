@@ -1,0 +1,9 @@
+{
+  "name" : "Logging Authority Resource Manager (delivering data for the logging service)",
+  "author" : "Umar Toseef",
+  "author-email" : "umar.toseef@eict.de",
+  "version" : 1,
+  "implements" : ["ologgingauthorityrm", "ologgingauthorityexceptions"],
+  "loads-after" : ["resourcemanagertools", "apitools"],
+  "requires" : ["config"]
+}

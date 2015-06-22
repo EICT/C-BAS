@@ -153,8 +153,9 @@ class TestGMAv2(unittest.TestCase):
         """
         Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
         """
-        create_data = {'KEY_MEMBER':'urn:publicid:IDN+mych+user+abrown', 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for user Arlene Brown.', 'KEY_PUBLIC':'ssh-rsa CAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
-        urn = self._test_create(create_data, 'KEY', 'KEY_ID', 0)
+        urn = 'urn:publicid:IDN+mych+user+abrown'
+        create_data = {'KEY_MEMBER':urn, 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for user Arlene Brown.', 'KEY_PUBLIC':'ssh-rsa CAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
+        self._test_create(create_data, 'KEY', 'KEY_ID', 0)
         update_data = {'KEY_TYPE' : 'UNAUTHORIZED_UPDATE'}
         self._test_update(urn, update_data, 'KEY', 'KEY_ID', 3)
         self._test_delete(urn, 'KEY', 'KEY_ID', 0)
@@ -193,15 +194,16 @@ class TestGMAv2(unittest.TestCase):
         lookup_data = {'MEMBER_USERNAME': 'mem1'}
         lookup_result = self._test_lookup(lookup_data, [], 'MEMBER', 1, 0)
 
-    # def test_key(self):
-    #     """
-    #     Test object type 'KEY' methods: create, lookup, update and delete.
-    #     """
-    #     create_data = {'KEY_MEMBER':'urn:publicid:IDN+mych+user+abrown', 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for user Arlene Brown.', 'KEY_PUBLIC':'ssh-rsa EAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
-    #     urn = self._test_create(create_data, 'KEY', 'KEY_MEMBER', 0)
-    #     update_data = {'KEY_DESCRIPTION':'SSH key for user A. Brown.'}
-    #     self._test_update(urn, update_data, 'KEY', 'KEY_MEMBER', 0)
-    #     self._test_delete(urn, 'KEY', 'KEY_MEMBER', 0)
+    def test_key(self):
+        """
+        Test object type 'KEY' methods: create, lookup, update and delete.
+        """
+        urn = 'urn:publicid:IDN+mych+user+abrowni'
+        create_data = {'KEY_MEMBER': urn, 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for user Arlene Browni.', 'KEY_PUBLIC':'ssh-rsa EAAAB3NzaW1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
+        self._test_create(create_data, 'KEY', 'KEY_MEMBER', 0)
+        update_data = {'KEY_DESCRIPTION':'SSH key for user A. Browni.'}
+        self._test_update(urn, update_data, 'KEY', 'KEY_MEMBER', 0)
+        self._test_delete(urn, 'KEY', 'KEY_MEMBER', 0)
 
     def _test_create(self, fields, object_type, expected_urn, expected_code):
         """
@@ -230,12 +232,15 @@ class TestGMAv2(unittest.TestCase):
         """
 
         code, value, output = ma_call('update', [object_type, urn, self._credential_list("root"), {'fields' : fields}], user_name="root")
+        if not code ==  expected_code:
+            print code, value, output
         self.assertEqual(code, expected_code)
         if code is 0:
             self.assertIsNone(value)
             result = self._test_lookup({expected_urn : urn}, None, object_type, 1, 0)
             for field_key, field_value in fields.iteritems():
-                self.assertEqual(result[urn].get(field_key), field_value)
+                if urn in result.keys():
+                    self.assertEqual(result[urn].get(field_key), field_value)
 
 
     def _test_delete(self, urn, object_type, expected_urn, expected_code):
@@ -257,6 +262,12 @@ class TestGMAv2(unittest.TestCase):
     def _credential_list(self, user_name):
         """Returns the _user_ credential for the given user_name."""
         return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value' : get_creds_file_contents('%s-cred.xml' % (user_name,))}]
+
+    def test_logging(self):
+
+        options = {'match': {'TIMESTAMP': {'$lt':1734973406.155236}}}
+        results = api_call("lookup", 'logging', params=['all', options], user_name="root")
+        print(results)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

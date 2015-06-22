@@ -331,15 +331,15 @@ class TestGSAv2(unittest.TestCase):
         project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
-        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
-        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
-        remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members(project_urn, 'PROJECT', add_data, 2, 0)
-        self._test_lookup_members(project_urn, 'PROJECT', change_data, 2, 0)
-        self._test_lookup_members(project_urn, 'PROJECT', remove_data, 1, 0)
-        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', add_data, 1, 0)
-        self._test_lookup_for_members(project_urn, 'test_urn','PROJECT', change_data, 1, 0)
-        self._test_lookup_for_members(project_urn, 'test_urn', 'PROJECT', remove_data, 0, 0)
+        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn123', 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
+        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn123', 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
+        remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_urn123'}]}
+        lookup_data = {'match':{'PROJECT_MEMBER' : 'test_urn123'}}
+        self._test_modify_membership(project_urn, 'PROJECT', add_data, 0)
+        self._test_modify_membership(project_urn, 'PROJECT', change_data, 0)
+        self._test_lookup_members(project_urn, 'PROJECT', lookup_data, 1, 0)
+        self._test_lookup_for_members(project_urn, 'test_urn123','PROJECT', {}, 1, 0)
+        self._test_modify_membership(project_urn, 'PROJECT', remove_data, 0)
         self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_slice_membership(self):
@@ -363,12 +363,12 @@ class TestGSAv2(unittest.TestCase):
         add_data = {'members_to_add' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
         change_data = {'members_to_change' : [{'SLICE_MEMBER' : 'test_urn', 'SLICE_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert}]}
         remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : 'test_urn'}]}
-        self._test_lookup_members(slice_urn, 'SLICE', add_data, 2, 0)
-        self._test_lookup_members(slice_urn, 'SLICE', change_data, 2, 0)
-        self._test_lookup_members(slice_urn, 'SLICE', remove_data, 1, 0)
-        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', add_data, 1, 0)
-        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', change_data, 1, 0)
-        self._test_lookup_for_members(slice_urn, 'test_urn', 'SLICE', remove_data, 0, 0)
+        lookup_data = {'match':{'SLICE_MEMBER' : 'test_urn'}}
+        self._test_modify_membership(slice_urn, 'SLICE', add_data, 0)
+        self._test_modify_membership(slice_urn, 'SLICE', change_data, 0)
+        self._test_lookup_members(slice_urn, 'SLICE', lookup_data, 1, 0)
+        self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', {}, 1, 0)
+        self._test_modify_membership(slice_urn, 'SLICE', remove_data, 0)
 
     def test_creds(self):
         """
@@ -446,21 +446,20 @@ class TestGSAv2(unittest.TestCase):
         """
         Helper method to test object membership lookup.
         """
-        if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
-
-            code, value, output = sa_call('lookup_members', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
-            self.assertEqual(code, 0)
-            self.assertEqual(len(value), expected_length)
+        code, value, output = sa_call('lookup_members', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
+        self.assertEqual(code, 0)
+        if not len(value) == expected_length:
+            print value
+        self.assertEqual(len(value), expected_length)
 
     def _test_lookup_for_members(self, urn, member_urn, object_type, data, expected_length, expected_code, op_user_name="root"):
         """
         Helper method to test object membership lookup for a member.
         """
-        if self._test_modify_membership(urn, object_type, data, expected_code, op_user_name) is 0:
 
-            code, value, output = sa_call('lookup_for_member', [object_type, member_urn, self._credential_list(op_user_name), data])
-            self.assertEqual(code, 0)
-            self.assertEqual(len(value), expected_length)
+        code, value, output = sa_call('lookup_for_member', [object_type, member_urn, self._credential_list(op_user_name), data])
+        self.assertEqual(code, expected_code)
+        self.assertEqual(len(value), expected_length)
 
     def _user_credentail_list(self):
         """Returns the _user_ credential for alice."""

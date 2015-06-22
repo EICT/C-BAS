@@ -1,5 +1,6 @@
 import eisoil.core.pluginmanager as pm
 import eisoil.core.log
+import copy
 logger=eisoil.core.log.getLogger('ofed')
 
 GMAv2DelegateBase = pm.getService('gmav2delegatebase')
@@ -24,6 +25,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
         self._delegate_tools = pm.getService('delegatetools')
         self._member_whitelist = self._delegate_tools.get_whitelist('MEMBER')
         self._key_whitelist = self._delegate_tools.get_whitelist('KEY')
+        self._logging_authority_resource_manager = pm.getService('ologgingauthorityrm')
 
     def get_version(self):
         """
@@ -41,14 +43,34 @@ class OMAv2Delegate(GMAv2DelegateBase):
         of passed fields for a 'create' call; if valid, create this object using
         the resource manager.
         """
+        fields_copy = copy.copy(fields) if fields else None
+
         if (type_.upper()=='KEY'):
+            # Authorization
             self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'KEY')
+            # Consistency checks
             self._delegate_tools.object_creation_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.create_key(credentials, fields, options)
+            # Creation
+            ret_values =  self._member_authority_resource_manager.create_key(credentials, fields, options)
+            # Logging
+            key_member = fields_copy['KEY_MEMBER'] if 'KEY_MEMBER' in fields_copy.keys() else None
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='create', target_type=type_.upper(),
+                    fields=None, options= None, target_urn=key_member, credentials=credentials)
+            return ret_values
+
         elif (type_.upper() =='MEMBER'):
+            # Authorization
             self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SYSTEM_MEMBER')
-            return self._member_authority_resource_manager.register_member(credentials, fields, options)
+            # Registration
+            ret_values = self._member_authority_resource_manager.register_member(credentials, fields, options)
+            # Logging
+            user_name = fields_copy['MEMBER_USERNAME'] if 'MEMBER_USERNAME' in fields_copy.keys() else None
+            user_urn = ret_values['MEMBER_URN'] if 'MEMBER_URN' in ret_values.keys() else None
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='create', target_type=type_.upper(),
+                    fields={'MEMBER_USERNAME':user_name}, options= None, target_urn=user_urn, credentials=credentials)
+            return ret_values
+
         else:
             raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
 
@@ -58,16 +80,35 @@ class OMAv2Delegate(GMAv2DelegateBase):
         of passed fields for a 'update' call; if valid, update this object using
         the resource manager.
         """
+        fields_copy = copy.copy(fields) if fields else None
+        options_copy = copy.copy(options) if options else None
+
         if (type_.upper()=='MEMBER'):
+            # Authorization
             self._delegate_tools.check_if_ma_info_update_authorized(credentials, 'SYSTEM_MEMBER', urn)
+            # Consistency checks
             self._delegate_tools.object_update_check(fields, self._member_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.update_member(urn, credentials, fields, options)
+            # Update
+            ret_values = self._member_authority_resource_manager.update_member(urn, credentials, fields, options)
+            # Logging
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='update', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
+
         elif (type_.upper()=='KEY'):
+            # Authorization
             self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
+            # Consistency checks
             self._delegate_tools.object_update_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            return self._member_authority_resource_manager.update_key(urn, credentials, fields, options)
+            # Update
+            ret_values = self._member_authority_resource_manager.update_key(urn, credentials, fields, options)
+            # Logging
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='update', target_type=type_.upper(),
+                    fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
+
         else:
             raise gfed_ex.GFedv2NotImplementedError("No update method found for object type: " + str(type_))
 
@@ -76,9 +117,17 @@ class OMAv2Delegate(GMAv2DelegateBase):
         Depending on the object type defined in the request, delete this object
         using the resource manager.
         """
+        options_copy = copy.copy(options) if options else None
+
         if (type_.upper()=='KEY'):
+            # Authorization
             self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
-            return self._member_authority_resource_manager.delete_key(urn, credentials, options)
+            # Removal
+            ret_values = self._member_authority_resource_manager.delete_key(urn, credentials, options)
+            # Logging
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='delete', target_type=type_.upper(),
+                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No delete method found for object type: " + str(type_))
 
@@ -87,17 +136,30 @@ class OMAv2Delegate(GMAv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
-        if (type_.upper()=='MEMBER'):
-            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
+        options_copy = copy.copy(options) if options else None
 
+        if (type_.upper()=='MEMBER'):
+            # Authorization
+            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
             if filter_ and 'MEMBER_URN' not in filter_:
                 filter_.append('MEMBER_URN')
-            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
+            # Lookup
+            ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
+                    fields=None, options= options_copy, credentials=credentials)
+            return ret_values
+
         elif (type_.upper()=='KEY'):
+            # Authorization
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'KEY')
             if filter_ and 'KEY_ID' not in filter_:
                 filter_.append('KEY_ID')
-            return self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")
+            # Lookup
+            ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
+                    fields=None, options= options_copy, credentials=credentials)
+            return ret_values
+
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
 

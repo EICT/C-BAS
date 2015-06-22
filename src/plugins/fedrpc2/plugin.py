@@ -2,6 +2,7 @@ import eisoil.core.pluginmanager as pm
 from fedrpctwo.gregistryvtwo import GRegistryv2Handler, GRegistryv2DelegateBase
 from fedrpctwo.gmavtwo import GMAv2Handler, GMAv2DelegateBase
 from fedrpctwo.gsavtwo import GSAv2Handler, GSAv2DelegateBase
+from fedrpctwo.glogging import GLoggingHandler, GLoggingDelegateBase
 
 def setup():
 
@@ -19,12 +20,15 @@ def setup():
     pm.registerService('gmav2delegatebase', GMAv2DelegateBase)
     xmlrpc.registerXMLRPC('gmav2', gma_handler, '/ma/2') # name, handlerObj, endpoint
     api_tools.register_endpoint(name='gmav2', type='ma', version='2', url='/ma/2')
-    #For compatibility with MONI we must support CreateUserCredential method
-    #xmlrpc.registerXMLRPC('rpcv2', gma_handler, '/RPC2') # name, handlerObj, endpoint
-    #api_tools.register_endpoint(name='rpcv2', type='ma', version='2', url='/RPC2')
 
     gsa_handler = GSAv2Handler()
     pm.registerService('gsav2handler', gsa_handler)
     pm.registerService('gsav2delegatebase', GSAv2DelegateBase)
     xmlrpc.registerXMLRPC('gsav2', gsa_handler, '/sa/2') # name, handlerObj, endpoint
     api_tools.register_endpoint(name='gsav2', type='sa', version='2', url='/sa/2')
+
+    glog_handler = GLoggingHandler()
+    pm.registerService('glogginghandler', glog_handler)
+    pm.registerService('gloggingdelegatebase', GLoggingDelegateBase)
+    xmlrpc.registerXMLRPC('glogging', glog_handler, '/logging') # name, handlerObj, endpoint
+    api_tools.register_endpoint(name='glogging', type='logging', version='1', url='/logging')

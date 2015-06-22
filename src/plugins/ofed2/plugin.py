@@ -2,6 +2,7 @@ import eisoil.core.pluginmanager as pm
 from oregistryvtwodelegate import ORegistryv2Delegate
 from osavtwodelegate import OSAv2Delegate
 from omavtwodelegate import OMAv2Delegate
+from ologgingdelegate import OLoggingDelegate
 
 """
 The delegate concept (introduced by eiSoil) was extended here.
@@ -26,3 +27,7 @@ def setup():
     sa_delegate = OSAv2Delegate()
     sa_handler = pm.getService('gsav2handler')
     sa_handler.setDelegate(sa_delegate)
+
+    log_delegate = OLoggingDelegate()
+    log_handler = pm.getService('glogginghandler')
+    log_handler.setDelegate(log_delegate)
