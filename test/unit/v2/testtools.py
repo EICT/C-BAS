@@ -13,7 +13,12 @@ def api_call(method_name, endpoint, params=[], user_name='alice', verbose=False)
 class SafeTransportWithCert(xmlrpclib.SafeTransport):
     """Helper class to force the right certificate for the transport class."""
     def __init__(self, key_path, cert_path):
-        xmlrpclib.SafeTransport.__init__(self) # no super, because old style class
+
+        if sys.version_info >= (2,7,9):
+            import ssl
+            xmlrpclib.SafeTransport.__init__(self, context=ssl._create_unverified_context())
+        else:
+            xmlrpclib.SafeTransport.__init__(self) # no super, because old style class
         self._key_path = key_path
         self._cert_path = cert_path
 
