@@ -125,6 +125,11 @@ class DelegateTools(object):
         """
         parsed_original_value = pyrfc3339.parse(original_value)
         parsed_value_in_question = pyrfc3339.parse(value_in_question)
+        now = pytz.timezone("UTC").localize(datetime.datetime.utcnow())
+
+        # Check if the object has already expired
+        if now > parsed_original_value:
+            raise GFedv2ArgumentError("Update is not possible because the object has already expired.")
 
         if type_:
             maximum_expansion_duration = self.STATIC['CONFIG'][type_]['max_%s_extension_time' %type_.lower()]

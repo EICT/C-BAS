@@ -99,7 +99,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
                 lookup_result = self._slice_authority_resource_manager.lookup_slice(credentials,
                                                                                     {'SLICE_URN' : str(urn)}, [], {})
 
-                # keyed_lookup_result enables referencing an dicitionary with any chosen key_name. For example,
+                # keyed_lookup_result enables referencing an dictionary with any chosen key_name. For example,
                 # SLICE_URN can be used as the key for the dictionary return when looking up a slice.
                 # This is needed here to enable fetching out the SLICE_CREATION time belonging to a certain SLICE_URN
                 keyed_lookup_result = self._delegate_tools.to_keyed_dict(lookup_result, "SLICE_URN")
@@ -109,9 +109,14 @@ class OSAv2Delegate(GSAv2DelegateBase):
                 if not is_valid:
                     raise gfed_ex.GFedv2ArgumentError("Invalid expiry date for object type: " + str(type_))
 
+            # Consistency check
             self._delegate_tools.object_update_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
+
+            # Update
             ret_values = self._slice_authority_resource_manager.update_slice(urn, credentials, fields, options)
+
+            # Logging
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='update', target_type=type_.upper(),
                     fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
             return ret_values
