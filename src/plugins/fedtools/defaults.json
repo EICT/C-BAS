@@ -255,13 +255,15 @@
             "TYPE": "STRING",
             "DESC": "Username of user",
             "MATCH": true,
-            "PROTECT": "PUBLIC"
+            "PROTECT": "PUBLIC",
+            "UPDATE" : false
         },
         "MEMBER_EMAIL": {
             "TYPE": "STRING",
             "DESC": "Email of user",
             "MATCH": false,
-            "PROTECT": "IDENTIFYING"
+            "PROTECT": "IDENTIFYING",
+            "UPDATE" : true
         },
         "MEMBER_CREDENTIALS": {
             "TYPE": "STRING",

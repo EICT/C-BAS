@@ -33,7 +33,11 @@ class XMLRPCDispatcher(object):
             raise e
 
         try:
-            return meth(*params)
+            print params
+            xy = meth(*params)
+            # return meth(*params)
+            #print xy
+            return xy
         except Exception, e:
             # TODO check if the exception has already been logged
             self._log.exception("Call to known method <%s> failed!" % (method))

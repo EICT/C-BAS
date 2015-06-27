@@ -1,3 +1,4 @@
+rm -rf deploy/trusted/
 mkdir tmp/ deploy/trusted/ deploy/trusted/certs/ deploy/trusted/cert_keys/ deploy/trusted/crl/
 if [ -z "$1" ]
 then

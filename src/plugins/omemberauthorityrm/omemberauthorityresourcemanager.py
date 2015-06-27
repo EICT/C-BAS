@@ -207,7 +207,7 @@ class OMemberAuthorityResourceManager(object):
         """
         Revokes membership by revoking member certificate
         :param urn: member urn
-        :return:
+        :return: None
         """
 
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN' : urn}, [])

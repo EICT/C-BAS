@@ -368,7 +368,7 @@ class TestGSAv2(unittest.TestCase):
         self._test_modify_membership(slice_urn, 'SLICE', change_data, 0)
         self._test_lookup_members(slice_urn, 'SLICE', lookup_data, 1, 0)
         self._test_lookup_for_members(slice_urn, 'test_urn','SLICE', {}, 1, 0)
-        self._test_modify_membership(slice_urn, 'SLICE', remove_data, 0)
+        #self._test_modify_membership(slice_urn, 'SLICE', remove_data, 0)
 
     def test_creds(self):
         """
@@ -470,6 +470,11 @@ class TestGSAv2(unittest.TestCase):
     def _credential_list(self, user_name):
         """Returns the _user_ credential for the given user_name."""
         return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': get_creds_file_contents('%s-cred.xml' % (user_name,))}]
+
+
+    def test_zall_lookup(self):
+        code, value, output = sa_call('lookup', ['SLICE', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
+        print code, len(value), output
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

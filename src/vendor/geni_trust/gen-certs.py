@@ -57,6 +57,25 @@ def read_file(dir_path, filename):
         contents = f.read()
     return contents
 
+def insert_user(username, urn, cert, creds, uuid, firstName, lastName, email, clearDB=False):
+        import pymongo
+        client = pymongo.MongoClient('localhost', 27017)
+        database = client['ohouse']
+        if clearDB:
+            database['ma'].drop()
+            database['sa'].drop()
+
+        create_fields = {"MEMBER_CERTIFICATE": cert,
+                            "MEMBER_UID" : uuid,
+                            "MEMBER_FIRSTNAME": firstName,
+                            "MEMBER_LASTNAME": lastName,
+                            "MEMBER_USERNAME": username,
+                            "MEMBER_EMAIL": email,
+                            "MEMBER_CREDENTIALS": creds,
+                            "MEMBER_URN": urn,
+                            "type" : "member"}
+        database['ma'].insert(create_fields)
+
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = "usage: %prog directory_path")
     parser.add_option("--silent", action="store_true", help="Silence output", default=False)
@@ -164,9 +183,10 @@ if __name__ == "__main__":
     if not opts.silent:
         print "Creating admin cert and cred"
     urn = geniutil.encode_urn(authority, 'user', ADMIN_NAME)
+    admin_uuid = str(uuid.uuid4())
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL,
-                                                serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
+                                                serial_number=cert_serial_number, uuidarg=admin_uuid)
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, ADMIN_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
@@ -174,11 +194,13 @@ if __name__ == "__main__":
               "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
     a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
     write_file(dir_path, ADMIN_CRED_FILE, a_cred, opts.silent)
+    insert_user(ADMIN_NAME,urn,a_c,a_cred,admin_uuid,'System', 'Administrator','root@cbas.de', True)
 
     urn = geniutil.encode_urn(authority, 'user', EXPEDIENT_NAME)
+    exp_uuid = str(uuid.uuid4())
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL,
-                                                serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
+                                                serial_number=cert_serial_number, uuidarg=exp_uuid)
     write_file(dir_path, EXPEDIENT_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, EXPEDIENT_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
@@ -186,6 +208,7 @@ if __name__ == "__main__":
               "MEMBER_REMOVE_REGISTRATION", "SERVICE_REGISTER"]
     a_cred = geniutil.create_credential_ex(a_c, a_c, ma_pr, ma_c, p_list, CRED_EXPIRY)
     write_file(dir_path, EXPEDIENT_CRED_FILE, a_cred, opts.silent)
+    insert_user(EXPEDIENT_NAME,urn,a_c,a_cred,exp_uuid,'Expedient', 'User-agent','expedient@cbas.de')
 
     if not opts.silent:
         print "Creating slice credential for valid test user"

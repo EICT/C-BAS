@@ -269,6 +269,12 @@ class TestGMAv2(unittest.TestCase):
         results = api_call("lookup", 'logging', params=['all', options], user_name="root")
         print(results)
 
+    def test_zall_lookup(self):
+
+        code, value, output = ma_call('lookup', ['MEMBER', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
+        print code, len(value), output
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         arg = sys.argv[1]

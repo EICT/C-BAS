@@ -63,7 +63,9 @@ class OMAv2Delegate(GMAv2DelegateBase):
             # Authorization
             self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SYSTEM_MEMBER')
             # Registration
+            print "Going to call register..."
             ret_values = self._member_authority_resource_manager.register_member(credentials, fields, options)
+            print "...registered."
             # Logging
             user_name = fields_copy['MEMBER_USERNAME'] if 'MEMBER_USERNAME' in fields_copy.keys() else None
             user_urn = ret_values['MEMBER_URN'] if 'MEMBER_URN' in ret_values.keys() else None
@@ -192,3 +194,13 @@ class OMAv2Delegate(GMAv2DelegateBase):
                type information suitable for passing to aggregates speaking AM API V3.
         """
         return self._member_authority_resource_manager.get_credentials(member_urn, credentials, options)
+
+    def revoke(self, member_urn, credentials):
+        """
+        Revokes a member certificate.
+        Arguments:
+           member_urn: URN of member whose certificate is to be revoked
+        Return:
+           None
+        """
+        return self._member_authority_resource_manager.revoke_certificate(member_urn)

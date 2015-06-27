@@ -21,6 +21,7 @@ class MongoDB(object):
         """
         Initialise a MongoDB Client and connect to a database named in config file through 'database_name'.
         """
+
         client = pymongo.MongoClient(ip_hostname, port)
         self._database = client[database_name]
 

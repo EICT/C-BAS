@@ -252,7 +252,6 @@ class OSliceAuthorityResourceManager(object):
         fields['PROJECT_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['PROJECT_EXPIRED'] = False
 
-
         # <UT>
         geniutil = pm.getService('geniutil')
         # Generating Project Certificate
@@ -275,6 +274,7 @@ class OSliceAuthorityResourceManager(object):
 
         # Finally, create project object
         ret_values = self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'project')
+
         # Add Project credentials to ret values
         ret_values['PROJECT_CREDENTIALS'] = p_creds
 
@@ -282,7 +282,6 @@ class OSliceAuthorityResourceManager(object):
         # Create PROJECT_MEMBER object
         options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_MEMBER_UID': user_uuid, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_CERTIFICATE': p_cert, 'PROJECT_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
-
         return ret_values
 
 
@@ -337,6 +336,7 @@ class OSliceAuthorityResourceManager(object):
         owner_cert = geniutil.extract_owner_certificate(credentials)
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
         _, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        resetCurrentLead = False
 
         # slice membership can be modified using
         # (a) System member credentials (b) Slice credentials (c) project credentials
@@ -349,22 +349,35 @@ class OSliceAuthorityResourceManager(object):
 
         for option_key, option_value in options.iteritems():
             if option_key in ['members_to_add', 'members_to_change']:
+                print option_key
                 for member_dict in option_value:
-                    # LEAD membership can be changed by LEAD himself or by ROOT
-                    if member_dict['SLICE_MEMBER'] == slice_lead and (user_urn_from_cert != slice_lead or user_urn_from_cert != target_urn_from_cred):
-                        raise self.gfed_ex.GFedv2ArgumentError("Only slice LEAD or ROOT can modify lead membership "+ str(urn))
 
-                    member_cert = member_dict['MEMBER_CERTIFICATE'] if 'MEMBER_CERTIFICATE' in member_dict else self._get_member_certificate(member_dict['SLICE_MEMBER'])
+                    # Obtain member cert
+                    #member_cert = member_dict['MEMBER_CERTIFICATE'] if 'MEMBER_CERTIFICATE' in member_dict else member_dict['SLICE_ROLE']#self._get_member_certificate(member_dict['SLICE_MEMBER'])
+                    #print ">>>"+member_cert+"<<<"
+
+                    # Manage privileges
                     member_role = member_dict['SLICE_ROLE'] if 'SLICE_ROLE' in member_dict else 'MEMBER'
                     member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='SLICE')
                     if 'EXTRA_PRIVILEGES' in member_dict:
                         member_pri = member_pri+member_dict['EXTRA_PRIVILEGES']
                         member_dict.pop('EXTRA_PRIVILEGES', None)
-                    member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
-                                                                                     issuer_key=self._sa_pr, issuer_cert=self._sa_c,
-                                                                                     privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+
+                    # LEAD role can be changed by LEAD member himself or by the ROOT
+                    if member_dict['SLICE_MEMBER'] == slice_lead or member_role == 'LEAD':
+                        if user_urn_from_cert != slice_lead and user_urn_from_cert != target_urn_from_cred:
+                            raise self.gfed_ex.GFedv2ArgumentError("Only slice LEAD or ROOT can modify lead membership "+ str(urn))
+
+                    # Create slice creds
+                    # member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
+                    #                                                                  issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                    #                                                                  privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+                    # Populate slice certificate
                     member_dict['SLICE_CERTIFICATE'] = slice_cert
+
+                    # Update slice object if necessary
                     if member_role == 'LEAD':
+                        resetCurrentLead = True
                         slice_lookup_result[0]['SLICE_LEAD'] = member_dict['SLICE_MEMBER']
                         self._resource_manager_tools.object_update(self.AUTHORITY_NAME, slice_lookup_result[0], 'slice', {'SLICE_URN':urn})
 
@@ -372,7 +385,26 @@ class OSliceAuthorityResourceManager(object):
                 for member_dict in option_value:
                     if slice_lead == member_dict['SLICE_MEMBER']:
                         raise self.gfed_ex.GFedv2ArgumentError("The specified user is slice LEAD and therefore cannot be removed "+ str(urn))
-        return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, options, 'SLICE_MEMBER', 'SLICE_URN')
+
+
+        ret_values = self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, options, 'SLICE_MEMBER', 'SLICE_URN')
+        return ret_values
+        # if resetCurrentLead:
+        #     self._reset_member_role(urn, slice_lead, credentials)
+
+
+
+    def _reset_member_role(self, slice_urn, member_urn, credential):
+        """
+        Helper function to reset a member role within a slice
+        """
+        pass
+        # remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : member_urn}]}
+        # self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, remove_data, 'SLICE_MEMBER', 'SLICE_URN')
+        #
+        # add_data = {'members_to_add' : [{'SLICE_MEMBER' : member_urn, 'SLICE_ROLE' : 'MEMBER'}]}
+        # self.modify_slice_membership(slice_urn, credential, add_data)
+
 
     def _get_member_certificate(self, member_urn):
         """
@@ -385,7 +417,7 @@ class OSliceAuthorityResourceManager(object):
         if lookup_results:
             return lookup_results[0]['MEMBER_CERTIFICATE']
         else:
-            raise self.gfed_ex.GFedv2ArgumentError("The specified user does not exist"+ str(member_urn))
+            raise self.gfed_ex.GFedv2ArgumentError("The specified user does not exist "+ str(member_urn))
 
     def _update_cred_expiry(self, cred, obj_cert, expiry):
         """

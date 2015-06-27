@@ -289,8 +289,7 @@ class DelegateTools(object):
                 else:
                     geniutil.verify_credential_ex([cred], target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
-                # print required_privileges
-                # print priv_from_cred
+                #print required_privileges, priv_from_cred
                 if not required_privileges or set(priv_from_cred).intersection(required_privileges):
                     cred_accepted = True
                     break
