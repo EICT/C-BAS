@@ -84,8 +84,8 @@ class ResourceManagerTools(object):
         for members_dict in option_value:
             members_dict['type'] = type_
             members_dict[urn_key] = urn
-            update_fields = {member_key : members_dict.get(member_key), 'type' :  type_}
-            self._database.update(authority, update_fields, members_dict)
+            id_fields = {member_key : members_dict.get(member_key), 'type' :  type_, urn_key: urn}
+            self._database.update(authority, id_fields, members_dict)
 
     @serviceinterface
     def member_lookup(self, authority, type_, key, value, extra_fields=None, match={}, filter_={}):

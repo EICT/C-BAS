@@ -252,7 +252,16 @@ class OSliceAuthorityResourceManager(object):
         fields['PROJECT_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         fields['PROJECT_EXPIRED'] = False
 
-        # <UT>
+        # Verify the uniqueness of project name
+        self._validate_project_urn(p_urn)
+
+        if 'PROJECT_EXPIRATION' in fields:
+            expDate = datetime.datetime.strptime(fields['PROJECT_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
+            if expDate > self.CRED_EXPIRY:
+                fields['PROJECT_EXPIRATION'] = pyrfc3339.generate(self.CRED_EXPIRY.replace(tzinfo=pytz.utc))
+        else:
+            fields['PROJECT_EXPIRATION'] = pyrfc3339.generate(self.CRED_EXPIRY.replace(tzinfo=pytz.utc))
+
         geniutil = pm.getService('geniutil')
         # Generating Project Certificate
         p_cert, p_pu, p_pr = geniutil.create_certificate(p_urn, self._sa_pr, self._sa_c)
@@ -325,7 +334,7 @@ class OSliceAuthorityResourceManager(object):
         slice_lookup_result = self.lookup_slice(None, match={'SLICE_URN':urn}, filter_=[], options=None)
 
         if not len(slice_lookup_result):
-            raise self.gfed_ex.GFedv2ArgumentError("The specified slice does not exist "+ str(urn))
+            raise self.gfed_ex.GFedv2ArgumentError("The specified slice does not exist: "+ str(urn))
         if len(slice_lookup_result) > 1:
             raise self.gfed_ex.GFedv2DuplicateError("There are more than one instance of specified slice: "+ str(urn))
 
@@ -353,8 +362,7 @@ class OSliceAuthorityResourceManager(object):
                 for member_dict in option_value:
 
                     # Obtain member cert
-                    #member_cert = member_dict['MEMBER_CERTIFICATE'] if 'MEMBER_CERTIFICATE' in member_dict else member_dict['SLICE_ROLE']#self._get_member_certificate(member_dict['SLICE_MEMBER'])
-                    #print ">>>"+member_cert+"<<<"
+                    member_cert = member_dict['MEMBER_CERTIFICATE'] if 'MEMBER_CERTIFICATE' in member_dict else self._get_member_certificate(member_dict['SLICE_MEMBER'])
 
                     # Manage privileges
                     member_role = member_dict['SLICE_ROLE'] if 'SLICE_ROLE' in member_dict else 'MEMBER'
@@ -369,9 +377,9 @@ class OSliceAuthorityResourceManager(object):
                             raise self.gfed_ex.GFedv2ArgumentError("Only slice LEAD or ROOT can modify lead membership "+ str(urn))
 
                     # Create slice creds
-                    # member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
-                    #                                                                  issuer_key=self._sa_pr, issuer_cert=self._sa_c,
-                    #                                                                  privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+                    member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
+                                                                                     issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                                                                                     privileges_list=member_pri, expiration=self.CRED_EXPIRY)
                     # Populate slice certificate
                     member_dict['SLICE_CERTIFICATE'] = slice_cert
 
@@ -386,11 +394,10 @@ class OSliceAuthorityResourceManager(object):
                     if slice_lead == member_dict['SLICE_MEMBER']:
                         raise self.gfed_ex.GFedv2ArgumentError("The specified user is slice LEAD and therefore cannot be removed "+ str(urn))
 
-
         ret_values = self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, options, 'SLICE_MEMBER', 'SLICE_URN')
+        if resetCurrentLead:
+            self._reset_member_role(urn, slice_lead, credentials)
         return ret_values
-        # if resetCurrentLead:
-        #     self._reset_member_role(urn, slice_lead, credentials)
 
 
 
@@ -398,12 +405,9 @@ class OSliceAuthorityResourceManager(object):
         """
         Helper function to reset a member role within a slice
         """
-        pass
-        # remove_data = {'members_to_remove' : [{'SLICE_MEMBER' : member_urn}]}
-        # self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, remove_data, 'SLICE_MEMBER', 'SLICE_URN')
-        #
-        # add_data = {'members_to_add' : [{'SLICE_MEMBER' : member_urn, 'SLICE_ROLE' : 'MEMBER'}]}
-        # self.modify_slice_membership(slice_urn, credential, add_data)
+
+        change_data = {'members_to_change' : [{'SLICE_MEMBER': member_urn, 'SLICE_ROLE': 'MEMBER'}]}
+        self.modify_slice_membership(slice_urn, credential, change_data)
 
 
     def _get_member_certificate(self, member_urn):
@@ -450,24 +454,38 @@ class OSliceAuthorityResourceManager(object):
 
         project_cert = project_lookup_result[0]['PROJECT_CERTIFICATE']
         project_lead = project_lookup_result[0]['PROJECT_LEAD']
+
         geniutil = pm.getService('geniutil')
         owner_cert = geniutil.extract_owner_certificate(credentials)
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
         _, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
+        resetCurrentLead = False
+
+        # For compatability with OMNI which passes urn str list instead of dict for members_to_remove
+        if 'members_to_remove' in options and type(options['members_to_remove'][0]) is str:
+            for i in range(0, len(options['members_to_remove'])):
+                options['members_to_remove'][i] = {'PROJECT_MEMBER': options['members_to_remove'][i]}
 
         for option_key, option_value in options.iteritems():
             if option_key in ['members_to_add', 'members_to_change']:
                 for member_dict in option_value:
-                    # LEAD membership can be changed by LEAD himself or by ROOT
-                    if member_dict['PROJECT_MEMBER'] == project_lead and ( user_urn_from_cert != project_lead or user_urn_from_cert != target_urn_from_cred):
-                        raise self.gfed_ex.GFedv2ArgumentError("Only project LEAD or ROOT can modify lead membership "+ str(urn))
 
-                    member_cert = member_dict['MEMBER_CERTIFICATE']
+                    # Obtain member cert
+                    member_cert = member_dict['MEMBER_CERTIFICATE'] if 'MEMBER_CERTIFICATE' in member_dict else self._get_member_certificate(member_dict['PROJECT_MEMBER'])
+
+                    # Manage privileges
                     member_role = member_dict['PROJECT_ROLE'] if 'PROJECT_ROLE' in member_dict else 'MEMBER'
                     member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='PROJECT')
                     if 'EXTRA_PRIVILEGES' in member_dict:
                         member_pri = member_pri+member_dict['EXTRA_PRIVILEGES']
                         member_dict.pop('EXTRA_PRIVILEGES', None)
+
+                    # LEAD membership can be changed by LEAD himself or by ROOT
+                    if member_dict['PROJECT_MEMBER'] == project_lead or member_role == 'LEAD':
+                        if user_urn_from_cert != project_lead and user_urn_from_cert != target_urn_from_cred:
+                            raise self.gfed_ex.GFedv2ArgumentError("Only project LEAD or ROOT can modify lead membership "+ str(urn))
+
+                    # Create Project creds
                     member_dict['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
                                                                                        issuer_key=self._sa_pr, issuer_cert=self._sa_c,
                                                                                        privileges_list=member_pri, expiration=self.CRED_EXPIRY)
@@ -476,7 +494,10 @@ class OSliceAuthorityResourceManager(object):
 
                     member_dict['PROJECT_MEMBER_UID'] = str(member_uuid)
                     member_dict['PROJECT_CERTIFICATE'] = project_cert
+
+                    # Update project object if necessary
                     if member_role == 'LEAD':
+                        resetCurrentLead = True
                         project_lookup_result[0]['PROJECT_LEAD'] = member_dict['PROJECT_MEMBER']
                         self._resource_manager_tools.object_update(self.AUTHORITY_NAME, project_lookup_result[0], 'project', {'PROJECT_URN':urn})
 
@@ -485,7 +506,16 @@ class OSliceAuthorityResourceManager(object):
                     if project_lead == member_dict['PROJECT_MEMBER']:
                         raise self.gfed_ex.GFedv2ArgumentError("The specified user is project LEAD and therefore cannot be removed "+ str(urn))
 
-        return self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
+        ret_values = self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
+
+        # Reset
+        if resetCurrentLead:
+            change_data = {'members_to_change' : [{'PROJECT_MEMBER': project_lead, 'PROJECT_ROLE': 'MEMBER'}]}
+            self.modify_project_membership(urn, credentials, change_data)
+
+        return ret_values
+
+
 
     def update_slice_credentials_for_member(self, member_urn, credentials, options):
         """
@@ -583,7 +613,20 @@ class OSliceAuthorityResourceManager(object):
             expDate = datetime.datetime.strptime(lookup_results[0]['SLICE_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
             now = datetime.datetime.utcnow()
             if now < expDate:
-                raise self.gfed_ex.GFedv2ArgumentError("A slice with specified name already exists under the following URN "+ str(slice_urn))
-            else:
-                print "Validation passed"
+                raise self.gfed_ex.GFedv2ArgumentError("A slice with specified name already exists under the following URN:"+ str(slice_urn))
 
+    def _validate_project_urn(self, project_urn):
+        """
+        Validates given project URN against existing/expired slices
+        :param project_urn:
+        :return:
+        """
+        lookup_results = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'project', {'PROJECT_URN': project_urn}, {})
+
+        if len(lookup_results) > 0:
+
+            # Slice exists, Let's check if it has been expired
+            expDate = datetime.datetime.strptime(lookup_results[0]['PROJECT_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
+            now = datetime.datetime.utcnow()
+            if now < expDate:
+                raise self.gfed_ex.GFedv2ArgumentError("A project with specified name already exists under the following URN:"+ str(project_urn))
