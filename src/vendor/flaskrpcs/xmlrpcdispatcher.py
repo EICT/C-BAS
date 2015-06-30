@@ -33,10 +33,10 @@ class XMLRPCDispatcher(object):
             raise e
 
         try:
-            print params
+            #print params
             xy = meth(*params)
             # return meth(*params)
-            print xy
+            #print xy
             return xy
         except Exception, e:
             # TODO check if the exception has already been logged
