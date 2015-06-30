@@ -114,7 +114,7 @@ if __name__ == "__main__":
             print "Creating CA certificate"
         urn = geniutil.encode_urn(authority, 'authority', 'ca')
         cert_serial_number += 1
-        ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True, serial_number=cert_serial_number)
+        ca_c, ca_pu, ca_pr = geniutil.create_certificate(urn, is_ca=True, serial_number=cert_serial_number, life_days=10000)
         write_file(dir_path, CA_CERT_FILE, ca_c, opts.silent)
         write_file(dir_path, CA_KEY_FILE, ca_pr, opts.silent)
     else:
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         print "Creating SA certificate"
     urn = geniutil.encode_urn(authority, 'authority', 'sa')
     cert_serial_number += 1
-    sa_c, sa_pu, sa_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
+    sa_c, sa_pu, sa_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number, life_days=10000)
     write_file(dir_path, SA_CERT_FILE, sa_c, opts.silent)
     write_file(dir_path, SA_KEY_FILE, sa_pr, opts.silent)
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         print "Creating MA certificate"
     urn = geniutil.encode_urn(authority, 'authority', 'ma')
     cert_serial_number += 1
-    ma_c, ma_pu, ma_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number)
+    ma_c, ma_pu, ma_pr = geniutil.create_certificate(urn, ca_pr, ca_c, is_ca=True, serial_number=cert_serial_number, life_days=10000)
     write_file(dir_path, MA_CERT_FILE, ma_c, opts.silent)
     write_file(dir_path, MA_KEY_FILE, ma_pr, opts.silent)
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         print "Creating AM certificate"
     urn = geniutil.encode_urn(authority, 'authority', 'am')
     cert_serial_number += 1
-    am_c, am_pu, am_pr = geniutil.create_certificate(urn, ca_pr, ca_c, serial_number=cert_serial_number)
+    am_c, am_pu, am_pr = geniutil.create_certificate(urn, ca_pr, ca_c, serial_number=cert_serial_number, life_days=10000)
     write_file(dir_path, AM_CERT_FILE, am_c, opts.silent)
     write_file(dir_path, AM_KEY_FILE, am_pr, opts.silent)
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     admin_uuid = str(uuid.uuid4())
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=ADMIN_EMAIL,
-                                                serial_number=cert_serial_number, uuidarg=admin_uuid)
+                                                serial_number=cert_serial_number, uuidarg=admin_uuid, life_days=10000)
     write_file(dir_path, ADMIN_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, ADMIN_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     exp_uuid = str(uuid.uuid4())
     cert_serial_number += 1
     a_c,a_pu,a_pr = geniutil.create_certificate(urn, issuer_key=ma_pr, issuer_cert=ma_c, email=EXPEDIENT_EMAIL,
-                                                serial_number=cert_serial_number, uuidarg=exp_uuid)
+                                                serial_number=cert_serial_number, uuidarg=exp_uuid, life_days=10000)
     write_file(dir_path, EXPEDIENT_CERT_FILE, a_c, opts.silent)
     write_file(dir_path, EXPEDIENT_KEY_FILE, a_pr, opts.silent)
     p_list = ["GLOBAL_MEMBERS_VIEW", "GLOBAL_MEMBERS_WILDCARDS", "GLOBAL_PROJECTS_MONITOR", "GLOBAL_PROJECTS_VIEW",

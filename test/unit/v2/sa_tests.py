@@ -120,7 +120,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
         """
-        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
@@ -226,7 +226,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test object type 'PROJECT' methods: create, lookup, update and delete.
         """
-        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2017-02-01T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_DESCRIPTION' : 'M. Broadbent Test Project'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0)
@@ -327,7 +327,7 @@ class TestGSAv2(unittest.TestCase):
         object.
         """
         #Create a project as it is a prerequisite
-        create_data = {'PROJECT_EXPIRATION':'2019-03-21T11:35:57Z', 'PROJECT_NAME': 'kajsdh', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'kajsdh', 'PROJECT_DESCRIPTION':'My test project'}
         project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
@@ -472,9 +472,9 @@ class TestGSAv2(unittest.TestCase):
         return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': get_creds_file_contents('%s-cred.xml' % (user_name,))}]
 
 
-    def test_zall_lookup(self):
-        code, value, output = sa_call('lookup', ['SLICE', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
-        print code, len(value), output
+    # def test_zall_lookup(self):
+    #     code, value, output = sa_call('lookup', ['SLICE', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
+    #     print code, len(value), output
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

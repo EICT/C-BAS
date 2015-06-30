@@ -263,16 +263,15 @@ class TestGMAv2(unittest.TestCase):
         """Returns the _user_ credential for the given user_name."""
         return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value' : get_creds_file_contents('%s-cred.xml' % (user_name,))}]
 
-    def test_logging(self):
-
-        options = {'match': {'TIMESTAMP': {'$lt':1734973406.155236}}}
-        results = api_call("lookup", 'logging', params=['all', options], user_name="root")
-        print(results)
-
-    def test_zall_lookup(self):
-
-        code, value, output = ma_call('lookup', ['MEMBER', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
-        print code, len(value), output
+    # def test_logging(self):
+    #
+    #     options = {'match': {'TIMESTAMP': {'$lt':1734973406.155236}}}
+    #     results = api_call("lookup", 'logging', params=['all', options], user_name="root")
+    #     print(results)
+    #
+    # def test_zall_lookup(self):
+    #     code, value, output = ma_call('lookup', ['MEMBER', self._credential_list("root"), {'match':{}, 'filter':{}}], user_name="root")
+    #     print code, len(value), output
 
 
 if __name__ == '__main__':
