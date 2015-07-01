@@ -145,7 +145,8 @@ class GSAv2Handler(xmlrpc.Dispatcher):
         Call delegate method and return result or exception.
         """
         try:
-            result = self._delegate.lookup_for_member(type_, member_urn,  credentials, options)
+            match, filter_ = self._api_tools.fetch_match_and_filter(options)
+            result = self._delegate.lookup_for_member(type_, member_urn,  credentials, options, match, filter_)
         except Exception as e:
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)

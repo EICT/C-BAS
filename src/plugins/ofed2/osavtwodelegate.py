@@ -265,7 +265,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         else:
             raise gfed_ex.GFedv2NotImplementedError("No member lookup method found for object type: " + str(type_))
 
-    def lookup_for_member(self, type_, member_urn, credentials, options):
+    def lookup_for_member(self, type_, member_urn, credentials, options, match={}, filter_={}):
         """
         Depending on the object type defined in the request, lookup details for
         a member using the resource manager.
@@ -273,14 +273,14 @@ class OSAv2Delegate(GSAv2DelegateBase):
         options_copy = list(options) if options else None
 
         if (type_.upper()=='SLICE'):
-            ret_values = self._slice_authority_resource_manager.lookup_slice_membership_for_member(member_urn, credentials, options)
+            ret_values = self._slice_authority_resource_manager.lookup_slice_membership_for_member(member_urn, credentials, options, match, filter_)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
                     fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
             return ret_values
 
         elif (type_.upper()=='PROJECT'):
             ret_values = self._slice_authority_resource_manager.\
-                lookup_project_membership_for_member(member_urn, credentials, options)
+                lookup_project_membership_for_member(member_urn, credentials, options, match, filter_)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
                     fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
             return ret_values

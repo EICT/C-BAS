@@ -358,7 +358,7 @@ class OSliceAuthorityResourceManager(object):
 
         for option_key, option_value in options.iteritems():
             if option_key in ['members_to_add', 'members_to_change']:
-                print option_key
+
                 for member_dict in option_value:
 
                     # Obtain member cert
@@ -573,17 +573,17 @@ class OSliceAuthorityResourceManager(object):
 
         return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'], match, filter_)
 
-    def lookup_slice_membership_for_member(self, member_urn, credentials, options):
+    def lookup_slice_membership_for_member(self, member_urn, credentials, options, match={}, filter_={}):
         """
         Lookup a slice membership object for a given member.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_MEMBER', member_urn, ['SLICE_MEMBER'], {}, {})
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_MEMBER', member_urn, ['SLICE_MEMBER'], match, filter_)
 
-    def lookup_project_membership_for_member(self, member_urn, credentials, options):
+    def lookup_project_membership_for_member(self, member_urn, credentials, options, match={}, filter_={}):
         """
         Lookup a project membership object for a given member.
         """
-        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_MEMBER', member_urn, ['PROJECT_MEMBER'], {}, {})
+        return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_MEMBER', member_urn, ['PROJECT_MEMBER'], match, filter_)
 
     def get_credentials(self, slice_urn, member_urn, options):
         """
