@@ -165,11 +165,11 @@ def extract_object_certificate(credentials):
         object_cert = cred_obj.get_gid_object().save_to_string(save_parents=True)
     return object_cert
 
-def verify_credential_ex(credentials, target_urn, trusted_cert_path, privileges=(), crl_path=None):
+def verify_credential_ex(credentials, owner_cert, target_urn, trusted_cert_path, privileges=(), crl_path=None):
 
     if credentials:
         cred_obj = sfa_cred.Credential(string=credentials[0]['geni_value'])
-        owner_cert = extract_owner_certificate(credentials)
+
         if cred_obj.parent:
             verify_delegated_credentials(credentials, owner_cert, target_urn, trusted_cert_path, privileges, crl_path)
         else:

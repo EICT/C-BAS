@@ -142,11 +142,21 @@ public class Members extends JPanel{
 					return;
 				}
 				
-				Member d = memberDetails.get(userList.getSelectedIndex());
+				int index = userList.getSelectedIndex();
+                X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(memberDetails.get(index).cert);
+                
+                if(e!=null)
+                {
+					JOptionPane.showMessageDialog(null, "The certificate is already in revoked state.");
+					return;                	
+                }
+
+				
+				Member d = memberDetails.get(index);
 				boolean rsp = MemberAuthorityAPI.reovkeMembership(d);
 				if(rsp == true)
 				{
-	                  X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(d.cert);
+	                  e = MemberAuthorityAPI.crl.getRevokedCertificate(d.cert);
 	                  tfMembershipStatus.setText(e==null?"Active":"Revoked");
 	                  tfMembershipStatus.setForeground(e==null?DARK_GREEN:Color.RED);
 				}

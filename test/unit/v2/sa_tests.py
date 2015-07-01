@@ -377,7 +377,7 @@ class TestGSAv2(unittest.TestCase):
         #Try to create a slice and get slice credentials
         create_data = {'SLICE_NAME': 'CREDS-TEST', 'SLICE_DESCRIPTION': 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject123'}
 
-        code, value, output = sa_call('create', ['SLICE', self._credential_list('root'), {'fields' : create_data}])
+        code, value, output = sa_call('create', ['SLICE', self._credential_list('root'), {'fields' : create_data}], user_name="root")
 
         self.assertEquals(code, 0)
 
@@ -386,19 +386,19 @@ class TestGSAv2(unittest.TestCase):
 
         #Try to verify slice credentials with correct slice urn as target urn
         code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}], slice_urn,
-                                                                 self._credential_list('root')])
+                                                                 self._credential_list('root')], user_name="root")
         self.assertEquals(code, 0)
 
         #Try to verify slice credentials with wrong slice urn as target urn
         code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}], 'slice_urn',
-                                                                 self._credential_list('root')])
+                                                                 self._credential_list('root')], user_name="root")
         self.assertEquals(code, 101)
 
         #Try to delegate slice credentials to another member
         delgatee_cert = get_creds_file_contents('alice-cert.pem')
         issuer_key = get_creds_file_contents('root-key.pem')
         code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2016-10-21T11:35:57Z',
-                                                               True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}]])
+                                                               True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}]], user_name="root")
         self.assertEquals(code, 0)
         #write_file("delegated_creds.xml", value)
 
@@ -421,7 +421,7 @@ class TestGSAv2(unittest.TestCase):
         #Try to verify delegated delegated creds with correct slice urn as target urn
         delegated_creds = value
         code, value, output = sa_call('verify_credentials', [[{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': delegated_creds}], slice_urn,
-                                                                 self._credential_list('root')])
+                                                                 self._credential_list('root')], user_name="root")
 
         self.assertEquals(code, 0)
 

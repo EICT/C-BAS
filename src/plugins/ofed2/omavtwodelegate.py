@@ -26,6 +26,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
         self._member_whitelist = self._delegate_tools.get_whitelist('MEMBER')
         self._key_whitelist = self._delegate_tools.get_whitelist('KEY')
         self._logging_authority_resource_manager = pm.getService('ologgingauthorityrm')
+        self._gmav2handler = pm.getService('gmav2handler')
 
     def get_version(self):
         """
@@ -44,10 +45,11 @@ class OMAv2Delegate(GMAv2DelegateBase):
         the resource manager.
         """
         fields_copy = copy.copy(fields) if fields else None
+        client_ssl_cert = self._gmav2handler.requestCertificate()
 
         if (type_.upper()=='KEY'):
             # Authorization
-            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'KEY')
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'KEY')
             # Consistency checks
             self._delegate_tools.object_creation_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -61,7 +63,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
 
         elif (type_.upper() =='MEMBER'):
             # Authorization
-            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SYSTEM_MEMBER')
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SYSTEM_MEMBER')
             # Registration
             print "Going to call register..."
             ret_values = self._member_authority_resource_manager.register_member(credentials, fields, options)
@@ -84,10 +86,11 @@ class OMAv2Delegate(GMAv2DelegateBase):
         """
         fields_copy = copy.copy(fields) if fields else None
         options_copy = copy.copy(options) if options else None
+        client_ssl_cert = self._gmav2handler.requestCertificate()
 
         if (type_.upper()=='MEMBER'):
             # Authorization
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, 'SYSTEM_MEMBER', urn)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, client_ssl_cert, 'SYSTEM_MEMBER', urn)
             # Consistency checks
             self._delegate_tools.object_update_check(fields, self._member_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -100,7 +103,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
 
         elif (type_.upper()=='KEY'):
             # Authorization
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, client_ssl_cert,  type_, urn)
             # Consistency checks
             self._delegate_tools.object_update_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -120,10 +123,11 @@ class OMAv2Delegate(GMAv2DelegateBase):
         using the resource manager.
         """
         options_copy = copy.copy(options) if options else None
+        client_ssl_cert = self._gmav2handler.requestCertificate()
 
         if (type_.upper()=='KEY'):
             # Authorization
-            self._delegate_tools.check_if_ma_info_update_authorized(credentials, type_, urn)
+            self._delegate_tools.check_if_ma_info_update_authorized(credentials, client_ssl_cert, type_, urn)
             # Removal
             ret_values = self._member_authority_resource_manager.delete_key(urn, credentials, options)
             # Logging

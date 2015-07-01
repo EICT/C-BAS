@@ -259,7 +259,7 @@ class DelegateTools(object):
             return self.STATIC['AUTHZ'][method_][type_][role_]
 
     @serviceinterface
-    def check_if_authorized(self, credentials, method, type_, target_urn=None, fields=None):
+    def check_if_authorized(self, credentials, owner_cert, method, type_, target_urn=None, fields=None):
         """
         Check if credentials have any of the given privileges
         :param credentials: credential string in SFA format
@@ -271,23 +271,23 @@ class DelegateTools(object):
 
         required_privileges = self.get_required_privilege_for(method, type_)
         geniutil = pm.getService('geniutil')
+
         cred_accepted = False
         for cred in credentials:
             try:
                 priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn([cred])
-                owner_cert = geniutil.extract_owner_certificate([cred])
                 user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
                 _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
                 #If given are system member credentials then target_urn cannot be used in verification
                 if user_urn_from_cert == target_urn_from_cred:
-                    geniutil.verify_credential_ex([cred], user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+                    geniutil.verify_credential_ex([cred], owner_cert, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
                 #If project credentials are used to execute commands on slice then context of such credentials must be verified
                 elif type_ in ['SLICE', 'SLICE_MEMBER'] and cred_typ == 'project':
                     self.verify_project_credentials_context([cred], method, fields, target_urn)
-                    geniutil.verify_credential_ex([cred], target_urn_from_cred, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+                    geniutil.verify_credential_ex([cred], owner_cert, target_urn_from_cred, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
                 # Finally, slice credentials are used for slice objects or project credentials are used for project object
                 else:
-                    geniutil.verify_credential_ex([cred], target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+                    geniutil.verify_credential_ex([cred], owner_cert, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
                 #print required_privileges, priv_from_cred
                 if not required_privileges or set(priv_from_cred).intersection(required_privileges):
@@ -373,7 +373,7 @@ class DelegateTools(object):
                         raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to modify "+ type_ + " membership")
 
     @serviceinterface
-    def check_if_ma_info_update_authorized(self, credentials, type_, target_urn):
+    def check_if_ma_info_update_authorized(self, credentials, owner_cert, type_, target_urn):
         """
         Performs authorization check on member/key info update
         :param credentials:
@@ -385,17 +385,16 @@ class DelegateTools(object):
             raise GFedv2ArgumentError("Passed invalid or no credentials")
 
         geniutil = pm.getService('geniutil')
-        owner_cert = geniutil.extract_owner_certificate(credentials)
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
 
         #Update is allowed for owner himself. Otherwise, proper credentials should be presented
         if user_urn_from_cert == target_urn:
-            geniutil.verify_credential_ex(credentials, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, owner_cert, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
-            self.check_if_authorized(credentials=credentials, method='UPDATE', type_=type_, target_urn=None)
+            self.check_if_authorized(credentials=credentials, owner_cert=owner_cert, method='UPDATE', type_=type_, target_urn=None)
 
 
-    def verify_credentials(self, credentials, target_urn=None):
+    def verify_credentials(self, credentials, owner_cert, target_urn=None):
         """
         Verifies if credentials are valid and trusted. If yes, then returns a list of associated privileges
         :param credentials: credentials to verify
@@ -409,18 +408,17 @@ class DelegateTools(object):
         geniutil = pm.getService('geniutil')
 
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
-        owner_cert = geniutil.extract_owner_certificate(credentials)
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
 
         #If given are system member credentials then target_urn cannot be used in verification
         if user_urn_from_cert == target_urn_from_cred:
-            geniutil.verify_credential_ex(credentials, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, owner_cert, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
-            geniutil.verify_credential_ex(credentials, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+            geniutil.verify_credential_ex(credentials, owner_cert, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
         return priv_from_cred
 
-    def delegate_credentials(self, delegetee_cert, issuer_key, privileges_list, expiration,
+    def delegate_credentials(self, delegetee_cert, issuer_cert, issuer_key, privileges_list, expiration,
                              delegatable, credentials):
         """
         Creates delegated credentials
@@ -434,7 +432,7 @@ class DelegateTools(object):
         priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn(credentials)
         certificate = geniutil.extract_owner_certificate(credentials)
 
-        self.verify_credentials(credentials, target_urn_from_cred)
+        self.verify_credentials(credentials, issuer_cert, target_urn_from_cred)
 
         if not set(priv_from_cred).issuperset(privileges_list):
             raise GFedv2AuthorizationError("You cannot delegate privileges that you don't own")

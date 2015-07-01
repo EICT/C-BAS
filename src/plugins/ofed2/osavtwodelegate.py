@@ -29,6 +29,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         self._slice_whitelist = self._delegate_tools.get_whitelist('SLICE')
         self._sliver_info_whitelist = self._delegate_tools.get_whitelist('SLIVER_INFO')
         self._project_whitelist = self._delegate_tools.get_whitelist('PROJECT')
+        self._gsav2handler = pm.getService('gsav2handler')
 
     def get_version(self):
         """
@@ -48,11 +49,13 @@ class OSAv2Delegate(GSAv2DelegateBase):
         """
         fields_copy = copy.copy(fields) if fields else None
         options_copy = copy.copy(options) if options else None
+        client_ssl_cert = self._gsav2handler.requestCertificate()
+
         if (type_.upper()=='SLICE'):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
             self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
-            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'SLICE', fields=fields)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SLICE', fields=fields)
             ret_values = self._slice_authority_resource_manager.create_slice(credentials, fields, options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
                     fields=fields_copy, options= options_copy, credentials=ret_values['SLICE_CREDENTIALS'])
@@ -64,7 +67,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_.upper()=='PROJECT'):
             self._delegate_tools.object_creation_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            self._delegate_tools.check_if_authorized(credentials, 'CREATE', 'PROJECT')
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'PROJECT')
             ret_values =  self._slice_authority_resource_manager.create_project(credentials, fields, options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
                     fields=fields_copy, options= options_copy, credentials=credentials)
@@ -81,9 +84,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         """
         fields_copy = copy.copy(fields) if fields else None
         options_copy = copy.copy(options) if options else None
+        client_ssl_cert = self._gsav2handler.requestCertificate()
 
         if (type_.upper() == 'SLICE'):
-            self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'SLICE', target_urn=urn)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'UPDATE', 'SLICE', target_urn=urn)
 
             if 'SLICE_EXPIRATION' in fields:
                 try:
@@ -126,7 +130,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.object_consistency_check(type_, fields)
             return self._slice_authority_resource_manager.update_sliver_info(urn, credentials, fields, options)
         elif (type_.upper()=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'PROJECT', target_urn=urn)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'UPDATE', 'PROJECT', target_urn=urn)
             update_expiration_time = fields.get('PROJECT_EXPIRATION')
             if update_expiration_time:
                 lookup_result = self._slice_authority_resource_manager.lookup_project(credentials,
@@ -158,6 +162,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         using the resource manager.
         """
         options_copy = copy.copy(options) if options else None
+        client_ssl_cert = self._gsav2handler.requestCertificate()
 
         if (type_.upper()=='SLICE'):
             raise gfed_ex.GFedv2NotImplementedError("No authoritative way to know that there aren't live slivers associated with a slice.")
@@ -165,7 +170,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             return self._slice_authority_resource_manager.delete_sliver_info(urn,  credentials, options)
         elif (type_.upper()=='PROJECT'):
 
-            self._delegate_tools.check_if_authorized(credentials,  'DELETE', 'PROJECT', target_urn=urn)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'DELETE', 'PROJECT', target_urn=urn)
             ret_values = self._slice_authority_resource_manager.delete_project(urn, credentials,  options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='delete', target_type=type_.upper(),
                     fields=None, options= options_copy, target_urn=urn, credentials=credentials)
@@ -217,9 +222,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         membership for the given URN using the resource manager.
         """
         options_copy = copy.deepcopy(options) if options else None
+        client_ssl_cert = self._gsav2handler.requestCertificate()
 
         if (type_.upper()=='SLICE'):
-            self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'SLICE_MEMBER', urn)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'UPDATE', 'SLICE_MEMBER', urn)
             #self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
             self._delegate_tools.member_check(['SLICE_MEMBER', 'SLICE_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
             ret_values = self._slice_authority_resource_manager.modify_slice_membership(urn, credentials, options)
@@ -228,7 +234,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             return ret_values
 
         elif (type_.upper()=='PROJECT'):
-            self._delegate_tools.check_if_authorized(credentials, 'UPDATE', 'PROJECT_MEMBER', urn)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'UPDATE', 'PROJECT_MEMBER', urn)
             self._delegate_tools.check_if_modify_membership_authorized(credentials, options, type_)
             self._delegate_tools.member_check(['PROJECT_MEMBER', 'PROJECT_ROLE', 'MEMBER_CERTIFICATE', 'EXTRA_PRIVILEGES'], options)
             ret_values = self._slice_authority_resource_manager.modify_project_membership(urn, credentials, options)
@@ -291,14 +297,16 @@ class OSAv2Delegate(GSAv2DelegateBase):
         """
         Verifies if given credentials are valid and trusted
         """
-        return self._delegate_tools.verify_credentials(creds_to_verify, target_urn)
+        client_ssl_cert = self._gsav2handler.requestCertificate()
+        return self._delegate_tools.verify_credentials(creds_to_verify, client_ssl_cert, target_urn)
 
     def delegate_credentials(self, delagetee_cert, issuer_key, privileges_list, expiration,
                              delegatable, credentials):
         """
         Generates delegate credentials
         """
-        ret_values = self._delegate_tools.delegate_credentials(delagetee_cert, issuer_key, privileges_list,
+        client_ssl_cert = self._gsav2handler.requestCertificate()
+        ret_values = self._delegate_tools.delegate_credentials(delagetee_cert, client_ssl_cert, issuer_key, privileges_list,
                                                          expiration, delegatable, credentials)
         #Logging of the action
         geniutil = pm.getService('geniutil')
@@ -327,7 +335,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         :param options:
         :return:
         """
-        self._delegate_tools.verify_credentials(credentials)
+        client_ssl_cert = self._gsav2handler.requestCertificate()
+        self._delegate_tools.verify_credentials(credentials, client_ssl_cert)
         geniutil = pm.getService('geniutil')
         owner_cert = geniutil.extract_owner_certificate(credentials)
         member_urn, _, _ = geniutil.extract_certificate_info(owner_cert)
