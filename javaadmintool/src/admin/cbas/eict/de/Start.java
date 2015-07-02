@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -14,11 +15,15 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
 import java.awt.GridLayout;
+
 import javax.swing.BoxLayout;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
+
 import javax.swing.border.BevelBorder;
 
 public class Start extends JDialog {
@@ -32,12 +37,13 @@ public class Start extends JDialog {
 	private JTextField textFieldPort;
 	private JTextField textFieldCert;
 	private JTextField textFieldKey;
-	static File certFile, certKeyFile; 
+	static File certFile=null, certKeyFile=null; 
 	static String host;
 	static int port;
 	static Object credentials[];	
 	JLabel status;
 	private Preferences prefs;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -107,12 +113,20 @@ public class Start extends JDialog {
 				}
 			}
 		});
-		panel.add(btnBrowseCert, BorderLayout.EAST);
+		panel.add(btnBrowseCert, BorderLayout.EAST);		
 		String savedCertFileName = prefs.get("cert_file", null);
 		if(savedCertFileName != null && new File(savedCertFileName).exists())
 		{
 			certFile = new File(savedCertFileName);
 			textFieldCert.setText(certFile.getPath());
+		}else
+		{
+			locateCertificate();
+			if(certFile != null && certFile.exists())
+				textFieldCert.setText(certFile.getPath());
+
+			if(certKeyFile != null && certKeyFile.exists())
+				textFieldKey.setText(certKeyFile.getPath());
 		}
 		
 		JLabel lblRootMemberCertificate_1 = new JLabel("Root Member Certificate Key:");
@@ -323,5 +337,34 @@ public class Start extends JDialog {
 		};
 		
 		(new Thread(thread)).start();
+	}
+	
+	private void locateCertificate()
+	{
+		// Guess through current working directory
+		File guessedLocation = new File( "./admin/root-cert.pem");
+		
+		// otherwise guess through jar file location
+		if(guessedLocation.exists() == false)
+		{
+			
+			File jarFileLocation = null;
+			try {
+				jarFileLocation = new File(
+						Start.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+			} catch (Exception e) {e.printStackTrace();}
+			
+			if(jarFileLocation == null || jarFileLocation.exists() == false)
+				return;
+			
+			guessedLocation = new File(jarFileLocation.getParentFile().getParentFile(), "admin/root-cert.pem");
+			
+			if(guessedLocation.exists() == false)
+				return;
+		}
+				
+		certFile = guessedLocation;
+		certKeyFile = new File( guessedLocation.getParent(), "root-key.pem");
+
 	}
 }
