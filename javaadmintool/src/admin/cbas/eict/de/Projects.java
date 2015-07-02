@@ -3,9 +3,8 @@ package admin.cbas.eict.de;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
+
 import javax.swing.DefaultListModel;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -17,20 +16,29 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
+
 import java.awt.GridBagLayout;
+
 import javax.swing.JLabel;
+
 import java.awt.GridBagConstraints;
+
 import javax.swing.JTextField;
+
 import java.awt.Insets;
-import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
+
 import javax.swing.JTextArea;
+
 import admin.cbas.eict.de.SliceAuthorityAPI.Membership;
 import admin.cbas.eict.de.SliceAuthorityAPI.Project;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Projects extends JPanel {
 
@@ -47,38 +55,15 @@ public class Projects extends JPanel {
 	MemberTableModel tableModel;
 	static LinkedList<SliceAuthorityAPI.Project> projectDetailsList;
 	private JTextField textFieldCreation;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					FAPIClient.init(new File("/home/umar.toseef/C-BAS/test/creds/root-cert.pem"),
-							new File("/home/umar.toseef/C-BAS/test/creds/root-key.pem"));					
-					Members.memberDetails = MemberAuthorityAPI.lookupAll();
-					
-					JFrame frame = new JFrame("Projects");
-					Projects panel = new Projects();
-					frame.getContentPane().add(panel);					
-					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-					frame.pack();
-					frame.setVisible(true);
-					projectDetailsList = SliceAuthorityAPI.lookupAllProjects();
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	MainGUI mainGUI;
+	
 
 	/**
 	 * Create the frame.
 	 */
-	public Projects() {
+	public Projects(MainGUI parent) {
 		
+		mainGUI = parent;
 		setLayout(new BorderLayout(0, 0));
 				
 		JScrollPane scrollPane = new JScrollPane();		
@@ -268,6 +253,19 @@ public class Projects extends JPanel {
 		spMemberTable.setPreferredSize(new Dimension(400, 220));
 		splitPane_right.setTopComponent(spMemberTable);
 		
+		memberTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					int row = ((JTable)e.getSource()).getSelectedRow();
+					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
+					String username = urn.substring(urn.lastIndexOf('+')+1);
+					mainGUI.setSelectedMember(username);
+				}				
+			}
+		});
+		
 		projectList.addListSelectionListener( new ListSelectionListener() {
 
             @Override
@@ -308,6 +306,15 @@ public class Projects extends JPanel {
 		
 		projectSliceListModel = new DefaultListModel();
 		projectSliceList = new JList(projectSliceListModel);
+		projectSliceList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					mainGUI.setSelectedSlice((String)((JList)e.getSource()).getSelectedValue());
+				}			
+			}
+		});
 		JScrollPane sp = new JScrollPane(projectSliceList);
 		sp.setPreferredSize(new Dimension(400, 220));
 		sp.setBorder(new TitledBorder("List of Project Slices"));

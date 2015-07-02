@@ -3,10 +3,9 @@ package admin.cbas.eict.de;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -19,21 +18,30 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
+
 import java.awt.GridBagLayout;
+
 import javax.swing.JLabel;
+
 import java.awt.GridBagConstraints;
+
 import javax.swing.JTextField;
+
 import java.awt.Insets;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+
 import javax.swing.SwingConstants;
 import javax.swing.JTextArea;
+
 import admin.cbas.eict.de.SliceAuthorityAPI.Membership;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Slices extends JPanel {
 
@@ -47,39 +55,14 @@ public class Slices extends JPanel {
 	private JTextArea textAreaDesc;
 	MemberTableModel tableModel;
 	static LinkedList<SliceAuthorityAPI.Slice> sliceDetailsList;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					FAPIClient.init(new File("/home/umar.toseef/C-BAS/test/creds/root-cert.pem"),
-							new File("/home/umar.toseef/C-BAS/test/creds/root-key.pem"));					
-					Members.memberDetails = MemberAuthorityAPI.lookupAll();
-					Projects.projectDetailsList = SliceAuthorityAPI.lookupAllProjects();
-					
-					JFrame frame = new JFrame("Slices");
-					Slices panel = new Slices();
-					frame.getContentPane().add(panel);					
-					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-					frame.pack();
-					frame.setVisible(true);
-					sliceDetailsList = SliceAuthorityAPI.lookupAllSlices();
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	final MainGUI mainGUI;
 
 	/**
 	 * Create the frame.
 	 */
-	public Slices() {
+	public Slices(MainGUI parent) {
 		
+		mainGUI = parent;
 		setLayout(new BorderLayout(0, 0));
 				
 		JScrollPane scrollPane = new JScrollPane();
@@ -285,6 +268,18 @@ public class Slices extends JPanel {
 		
 		tableModel = new MemberTableModel(null, new String[]{"Member", "Role"});		
 		memberTable = new JTable(tableModel);
+		memberTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					int row = ((JTable)e.getSource()).getSelectedRow();
+					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
+					String username = urn.substring(urn.lastIndexOf('+')+1);
+					mainGUI.setSelectedMember(username);
+				}				
+			}
+		});
 		memberTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		memberTable.getColumnModel().getColumn(0).setPreferredWidth(300);
 		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);

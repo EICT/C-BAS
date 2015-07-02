@@ -20,7 +20,12 @@ import java.awt.event.ActionEvent;
 public class MainGUI {
 
 	private JFrame frame;
-	JPanel panelUsers, panelSlices, panelProjects, panelLog;
+	Members panelUsers;
+	Slices panelSlices; 
+	Projects panelProjects;
+	JPanel panelLog;
+	JTabbedPane tabbedPane;
+	static final int MEMBERS_TAB_INDEX=0, PROJECTS_TAB_INDEX=1, SLICES_TAB_INDEX=2;
 
 	/**
 	 * Launch the application.
@@ -55,18 +60,18 @@ public class MainGUI {
 		frame.setTitle("C-BAS Admin Tool");
 
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		
-		panelUsers = new Members();
-		tabbedPane.addTab("Members", null, panelUsers, null);
+		panelUsers = new Members(this);
+		tabbedPane.addTab("Members", null, panelUsers, "Manage members");
 		
 		
-		panelProjects = new Projects();
-		tabbedPane.addTab("Projects", null, panelProjects, null);
+		panelProjects = new Projects(this);
+		tabbedPane.addTab("Projects", null, panelProjects, "Manage projects");
 		
-		panelSlices = new Slices();
-		tabbedPane.addTab("Slices", null, panelSlices, null);
+		panelSlices = new Slices(this);
+		tabbedPane.addTab("Slices", null, panelSlices, "Manage slices");
 
 //		JPanel panelLog = new JPanel();
 //		tabbedPane.addTab("Logs", null, panelLog, null);
@@ -102,6 +107,24 @@ public class MainGUI {
 	public void setVisible(boolean f)
 	{
 		frame.setVisible(f);
+	}
+	
+	public void setSelectedProject(String project)
+	{
+		panelProjects.projectList.setSelectedValue(project, true);
+		this.tabbedPane.setSelectedIndex(PROJECTS_TAB_INDEX);
+		
+	}
+	public void setSelectedSlice(String slice)
+	{
+		panelSlices.sliceList.setSelectedValue(slice, true);
+		this.tabbedPane.setSelectedIndex(SLICES_TAB_INDEX);
+				
+	}
+	public void setSelectedMember(String member)
+	{
+		panelUsers.userList.setSelectedValue(member, true);
+		this.tabbedPane.setSelectedIndex(MEMBERS_TAB_INDEX);
 	}
 
 }

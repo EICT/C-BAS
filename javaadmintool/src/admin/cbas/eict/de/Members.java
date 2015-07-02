@@ -33,6 +33,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.AnObject;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Members extends JPanel{
 	
@@ -62,11 +64,14 @@ public class Members extends JPanel{
 	private JTextField tfMembershipStatus;
 	JFileChooser fileChooser;
 	static Color DARK_GREEN = new Color(30,200,60);
+	final MainGUI mainGUI;
 
 	/**
 	 * Create the application.
 	 */
-	public Members() {		
+	public Members(MainGUI mainWindow) {
+		
+		mainGUI = mainWindow;
 			
 		setLayout(new BorderLayout());
 		
@@ -344,12 +349,30 @@ public class Members extends JPanel{
 		
 		listModelSlices = new DefaultListModel();
 		listSlices= new JList(listModelSlices);	
+		listSlices.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					mainGUI.setSelectedSlice((String)((JList)e.getSource()).getSelectedValue());
+				}
+			}
+		});
 		scrollPaneSlices = new JScrollPane(listSlices);
 		scrollPaneSlices.setBorder(new TitledBorder("Member Slices"));
 		splitPaneProjectSlices.setRightComponent(scrollPaneSlices);
 		
 		listModelProjects = new DefaultListModel();
 		listProjects = new JList(listModelProjects);
+		listProjects.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					mainGUI.setSelectedProject((String)((JList)e.getSource()).getSelectedValue());
+				}
+			}
+		});
 		scrollPaneProjects = new JScrollPane(listProjects);
 		scrollPaneProjects.setBorder(new TitledBorder("Member Projects"));
 		splitPaneProjectSlices.setLeftComponent(scrollPaneProjects);
