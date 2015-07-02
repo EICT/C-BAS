@@ -349,6 +349,7 @@ public class Members extends JPanel{
 		
 		listModelSlices = new DefaultListModel();
 		listSlices= new JList(listModelSlices);	
+		listSlices.setToolTipText("Double click an entry to see its details");
 		listSlices.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -364,6 +365,7 @@ public class Members extends JPanel{
 		
 		listModelProjects = new DefaultListModel();
 		listProjects = new JList(listModelProjects);
+		listProjects.setToolTipText("Double click an entry to see its details");
 		listProjects.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -429,9 +431,13 @@ public class Members extends JPanel{
 		
 		//load list
 		if( memberDetails != null)
+		{
 			for(int j=0; j<memberDetails.size(); j++)
 				listModelMembers.addElement(memberDetails.get(j).username);
-
+			
+			if(listModelMembers.getSize()>0)
+				userList.setSelectedIndex(0);
+		}
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 	

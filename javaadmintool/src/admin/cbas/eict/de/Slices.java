@@ -285,6 +285,7 @@ public class Slices extends JPanel {
 		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);
 		memberTable.getColumnModel().getColumn(1).setMaxWidth(75);
 		JScrollPane memberScrollPane = new JScrollPane(memberTable);
+		memberScrollPane.setToolTipText("Double click an entry to see its details");
 		rightPanel.add(memberScrollPane, BorderLayout.CENTER);
 		
 		sliceList.addListSelectionListener( new ListSelectionListener() {
@@ -318,8 +319,14 @@ public class Slices extends JPanel {
 		
 		//Load lists
 		if(sliceDetailsList != null)
+		{
 			for(int i=0; i<sliceDetailsList.size(); i++)
 				sliceListModel.addElement(sliceDetailsList.get(i).name);
+		
+			if(sliceListModel.getSize()>0)
+				sliceList.setSelectedIndex(0);
+		
+		}
 
 		
 	}

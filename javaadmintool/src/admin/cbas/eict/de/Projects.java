@@ -249,6 +249,7 @@ public class Projects extends JPanel {
 		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);
 		memberTable.getColumnModel().getColumn(1).setMaxWidth(75);
 		JScrollPane spMemberTable = new JScrollPane(memberTable);
+		spMemberTable.setToolTipText("Double click an entry to see its details");
 		//spMemberTable.setBorder(new TitledBorder("List of Members"));
 		spMemberTable.setPreferredSize(new Dimension(400, 220));
 		splitPane_right.setTopComponent(spMemberTable);
@@ -306,6 +307,7 @@ public class Projects extends JPanel {
 		
 		projectSliceListModel = new DefaultListModel();
 		projectSliceList = new JList(projectSliceListModel);
+		projectSliceList.setToolTipText("Double click an entry to see its details");
 		projectSliceList.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -328,8 +330,13 @@ public class Projects extends JPanel {
 		
 		//Load lists
 		if(projectDetailsList != null)
+		{
 			for(int i=0; i<projectDetailsList.size(); i++)
 				projectListModel.addElement(projectDetailsList.get(i).name);
+			
+			if(projectListModel.getSize()>0)
+				projectList.setSelectedIndex(0);
+		}
 
 	}
 	
