@@ -155,9 +155,15 @@ public class Members extends JPanel{
 					JOptionPane.showMessageDialog(null, "The certificate is already in revoked state.");
 					return;                	
                 }
-
-				
+                
 				Member d = memberDetails.get(index);
+				if(d.username.equals("root") || d.username.equals("expedient"))
+				{
+					JOptionPane.showMessageDialog(null, d.username+" is a privileged user. This membership cannot be revoked.");
+					return;                						
+				}
+				
+				
 				boolean rsp = MemberAuthorityAPI.reovkeMembership(d);
 				if(rsp == true)
 				{
@@ -182,6 +188,13 @@ public class Members extends JPanel{
 				}
 				
 				Member d = memberDetails.get(userList.getSelectedIndex());
+
+				if(d.username.equals("root") || d.username.equals("expedient"))
+				{
+					JOptionPane.showMessageDialog(null, d.username+" is a privileged user. This membership cannot be modified.");
+					return;                						
+				}
+				
 				Member rsp = MemberAuthorityAPI.extendMembership(d);
 				if(rsp != null)
 				{
