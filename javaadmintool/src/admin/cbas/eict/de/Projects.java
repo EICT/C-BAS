@@ -12,6 +12,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
@@ -181,8 +182,8 @@ public class Projects extends JPanel {
 			}
 		});
 		
-		JButton btnNewSlice = new JButton("New Project");
-		btnNewSlice.addActionListener(new ActionListener() {
+		JButton btnNewProject = new JButton("New Project");
+		btnNewProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Project d = showNewProjectDialog();
 				
@@ -199,7 +200,36 @@ public class Projects extends JPanel {
 				
 			}
 		});
-		panelButtons.add(btnNewSlice);
+		panelButtons.add(btnNewProject);
+		
+		JButton btnDeleteProject = new JButton("Delete Project");
+		btnDeleteProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				if(projectList.isSelectionEmpty())
+				{
+					JOptionPane.showMessageDialog(null, "Select a project to delete.");
+					return;
+				}
+				
+				Project project = (Project) projectList.getSelectedValue();
+				
+				if(project.slices.length > 0)
+				{
+					JOptionPane.showMessageDialog(null, "Cannot delete a project containing slices.");
+					return;					
+				}
+				
+				boolean rsp = SliceAuthorityAPI.delProject(project.urn);
+				if(rsp)
+				{
+					projectListModel.removeElement(project);
+				}else
+					showErrorMessage();
+				
+			}
+		});
+		panelButtons.add(btnDeleteProject);
 		panelButtons.add(btnAddMember);
 		
 		JButton btnRemoveMember = new JButton("Remove Member");
@@ -362,6 +392,9 @@ public class Projects extends JPanel {
 		JTextArea desc;
 		name = new JTextField("");
 		name.setColumns(30);
+	    AbstractDocument doc = (AbstractDocument) name.getDocument();
+	    doc.setDocumentFilter(new PatternFilter("^[a-zA-Z0-9][-a-zA-Z0-9]{0,18}"));
+		
 		desc = new JTextArea("");
 		
 		c.weightx = 0.9;

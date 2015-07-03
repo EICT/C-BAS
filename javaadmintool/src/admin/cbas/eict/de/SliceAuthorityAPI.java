@@ -285,6 +285,27 @@ public class SliceAuthorityAPI {
         return project;
 	}	
 	
+
+	public static boolean delProject(String urn)
+	{
+
+		Map<String, Object> options = new HashMap<String, Object>();
+				
+        Object params[] = new Object[]{"PROJECT", urn, credentials, options};
+		
+        Map<String, Object> rsp = FAPIClient.execute(url, "delete", params);
+		
+        Integer code = (Integer)rsp.get("code");
+        if (code.intValue() != 0)
+        {
+        	output = (String)rsp.get("output");
+        	return false;
+        }
+
+        return true;
+	}	
+
+	
 	@SuppressWarnings("unchecked")
 	public static LinkedList<AnObject> lookupForMembers(String memberURN, String objType)
 	{

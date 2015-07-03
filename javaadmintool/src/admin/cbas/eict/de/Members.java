@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -14,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,12 +26,14 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.security.cert.X509CRLEntry;
 import java.util.LinkedList;
+
 import javax.swing.JPanel;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.AnObject;
@@ -139,7 +143,7 @@ public class Members extends JPanel{
 			}			
 		});
 		
-		buttonRevokeUser = new JButton("Revoke certificate");
+		buttonRevokeUser = new JButton("Revoke Certificate");
 		buttonRevokeUser.addActionListener( new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -339,7 +343,7 @@ public class Members extends JPanel{
 		infoPanel.add(tfValidUntil, gbc_tfValidUntil);
 		tfValidUntil.setColumns(10);
 		
-		lblMembershipStatus = new JLabel("Membership status:");
+		lblMembershipStatus = new JLabel("Membership Status:");
 		GridBagConstraints gbc_lblMembershipStatus = new GridBagConstraints();
 		gbc_lblMembershipStatus.anchor = GridBagConstraints.EAST;
 		gbc_lblMembershipStatus.insets = new Insets(0, 0, 10, 5);
@@ -486,8 +490,10 @@ public class Members extends JPanel{
 		JTextField tfFirstName, tfLastName, tfEmail, tfUsername;
 		tfFirstName = new JTextField(memDetails==null?"":memDetails.fName);
 		tfLastName = new JTextField(memDetails==null?"":memDetails.lName);
-		tfEmail = new JTextField(memDetails==null?"":memDetails.email);
+		tfEmail = new JTextField(memDetails==null?"":memDetails.email);	
+
 		tfUsername = new JTextField(memDetails==null?"":memDetails.username);
+	    ((AbstractDocument) tfUsername.getDocument()).setDocumentFilter(new PatternFilter("^[a-zA-Z][\\w]{0,7}"));
 		
 		c.weightx = 0.9;
 		c.gridx = 1;
@@ -530,7 +536,7 @@ public class Members extends JPanel{
 			d.fName = tfFirstName.getText().trim();
 			d.lName = tfLastName.getText().trim();
 			d.email = tfEmail.getText().trim();
-			d.username = tfUsername.getText().trim().toLowerCase();
+			d.username = tfUsername.getText().trim();
 			
 			return d;
 		}

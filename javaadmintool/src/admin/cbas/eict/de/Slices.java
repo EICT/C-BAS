@@ -13,6 +13,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
@@ -356,6 +357,9 @@ public class Slices extends JPanel {
 		
 		JComboBox projectBox = new JComboBox(projectNames);
 		JTextField name = new JTextField("");
+	    AbstractDocument doc = (AbstractDocument) name.getDocument();
+	    doc.setDocumentFilter(new PatternFilter("^[a-zA-Z0-9][-a-zA-Z0-9]{0,18}"));
+		
 		name.setColumns(30);
 		JTextArea desc = new JTextArea("");
 		
