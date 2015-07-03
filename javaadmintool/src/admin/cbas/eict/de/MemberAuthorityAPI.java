@@ -4,7 +4,6 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +21,7 @@ public class MemberAuthorityAPI {
 
 	
 	@SuppressWarnings("unchecked")
-	public static LinkedList<Member> lookupAll()
+	public static Member[] lookupAll()
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"MEMBER", "", options};
@@ -39,8 +38,9 @@ public class MemberAuthorityAPI {
         Map<String, Object> x = (Map<String, Object>) rsp.get("value");
         
         Set<String> keyset = x.keySet();
-        LinkedList<Member> memDetails = new LinkedList<Member>();
+        Member[] memDetails = new Member[keyset.size()];
         Iterator<String> itr = keyset.iterator();
+        int index=0;
         
         while(itr.hasNext())
         {
@@ -55,7 +55,7 @@ public class MemberAuthorityAPI {
         	d.urn = urn;
         	d.uuid = m.get("MEMBER_UID");
         	d.username = m.get("MEMBER_USERNAME");
-        	memDetails.add(d);
+        	memDetails[index++] = d;
         }
         
         return memDetails;
@@ -255,10 +255,22 @@ public class MemberAuthorityAPI {
 	}
 	
 	
-	static class Member
+	static class Member implements Comparable<Member>
 	{
 		String fName, lName, username, email, urn, uuid, certStr, privateKey;
 		X509Certificate cert;
+		
+
+		@Override
+		public int compareTo(Member o2) {
+			return this.username.toLowerCase().compareTo(o2.username.toLowerCase());
+		}
+		
+		@Override
+		public String toString() {
+			return username;
+		}
+		
 	}
 	
 	

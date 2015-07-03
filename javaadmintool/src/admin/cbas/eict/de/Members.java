@@ -6,7 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -31,8 +30,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.AnObject;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -41,8 +42,8 @@ public class Members extends JPanel{
 	private static final long serialVersionUID = -2394649760751128917L;
 	JList userList;
 	JButton buttonEditUser, buttonAddUser, buttonRevokeUser, buttonExtendMembership;
-	DefaultListModel listModelMembers, listModelProjects, listModelSlices;
-	static LinkedList <MemberAuthorityAPI.Member> memberDetails;
+	SortedListModel<MemberAuthorityAPI.Member> listModelMembers;
+	SortedListModel<String> listModelProjects, listModelSlices;
 	private JPanel panelRight;
 	private JSplitPane splitPaneProjectSlices;
 	private JScrollPane scrollPaneProjects;
@@ -69,14 +70,16 @@ public class Members extends JPanel{
 	/**
 	 * Create the application.
 	 */
-	public Members(MainGUI mainWindow) {
+	public Members(MainGUI mainWindow, Member[] memberData) {
 		
 		mainGUI = mainWindow;
 			
 		setLayout(new BorderLayout());
 		
 		JScrollPane scrollPane = new JScrollPane();
-		listModelMembers = new DefaultListModel(); 
+		listModelMembers = new SortedListModel<Member>();
+		if(memberData != null)
+			listModelMembers.addAll(memberData);
 		userList = new JList(listModelMembers);
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(userList);
@@ -94,19 +97,20 @@ public class Members extends JPanel{
 					return;
 				}
 				
-				Member d = getMemberDetailInput(memberDetails.get(userList.getSelectedIndex()));
-				if( d != null)
+				Member toEdit = (Member) userList.getSelectedValue();
+				Member changes = getMemberDetailInput(toEdit);
+				if( changes != null)
 				{
-					d.urn = memberDetails.get(userList.getSelectedIndex()).urn;
-					boolean rsp = MemberAuthorityAPI.updateMemberInfo(d);
+					changes.urn = toEdit.urn;
+					boolean rsp = MemberAuthorityAPI.updateMemberInfo(changes);
 					if(rsp == true)
 					{						
-						memberDetails.get(userList.getSelectedIndex()).fName = d.fName;
-						memberDetails.get(userList.getSelectedIndex()).lName = d.lName;
-						memberDetails.get(userList.getSelectedIndex()).email = d.email;
-		                tfFirstName.setText(d.fName);
-		                tfLastName.setText(d.lName);
-		                tfEmail.setText(d.email);
+						toEdit.fName = changes.fName;
+						toEdit.lName = changes.lName;
+						toEdit.email = changes.email;
+		                tfFirstName.setText(changes.fName);
+		                tfLastName.setText(changes.lName);
+		                tfEmail.setText(changes.email);
 					}
 					else
 						showErrorMessage();
@@ -124,10 +128,9 @@ public class Members extends JPanel{
 					Member rsp = MemberAuthorityAPI.addMember(d);
 					if(rsp != null)
 					{
-						memberDetails.add(rsp);
-						listModelMembers.addElement(rsp.username);						
+						listModelMembers.add(rsp);
 						saveCertificateAndKey(rsp, "Member has been added.");
-						userList.setSelectedValue(rsp.username, true);
+						userList.setSelectedValue(rsp, true);
 					}
 					else
 						showErrorMessage();
@@ -147,8 +150,9 @@ public class Members extends JPanel{
 					return;
 				}
 				
-				int index = userList.getSelectedIndex();
-                X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(memberDetails.get(index).cert);
+
+				Member toRevoke = (Member) userList.getSelectedValue();
+                X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(toRevoke.cert);
                 
                 if(e!=null)
                 {
@@ -156,18 +160,18 @@ public class Members extends JPanel{
 					return;                	
                 }
                 
-				Member d = memberDetails.get(index);
-				if(d.username.equals("root") || d.username.equals("expedient"))
+				
+				if(toRevoke.username.equals("root") || toRevoke.username.equals("expedient"))
 				{
-					JOptionPane.showMessageDialog(null, d.username+" is a privileged user. This membership cannot be revoked.");
+					JOptionPane.showMessageDialog(null, toRevoke.username+" is a privileged user. This membership cannot be revoked.");
 					return;                						
 				}
 				
 				
-				boolean rsp = MemberAuthorityAPI.reovkeMembership(d);
+				boolean rsp = MemberAuthorityAPI.reovkeMembership(toRevoke);
 				if(rsp == true)
 				{
-	                  e = MemberAuthorityAPI.crl.getRevokedCertificate(d.cert);
+	                  e = MemberAuthorityAPI.crl.getRevokedCertificate(toRevoke.cert);
 	                  tfMembershipStatus.setText(e==null?"Active":"Revoked");
 	                  tfMembershipStatus.setForeground(e==null?DARK_GREEN:Color.RED);
 				}
@@ -187,25 +191,26 @@ public class Members extends JPanel{
 					return;
 				}
 				
-				Member d = memberDetails.get(userList.getSelectedIndex());
 
-				if(d.username.equals("root") || d.username.equals("expedient"))
+				Member toRenew = (Member) userList.getSelectedValue();
+				
+				if(toRenew.username.equals("root") || toRenew.username.equals("expedient"))
 				{
-					JOptionPane.showMessageDialog(null, d.username+" is a privileged user. This membership cannot be modified.");
+					JOptionPane.showMessageDialog(null, toRenew.username+" is a privileged user. This membership cannot be modified.");
 					return;                						
 				}
 				
-				Member rsp = MemberAuthorityAPI.extendMembership(d);
+				Member rsp = MemberAuthorityAPI.extendMembership(toRenew);
 				if(rsp != null)
 				{
-					d.cert = rsp.cert;
-					d.certStr = rsp.certStr;
-					d.privateKey = rsp.privateKey;
-					listModelMembers.addElement(rsp.username);
+					toRenew.cert = rsp.cert;
+					toRenew.certStr = rsp.certStr;
+					toRenew.privateKey = rsp.privateKey;
+					listModelMembers.add(rsp);
 					userList.setSelectedValue(rsp.username, true);
-					saveCertificateAndKey(d, "Membership has been extended.");
-	                tfValidFrom.setText(Utils.formatDate(d.cert.getNotBefore()));
-	                tfValidUntil.setText(Utils.formatDate(d.cert.getNotAfter()));
+					saveCertificateAndKey(toRenew, "Membership has been extended.");
+	                tfValidFrom.setText(Utils.formatDate(toRenew.cert.getNotBefore()));
+	                tfValidUntil.setText(Utils.formatDate(toRenew.cert.getNotAfter()));
 	                tfMembershipStatus.setText("Active");	
 	                tfMembershipStatus.setForeground(DARK_GREEN);
 	                
@@ -360,7 +365,7 @@ public class Members extends JPanel{
 		splitPaneProjectSlices = new JSplitPane();
 		panelRight.add(splitPaneProjectSlices, BorderLayout.CENTER);		
 		
-		listModelSlices = new DefaultListModel();
+		listModelSlices = new SortedListModel<String>();
 		listSlices= new JList(listModelSlices);	
 		listSlices.setToolTipText("Double click an entry to see its details");
 		listSlices.addMouseListener(new MouseAdapter() {
@@ -376,7 +381,7 @@ public class Members extends JPanel{
 		scrollPaneSlices.setBorder(new TitledBorder("Member Slices"));
 		splitPaneProjectSlices.setRightComponent(scrollPaneSlices);
 		
-		listModelProjects = new DefaultListModel();
+		listModelProjects = new SortedListModel<String>();
 		listProjects = new JList(listModelProjects);
 		listProjects.setToolTipText("Double click an entry to see its details");
 		listProjects.addMouseListener(new MouseAdapter() {
@@ -405,35 +410,36 @@ public class Members extends JPanel{
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                  int index = userList.getSelectedIndex();
-                  tfFirstName.setText(memberDetails.get(index).fName);
-                  tfLastName.setText(memberDetails.get(index).lName);
-                  tfEmail.setText(memberDetails.get(index).email);
+  				  Member mem = (Member) userList.getSelectedValue();
+                  
+                  tfFirstName.setText(mem.fName);
+                  tfLastName.setText(mem.lName);
+                  tfEmail.setText(mem.email);
                   //tfUsername.setText(memberDetails.get(index).username);
-                  tfUserURN.setText(memberDetails.get(index).urn);
+                  tfUserURN.setText(mem.urn);
                   //tfUserUUID.setText(memberDetails.get(index).uuid);                  
-                  tfValidFrom.setText(Utils.formatDate(memberDetails.get(index).cert.getNotBefore()));
-                  tfValidUntil.setText(Utils.formatDate(memberDetails.get(index).cert.getNotAfter()));
-                  X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(memberDetails.get(index).cert);
+                  tfValidFrom.setText(Utils.formatDate(mem.cert.getNotBefore()));
+                  tfValidUntil.setText(Utils.formatDate(mem.cert.getNotAfter()));
+                  X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(mem.cert);
                   tfMembershipStatus.setText(e==null?"Active":"Revoked");
                   tfMembershipStatus.setForeground(e==null?DARK_GREEN:Color.RED);
                   
-                  LinkedList<AnObject> slices = SliceAuthorityAPI.lookupForMembers(memberDetails.get(index).urn, "SLICE"); 
+                  LinkedList<AnObject> slices = SliceAuthorityAPI.lookupForMembers(mem.urn, "SLICE"); 
                   if(slices != null)
                   {
 	                  listModelSlices.clear();
 	                  for(int i=0; i<slices.size(); i++)
-	                	  listModelSlices.addElement(slices.get(i).name);
+	                	  listModelSlices.add(slices.get(i).name);
                   }
                   else
                 	  JOptionPane.showMessageDialog(null, "Could not fetch member slices.", "Error", JOptionPane.ERROR_MESSAGE);;
                   
-                  LinkedList<AnObject> projects = SliceAuthorityAPI.lookupForMembers(memberDetails.get(index).urn, "PROJECT");                  
+                  LinkedList<AnObject> projects = SliceAuthorityAPI.lookupForMembers(mem.urn, "PROJECT");                  
                   if(projects != null)
                   {
                 	  listModelProjects.clear();
                 	  for(int i=0; i<projects.size(); i++)
-                		  listModelProjects.addElement(projects.get(i).name);
+                		  listModelProjects.add(projects.get(i).name);
                   }
                   else
                 	  JOptionPane.showMessageDialog(null, "Could not fetch member projects.", "Error", JOptionPane.ERROR_MESSAGE);;
@@ -442,15 +448,9 @@ public class Members extends JPanel{
             }
         }); 
 		
-		//load list
-		if( memberDetails != null)
-		{
-			for(int j=0; j<memberDetails.size(); j++)
-				listModelMembers.addElement(memberDetails.get(j).username);
-			
-			if(listModelMembers.getSize()>0)
-				userList.setSelectedIndex(0);
-		}
+		if(listModelMembers.getSize()>0)
+			userList.setSelectedIndex(0);
+		
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 	
@@ -530,7 +530,7 @@ public class Members extends JPanel{
 			d.fName = tfFirstName.getText().trim();
 			d.lName = tfLastName.getText().trim();
 			d.email = tfEmail.getText().trim();
-			d.username = tfUsername.getText().trim();
+			d.username = tfUsername.getText().trim().toLowerCase();
 			
 			return d;
 		}
@@ -576,9 +576,13 @@ public class Members extends JPanel{
 		dialog.pack();
 		dialog.setLocationRelativeTo(this);
 		dialog.setVisible(true);
-				
-		    
-		
-		
 	}
+	
+	
+	public Object[] getMemberArray()
+	{
+		return listModelMembers.toArray();
+	}
+	
+	
 }

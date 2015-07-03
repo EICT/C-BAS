@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -14,7 +13,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
@@ -28,14 +26,15 @@ import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
 
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import javax.swing.SwingConstants;
 import javax.swing.JTextArea;
 
+import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.Membership;
+import admin.cbas.eict.de.SliceAuthorityAPI.Project;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
 
 import java.awt.event.ActionListener;
@@ -47,26 +46,28 @@ public class Slices extends JPanel {
 
 	private static final long serialVersionUID = 5788915620169210764L;
 	JList sliceList;
-	DefaultListModel sliceListModel;
+	SortedListModel<Slice> sliceListModel;
 	private JTable memberTable;
 	private JTextField textFieldSliceURN;
 	private JTextField textFieldProjectURN;
 	private JTextField textFieldExpiry, textFieldCreation;
 	private JTextArea textAreaDesc;
 	MemberTableModel tableModel;
-	static LinkedList<SliceAuthorityAPI.Slice> sliceDetailsList;
 	final MainGUI mainGUI;
 
 	/**
 	 * Create the frame.
 	 */
-	public Slices(MainGUI parent) {
+	public Slices(MainGUI parent, Slice[] sliceData) {
 		
 		mainGUI = parent;
 		setLayout(new BorderLayout(0, 0));
 				
 		JScrollPane scrollPane = new JScrollPane();
-		sliceListModel = new DefaultListModel(); 
+		sliceListModel = new SortedListModel<Slice>();
+		if(sliceData != null)
+			sliceListModel.addAll(sliceData);
+		
 		sliceList = new JList(sliceListModel);
 		sliceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(sliceList);
@@ -212,8 +213,7 @@ public class Slices extends JPanel {
 						showErrorMessage();
 					else
 					{
-						sliceDetailsList.add(d);
-						sliceListModel.addElement(d.name);
+						sliceListModel.add(d);
 						sliceList.setSelectedValue(d.name, true);
 					}
 				}
@@ -227,7 +227,7 @@ public class Slices extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				if(memberTable.getSelectedRow()>=0)
 				{
-					Slice slice = sliceDetailsList.get(sliceList.getSelectedIndex());
+					Slice slice = (Slice) sliceList.getSelectedValue();
 					int row = memberTable.getSelectedRow();
 					String role = slice.members.get(row).role;
 					
@@ -293,8 +293,8 @@ public class Slices extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                  int index = sliceList.getSelectedIndex();
-                  Slice d = sliceDetailsList.get(index);
+
+                  Slice d = (Slice) sliceList.getSelectedValue();
                   textFieldSliceURN.setText(d.urn);
                   textAreaDesc.setText(d.desc);
                   textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
@@ -317,16 +317,9 @@ public class Slices extends JPanel {
             }
         }); 
 		
-		//Load lists
-		if(sliceDetailsList != null)
-		{
-			for(int i=0; i<sliceDetailsList.size(); i++)
-				sliceListModel.addElement(sliceDetailsList.get(i).name);
-		
-			if(sliceListModel.getSize()>0)
-				sliceList.setSelectedIndex(0);
-		
-		}
+		//Select first item for display
+		if(sliceListModel.getSize()>0)
+			sliceList.setSelectedIndex(0);
 
 		
 	}
@@ -334,16 +327,17 @@ public class Slices extends JPanel {
 	
 	private Slice showNewSliceDialog()
 	{
+		Object[] allProjects = mainGUI.getProjectsArray();
 		
-		if(Projects.projectDetailsList.size() == 0)
+		if(allProjects.length == 0)
 		{
 			JOptionPane.showMessageDialog(this, "Please first create a project.");
 			return null;
 		}
 		
-		String[] projectNames = new String[Projects.projectDetailsList.size()];
+		String[] projectNames = new String[allProjects.length];
 		for(int i=0; i< projectNames.length; i++)
-			projectNames[i] = Projects.projectDetailsList.get(i).name;
+			projectNames[i] = ((Project)allProjects[i]).name;
 		
 		JPanel infoPanel = new JPanel();
 		infoPanel.setLayout(new GridBagLayout());
@@ -393,7 +387,7 @@ public class Slices extends JPanel {
 			Slice d = new Slice();
 			d.name = name.getText().trim();
 			d.desc = desc.getText().trim();
-			d.urnProject = Projects.projectDetailsList.get(projectBox.getSelectedIndex()).urn;
+			d.urnProject = ((Project)allProjects[projectBox.getSelectedIndex()]).urn;
 			return d;
 		}
 		
@@ -401,15 +395,23 @@ public class Slices extends JPanel {
 	
 	private void showAddMemberDialog()
 	{		
-		Slice slice = sliceDetailsList.get(sliceList.getSelectedIndex());
+		Slice slice = (Slice) sliceList.getSelectedValue();
 		HashSet<String> existingMembers = new HashSet<String>();
 		for(int i=0; i<slice.members.size(); i++)
 			existingMembers.add(slice.members.get(i).urn);
 		
 		HashSet<String> nonMembers = new HashSet<String>();
-		for(int i=0; i<Members.memberDetails.size(); i++)
+		Object[] allMembers = mainGUI.getMembersArray();
+
+		for(int i=0; i<allMembers.length; i++)
 		{
-			String urn = Members.memberDetails.get(i).urn;
+			Member m = (Member)allMembers[i];
+			
+			//Ignore Revoked members
+			if(MemberAuthorityAPI.crl.getRevokedCertificate(m.cert) != null)
+				continue;
+			
+			String urn = m.urn;
 			if(!existingMembers.contains(urn))
 				nonMembers.add(urn);
 		}
@@ -440,7 +442,7 @@ public class Slices extends JPanel {
 	
 	private void showChangeRoleDialog()
 	{
-		Slice slice = sliceDetailsList.get(sliceList.getSelectedIndex());
+		Slice slice = (Slice) sliceList.getSelectedValue();
 		int row = memberTable.getSelectedRow();
 		String role = slice.members.get(row).role;
 		String availableRoles[];
@@ -484,77 +486,13 @@ public class Slices extends JPanel {
 			    "Error", 
 			    JOptionPane.ERROR_MESSAGE);
 	}
+
+	public Object[] getSliceArray()
+	{
+		return sliceListModel.toArray();
+	}
+	
 	
 } //class
 
 
-// class that extends the AbstractTableModel
-class MemberTableModel extends AbstractTableModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5213220199876788215L;
-	//data
-	ArrayList<String[]> al;
-	// the headers
-	String[] header;
-	
-	// constructor 
-	MemberTableModel(String[][] obj, String[] header) {
-		// save the header
-		this.header = header;	
-		// and the rows
-		al = new ArrayList<String[]>();
-		
-		// copy the rows into the ArrayList
-		if(obj != null)
-		{
-			for(int i = 0; i < obj.length; ++i)
-				al.add(obj[i]);
-		}
-	}
-	// method that needs to be overload. The row count is the size of the ArrayList
-	public int getRowCount() {
-		return al.size();
-	}
-
-	// method that needs to be overload. The column count is the size of our header
-	public int getColumnCount() {
-		return header.length;
-	}
-
-	// method that needs to be overload. The object is in the arrayList at rowIndex
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		return al.get(rowIndex)[columnIndex];
-	}
-	
-	// a method to return the column name 
-	public String getColumnName(int index) {
-		return header[index];
-	}
-	
-	// a method to add a new line to the table
-	void add(String member, String role) {
-		al.add(new String[]{member, role});
-		// inform the GUI that I have change
-		fireTableDataChanged();
-	}
-	
-	void clear(){
-		al.clear();
-		fireTableDataChanged();
-	}
-	
-	void remove(int row){
-		al.remove(row);
-		fireTableDataChanged();
-	}
-	
-	public void setValueAt(Object value, int row, int col)
-	{
-		al.get(row)[col] = (String)value;		
-		fireTableCellUpdated(row, col);
-	}
-	
-}

@@ -1,17 +1,24 @@
 package admin.cbas.eict.de;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Toolkit;
+
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+
 import java.awt.BorderLayout;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+
+import admin.cbas.eict.de.MemberAuthorityAPI.Member;
+import admin.cbas.eict.de.SliceAuthorityAPI.Project;
+import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ActionListener;
@@ -27,34 +34,12 @@ public class MainGUI {
 	JTabbedPane tabbedPane;
 	static final int MEMBERS_TAB_INDEX=0, PROJECTS_TAB_INDEX=1, SLICES_TAB_INDEX=2;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					MainGUI window = new MainGUI();		
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the application.
 	 */
-	public MainGUI() {
-		initialize();		
+	public MainGUI(Member[] memberSet, Project[] projectSet, Slice[] sliceSet) {
 
-	}
-
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle("C-BAS Admin Tool");
@@ -63,14 +48,14 @@ public class MainGUI {
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		
-		panelUsers = new Members(this);
+		panelUsers = new Members(this, memberSet);
 		tabbedPane.addTab("Members", null, panelUsers, "Manage members");
 		
 		
-		panelProjects = new Projects(this);
+		panelProjects = new Projects(this, projectSet);
 		tabbedPane.addTab("Projects", null, panelProjects, "Manage projects");
 		
-		panelSlices = new Slices(this);
+		panelSlices = new Slices(this, sliceSet);
 		tabbedPane.addTab("Slices", null, panelSlices, "Manage slices");
 
 //		JPanel panelLog = new JPanel();
@@ -109,22 +94,56 @@ public class MainGUI {
 		frame.setVisible(f);
 	}
 	
-	public void setSelectedProject(String project)
+	public void setSelectedProject(String projectName)
 	{
-		panelProjects.projectList.setSelectedValue(project, true);
+		Object[] allProjects = getProjectsArray();
+		for(int i=0; i<allProjects.length; i++)
+			if(((Project)allProjects[i]).name.equals(projectName) )
+			{
+				panelProjects.projectList.setSelectedValue(allProjects[i], true);
+				break;
+			}		
+
 		this.tabbedPane.setSelectedIndex(PROJECTS_TAB_INDEX);
 		
 	}
-	public void setSelectedSlice(String slice)
+	public void setSelectedSlice(String sliceName)
 	{
-		panelSlices.sliceList.setSelectedValue(slice, true);
+		Object[] allSlices = getSlicesArray();
+		for(int i=0; i<allSlices.length; i++)
+			if(((Slice)allSlices[i]).name.equals(sliceName) )
+			{
+				panelSlices.sliceList.setSelectedValue(allSlices[i], true);
+				break;
+			}
 		this.tabbedPane.setSelectedIndex(SLICES_TAB_INDEX);
 				
 	}
-	public void setSelectedMember(String member)
+	public void setSelectedMember(String username)
 	{
-		panelUsers.userList.setSelectedValue(member, true);
+		Object[] allMembers = getMembersArray();
+		for(int i=0; i<allMembers.length; i++)
+			if(((Member)allMembers[i]).username.equals(username) )
+			{
+				panelUsers.userList.setSelectedValue(allMembers[i], true);
+				break;
+			}
 		this.tabbedPane.setSelectedIndex(MEMBERS_TAB_INDEX);
+	}
+	
+	public Object[] getMembersArray()
+	{
+		return panelUsers.getMemberArray();
+	}
+
+	public Object[] getSlicesArray()
+	{
+		return panelSlices.getSliceArray();
+	}
+
+	public Object[] getProjectsArray()
+	{
+		return panelProjects.getProjectArray();
 	}
 
 }

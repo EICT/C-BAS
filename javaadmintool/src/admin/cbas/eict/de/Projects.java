@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,6 +30,7 @@ import java.util.LinkedList;
 
 import javax.swing.JTextArea;
 
+import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.Membership;
 import admin.cbas.eict.de.SliceAuthorityAPI.Project;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
@@ -47,13 +47,14 @@ public class Projects extends JPanel {
 	 */
 	private static final long serialVersionUID = 4216474279890435844L;
 	JList projectList, projectSliceList;
-	DefaultListModel projectListModel, projectSliceListModel;
+	SortedListModel<Project> projectListModel;
+	SortedListModel<String> projectSliceListModel;
 	private JTable memberTable;
 	private JTextField textFieldProjectURN;
 	private JTextField textFieldExpiry;
 	private JTextArea textAreaDesc;
 	MemberTableModel tableModel;
-	static LinkedList<SliceAuthorityAPI.Project> projectDetailsList;
+//	static LinkedList<SliceAuthorityAPI.Project> projectDetailsList;
 	private JTextField textFieldCreation;
 	MainGUI mainGUI;
 	
@@ -61,13 +62,17 @@ public class Projects extends JPanel {
 	/**
 	 * Create the frame.
 	 */
-	public Projects(MainGUI parent) {
+	public Projects(MainGUI parent, Project[] projectData) {
 		
 		mainGUI = parent;
 		setLayout(new BorderLayout(0, 0));
 				
 		JScrollPane scrollPane = new JScrollPane();		
-		projectListModel = new DefaultListModel(); 
+		
+		projectListModel = new SortedListModel<Project>();
+		if(projectData != null)
+			projectListModel.addAll(projectData);
+		
 		projectList = new JList(projectListModel);
 		projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(projectList);
@@ -170,7 +175,7 @@ public class Projects extends JPanel {
 		btnAddMember.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(projectList.isSelectionEmpty())
-					JOptionPane.showMessageDialog(null, "Select the slice from list to add member.");
+					JOptionPane.showMessageDialog(null, "Select the project from list to add member.");
 				else
 					showAddMemberDialog();
 			}
@@ -180,12 +185,15 @@ public class Projects extends JPanel {
 		btnNewSlice.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Project d = showNewProjectDialog();
+				
+				if(d == null)
+					return;
+				
 				d = SliceAuthorityAPI.addProject(d);
 				if(d != null)
-				{
-					projectDetailsList.add(d);
-					projectListModel.addElement(d.name);
-					projectList.setSelectedValue(d.name, true);
+				{					
+					projectListModel.add(d);
+					projectList.setSelectedValue(d, true);
 				}else
 					showErrorMessage();
 				
@@ -199,7 +207,7 @@ public class Projects extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				if(memberTable.getSelectedRow()>=0)
 				{
-					Project project = projectDetailsList.get(projectList.getSelectedIndex());
+					Project project = (Project) projectList.getSelectedValue();
 					int row = memberTable.getSelectedRow();
 					Membership mem = project.members.get(row);
 					
@@ -272,8 +280,8 @@ public class Projects extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                  int index = projectList.getSelectedIndex();
-                  Project d = projectDetailsList.get(index);
+                  
+                  Project d = (Project) projectList.getSelectedValue();
                   textAreaDesc.setText(d.desc);
                   textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
                   textFieldProjectURN.setText(d.urn);
@@ -291,7 +299,7 @@ public class Projects extends JPanel {
                   for(int i=0; i<members.size(); i++)
                 	  tableModel.add(members.get(i).urn, members.get(i).role);
 
-                  LinkedList<Slice> slices = SliceAuthorityAPI.lookupSlices(d.urn);
+                  Slice[] slices = SliceAuthorityAPI.lookupSlices(d.urn);
                   if(slices == null)
                   {
                 	  showErrorMessage();
@@ -299,13 +307,13 @@ public class Projects extends JPanel {
                   }
                   d.slices = slices;
                   projectSliceListModel.clear();
-                  for(int i=0; i<slices.size(); i++)
-                	  projectSliceListModel.addElement(slices.get(i).name);
+                  for(int i=0; i<slices.length; i++)
+                	  projectSliceListModel.add(slices[i].name);
                 }
             }
         }); 
 		
-		projectSliceListModel = new DefaultListModel();
+		projectSliceListModel = new SortedListModel<String>();
 		projectSliceList = new JList(projectSliceListModel);
 		projectSliceList.setToolTipText("Double click an entry to see its details");
 		projectSliceList.addMouseListener(new MouseAdapter() {
@@ -328,15 +336,9 @@ public class Projects extends JPanel {
 		add(splitPane, BorderLayout.CENTER);
 
 		
-		//Load lists
-		if(projectDetailsList != null)
-		{
-			for(int i=0; i<projectDetailsList.size(); i++)
-				projectListModel.addElement(projectDetailsList.get(i).name);
-			
-			if(projectListModel.getSize()>0)
-				projectList.setSelectedIndex(0);
-		}
+		//Select first element in the list for display
+		if(projectListModel.getSize()>0)
+			projectList.setSelectedIndex(0);
 
 	}
 	
@@ -396,15 +398,22 @@ public class Projects extends JPanel {
 	
 	private void showAddMemberDialog()
 	{
-		Project project = projectDetailsList.get(projectList.getSelectedIndex());
+		Project project = (Project) projectList.getSelectedValue();
 		HashSet<String> existingMembers = new HashSet<String>();
 		for(int i=0; i<project.members.size(); i++)
 			existingMembers.add(project.members.get(i).urn);
 		
 		HashSet<String> nonMembers = new HashSet<String>();
-		for(int i=0; i<Members.memberDetails.size(); i++)
+		Object[] allMembers = mainGUI.getMembersArray();
+		for(int i=0; i<allMembers.length; i++)
 		{
-			String urn = Members.memberDetails.get(i).urn;
+			Member m = (Member)allMembers[i];
+			
+			//Ignore Revoked members
+			if(MemberAuthorityAPI.crl.getRevokedCertificate(m.cert) != null)
+				continue;
+			
+			String urn = m.urn;
 			if(!existingMembers.contains(urn))
 				nonMembers.add(urn);
 		}
@@ -412,11 +421,11 @@ public class Projects extends JPanel {
 		String[] choiceArray = nonMembers.toArray(new String[0]);
 		if(choiceArray.length == 0)
 		{
-			JOptionPane.showMessageDialog(null, "There are no more members to add to this slice.");
+			JOptionPane.showMessageDialog(null, "There are no more ACTIVE members to add to this project.");
 		}
 		else
 		{
-			String newMember = (String) JOptionPane.showInputDialog(null, "Select new member for slice "+project.name+"\n", "Add Member", JOptionPane.PLAIN_MESSAGE, null, choiceArray, choiceArray[0]);
+			String newMember = (String) JOptionPane.showInputDialog(null, "Select new member for project "+project.name+"\n", "Add Member", JOptionPane.PLAIN_MESSAGE, null, choiceArray, choiceArray[0]);
 			if(newMember != null)
 			{
 				Membership mem = SliceAuthorityAPI.addMember(project.urn, newMember, "PROJECT");
@@ -435,7 +444,7 @@ public class Projects extends JPanel {
 	
 	private void showChangeRoleDialog()
 	{
-		Project project = projectDetailsList.get(projectList.getSelectedIndex());
+		Project project = (Project) projectList.getSelectedValue();
 		int row = memberTable.getSelectedRow();
 		Membership m = project.members.get(row);
 		String role = project.members.get(row).role;
@@ -448,7 +457,7 @@ public class Projects extends JPanel {
 			availableRoles = new String[]{"LEAD", "MEMBER"};
 		else
 		{
-			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a slice.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.");
+			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a project.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.");
 			return;
 		}
 		
@@ -482,6 +491,12 @@ public class Projects extends JPanel {
 			    "Error", 
 			    JOptionPane.ERROR_MESSAGE);
 	}
+	
+	public Object[] getProjectArray()
+	{
+		return projectListModel.toArray();
+	}
+
 	
 } //class
 

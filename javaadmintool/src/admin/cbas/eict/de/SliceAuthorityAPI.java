@@ -19,7 +19,7 @@ public class SliceAuthorityAPI {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static LinkedList<Slice> lookupSlices(String projectURN)
+	public static Slice[] lookupSlices(String projectURN)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();				
 
@@ -44,8 +44,9 @@ public class SliceAuthorityAPI {
         Map<String, Object> x = (Map<String, Object>) rsp.get("value");
         
         Set<String> keyset = x.keySet();
-        LinkedList<Slice> sliceDetails = new LinkedList<Slice>();
+        Slice[] sliceDetails = new Slice[keyset.size()];
         Iterator<String> itr = keyset.iterator();
+        int index=0;
         
         while(itr.hasNext())
         {
@@ -59,14 +60,14 @@ public class SliceAuthorityAPI {
         	d.desc = m.get("SLICE_DESCRIPTION");
         	d.creation = m.get("SLICE_CREATION");
         	d.urn = urn;
-        	sliceDetails.add(d);
+        	sliceDetails[index++] = d;
         }
         
         return sliceDetails;
 	}
 	
 	
-	public static LinkedList<Slice> lookupAllSlices()
+	public static Slice[] lookupAllSlices()
 	{
 		return lookupSlices(null);
 	}
@@ -214,7 +215,7 @@ public class SliceAuthorityAPI {
 	}	
 	
 	@SuppressWarnings("unchecked")
-	public static LinkedList<Project> lookupAllProjects()
+	public static Project[] lookupAllProjects()
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"PROJECT", "", options};
@@ -230,8 +231,9 @@ public class SliceAuthorityAPI {
         Map<String, Object> x = (Map<String, Object>) rsp.get("value");
         
         Set<String> keyset = x.keySet();
-        LinkedList<Project> projectDetails = new LinkedList<Project>();
+        Project[] projectDetails = new Project[keyset.size()];
         Iterator<String> itr = keyset.iterator();
+        int index=0;
         
         while(itr.hasNext())
         {
@@ -244,7 +246,7 @@ public class SliceAuthorityAPI {
         	d.desc = m.get("PROJECT_DESCRIPTION");
         	d.creation = m.get("PROJECT_CREATION");
         	d.urn = urn;
-        	projectDetails.add(d);
+        	projectDetails[index++] = d;
         }
         
         return projectDetails;
@@ -321,7 +323,7 @@ public class SliceAuthorityAPI {
 	//////// inner classes
 	
 	
-	static class Slice
+	static class Slice implements Comparable<Slice>
 	{
 		String urn, uuid, name, desc, urnProject, expiry, creation;
 		LinkedList<Membership> members;
@@ -329,6 +331,17 @@ public class SliceAuthorityAPI {
 		Slice()
 		{
 			members = new LinkedList<Membership>();
+		}
+
+		@Override
+		public int compareTo(Slice arg0) {			
+			return name.toLowerCase().compareTo(arg0.name.toLowerCase());
+		}
+		
+		@Override
+		public String toString()
+		{
+			return name;
 		}
 			
 	} //inner-class
@@ -345,17 +358,28 @@ public class SliceAuthorityAPI {
 		}
 	} //inner-class
 	
-	static class Project
+	static class Project implements Comparable<Project>
 	{
 		String urn, uuid, name, desc, expiry, creation;
 		LinkedList<Membership> members;
-		LinkedList<Slice> slices;
+		Slice[] slices;
 		
 		Project()
 		{
 			members = new LinkedList<Membership>();
 		}
 			
+		@Override
+		public int compareTo(Project arg0) {			
+			return name.toLowerCase().compareTo(arg0.name.toLowerCase());
+		}
+		
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+		
 	} //inner-class
 	
 	static class AnObject

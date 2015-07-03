@@ -26,6 +26,10 @@ import java.io.File;
 
 import javax.swing.border.BevelBorder;
 
+import admin.cbas.eict.de.MemberAuthorityAPI.Member;
+import admin.cbas.eict.de.SliceAuthorityAPI.Project;
+import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
+
 public class Start extends JDialog {
 
 	/**
@@ -282,8 +286,8 @@ public class Start extends JDialog {
 				
 				//Load Users data
 				status.setText("Loading members' data...");
-				Members.memberDetails = MemberAuthorityAPI.lookupAll();
-				if(Members.memberDetails == null)
+				Member[] memberSet = MemberAuthorityAPI.lookupAll();
+				if(memberSet == null)
 				{
 					JOptionPane.showMessageDialog( Start.this, 
 						    "<html><body><p style='width: 300px;'>"+MemberAuthorityAPI.output+"</p></body></html>", 
@@ -303,8 +307,8 @@ public class Start extends JDialog {
 				
 				//Load project data
 				status.setText("Loading projects' data...");
-				Projects.projectDetailsList = SliceAuthorityAPI.lookupAllProjects();
-				if(Projects.projectDetailsList == null)
+				Project[] projectSet = SliceAuthorityAPI.lookupAllProjects();
+				if(projectSet== null)
 				{
 					JOptionPane.showMessageDialog( Start.this, 
 						    "<html><body><p style='width: 300px;'>"+SliceAuthorityAPI.output+"</p></body></html>", 
@@ -315,8 +319,8 @@ public class Start extends JDialog {
 
 				//Load slice data
 				status.setText("Loading slices' data...");
-				Slices.sliceDetailsList = SliceAuthorityAPI.lookupAllSlices();
-				if(Slices.sliceDetailsList == null)
+				Slice[] sliceSet = SliceAuthorityAPI.lookupAllSlices();
+				if(sliceSet == null)
 				{
 					JOptionPane.showMessageDialog( Start.this, 
 						    "<html><body><p style='width: 300px;'>"+SliceAuthorityAPI.output+"</p></body></html>", 
@@ -326,7 +330,7 @@ public class Start extends JDialog {
 				}
 
 				status.setText("Initializing GUI...");
-				MainGUI mainGUI = new MainGUI();
+				MainGUI mainGUI = new MainGUI(memberSet, projectSet, sliceSet);
 				
 				//Dispose dialog and show main GUI
 				Start.this.dispose();
