@@ -25,7 +25,16 @@ public class MemberAuthorityAPI {
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"MEMBER", "", options};
-        
+		Map<String, Object> filter = new HashMap<String, Object>();
+		filter.put("MEMBER_CERTIFICATE", new Integer(1));				
+		filter.put("MEMBER_EMAIL", new Integer(1));				
+		filter.put("MEMBER_FIRSTNAME", new Integer(1));				
+		filter.put("MEMBER_LASTNAME", new Integer(1));				
+		filter.put("MEMBER_UID", new Integer(1));				
+		filter.put("MEMBER_URN", new Integer(1));				
+		filter.put("MEMBER_USERNAME", new Integer(1));				
+		options.put("filter", filter);
+                
 		
         Map<String, Object> rsp = FAPIClient.execute(url, "lookup", params);
 		
@@ -250,7 +259,6 @@ public class MemberAuthorityAPI {
         }
 
         return (Object[]) rsp.get("value");
-       	
 
 	}
 	
@@ -259,7 +267,6 @@ public class MemberAuthorityAPI {
 	{
 		String fName, lName, username, email, urn, uuid, certStr, privateKey;
 		X509Certificate cert;
-		
 
 		@Override
 		public int compareTo(Member o2) {

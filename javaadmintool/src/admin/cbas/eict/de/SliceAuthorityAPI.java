@@ -22,6 +22,14 @@ public class SliceAuthorityAPI {
 	public static Slice[] lookupSlices(String projectURN)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();				
+		Map<String, Object> filter = new HashMap<String, Object>();
+		filter.put("SLICE_NAME", new Integer(1));				
+		filter.put("SLICE_EXPIRATION", new Integer(1));				
+		filter.put("SLICE_UID", new Integer(1));				
+		filter.put("SLICE_URN", new Integer(1));				
+		filter.put("SLICE_DESCRIPTION", new Integer(1));				
+		filter.put("SLICE_CREATION", new Integer(1));				
+		options.put("filter", filter);
 
 		if(projectURN != null)
 		{
@@ -76,6 +84,12 @@ public class SliceAuthorityAPI {
 	public static LinkedList<Membership> lookupMembers(String objURN, String objType)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
+		Map<String, Object> filter = new HashMap<String, Object>();
+		filter.put(objType+"_MEMBER", new Integer(1));				
+		filter.put(objType+"_ROLE", new Integer(1));				
+		options.put("filter", filter);
+		
+		
         Object params[] = new Object[]{objType, objURN, "", options};
 		
         Map<String, Object> rsp = FAPIClient.execute(url, "lookup_members", params);
@@ -219,6 +233,15 @@ public class SliceAuthorityAPI {
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"PROJECT", "", options};
+		Map<String, Object> filter = new HashMap<String, Object>();
+		filter.put("PROJECT_NAME", new Integer(1));				
+		filter.put("PROJECT_EXPIRATION", new Integer(1));				
+		filter.put("PROJECT_UID", new Integer(1));				
+		filter.put("PROJECT_URN", new Integer(1));				
+		filter.put("PROJECT_DESCRIPTION", new Integer(1));				
+		filter.put("PROJECT_CREATION", new Integer(1));				
+		options.put("filter", filter);
+        
 		
         Map<String, Object> rsp = FAPIClient.execute(url, "lookup", params);
 		
