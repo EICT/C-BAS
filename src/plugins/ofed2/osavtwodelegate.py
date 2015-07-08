@@ -184,7 +184,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
-        options_copy = copy.copy(options) if options else None
+        # Turn off logging for lookups
+        # options_copy = copy.copy(options) if options else None
 
         if (type_.upper()=='SLICE'):
             # Temporarily lookup call are not authorized
@@ -198,8 +199,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
                     urn.pop('SLICE_EXPIRED')
                 result_list =  result_list + self._slice_authority_resource_manager.lookup_slice(credentials, urn, filter_, options)
 
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=match, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=match, credentials=credentials)
 
             return self._delegate_tools.to_keyed_dict(result_list, "SLICE_URN")
 
@@ -208,8 +209,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_.upper()=='PROJECT'):
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT')
             ret_values = self._delegate_tools.to_keyed_dict(self._slice_authority_resource_manager.lookup_project(credentials, match, filter_, options), "PROJECT_URN")
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=match, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=match, credentials=credentials)
             return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
@@ -249,15 +250,16 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup members for
         a given URN using the resource manager.
         """
-        options_copy = list(options) if options else None
+        # Turn off logging for lookups
+        # options_copy = list(options) if options else None
 
         if (type_.upper()=='SLICE'):
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE_MEMBER', target_urn=urn)
             if 'SLICE_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store SLICE_EXPIRED in slice creds
                 match.pop('SLICE_EXPIRED')
             ret_values = self._slice_authority_resource_manager.lookup_slice_membership(urn, credentials, match, filter_,options)
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=urn, credentials=credentials)
             return ret_values
 
         elif (type_.upper()=='PROJECT'):
@@ -265,8 +267,8 @@ class OSAv2Delegate(GSAv2DelegateBase):
             if 'PROJECT_EXPIRED' in match: # Compatabilty issue with OMNI. CBAS does not store PROJECT_EXPIRED in project creds
                 match.pop('PROJECT_EXPIRED')
             ret_values = self._slice_authority_resource_manager.lookup_project_membership(urn, credentials, match, filter_, options)
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=urn, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_members', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=urn, credentials=credentials)
             return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No member lookup method found for object type: " + str(type_))
@@ -276,19 +278,20 @@ class OSAv2Delegate(GSAv2DelegateBase):
         Depending on the object type defined in the request, lookup details for
         a member using the resource manager.
         """
-        options_copy = list(options) if options else None
+        # Turn off logging for lookups
+        # options_copy = list(options) if options else None
 
         if (type_.upper()=='SLICE'):
             ret_values = self._slice_authority_resource_manager.lookup_slice_membership_for_member(member_urn, credentials, options, match, filter_)
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
             return ret_values
 
         elif (type_.upper()=='PROJECT'):
             ret_values = self._slice_authority_resource_manager.\
                 lookup_project_membership_for_member(member_urn, credentials, options, match, filter_)
-            self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
-                    fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='sa', method='lookup_for_member', target_type=type_.upper(),
+            #         fields=None, options= options_copy, target_urn=member_urn, credentials=credentials)
             return ret_values
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup for member method found for object type: " + str(type_))

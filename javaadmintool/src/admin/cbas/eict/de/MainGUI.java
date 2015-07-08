@@ -58,8 +58,8 @@ public class MainGUI {
 		panelSlices = new Slices(this, sliceSet);
 		tabbedPane.addTab("Slices", null, panelSlices, "Manage slices");
 
-//		JPanel panelLog = new JPanel();
-//		tabbedPane.addTab("Logs", null, panelLog, null);
+		JPanel panelLog = new Logs();
+		tabbedPane.addTab("Logs", null, panelLog, null);
 		
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);

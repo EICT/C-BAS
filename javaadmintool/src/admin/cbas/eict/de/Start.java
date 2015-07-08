@@ -248,6 +248,7 @@ public class Start extends JDialog {
 				//Set endpoints
 				MemberAuthorityAPI.setHostAndPort(host, port);
 				SliceAuthorityAPI.setHostAndPort(host, port);
+				LoggingAuthorityAPI.setHostAndPort(host, port);
 				
 				//Try connecting with C-BAS
 				status.setText("Trying to connect...");

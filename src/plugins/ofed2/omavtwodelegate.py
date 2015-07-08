@@ -142,7 +142,8 @@ class OMAv2Delegate(GMAv2DelegateBase):
         Depending on the object type defined in the request, lookup this object
         using the resource manager.
         """
-        options_copy = copy.copy(options) if options else None
+        # Turn off logging for lookups
+        # options_copy = copy.copy(options) if options else None
 
         if (type_.upper()=='MEMBER'):
             # Authorization
@@ -151,8 +152,8 @@ class OMAv2Delegate(GMAv2DelegateBase):
                 filter_.append('MEMBER_URN')
             # Lookup
             ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
-            self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
-                    fields=None, options= options_copy, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
+            #         fields=None, options= options_copy, credentials=credentials)
             return ret_values
 
         elif (type_.upper()=='KEY'):
@@ -162,8 +163,8 @@ class OMAv2Delegate(GMAv2DelegateBase):
                 filter_.append('KEY_ID')
             # Lookup
             ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")
-            self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
-                    fields=None, options= options_copy, credentials=credentials)
+            # self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
+            #         fields=None, options= options_copy, credentials=credentials)
             return ret_values
 
         else:
