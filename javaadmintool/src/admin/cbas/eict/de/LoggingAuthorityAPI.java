@@ -1,5 +1,6 @@
 package admin.cbas.eict.de;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,9 +72,9 @@ public class LoggingAuthorityAPI {
 			timestamp = new Date((long) (ts*1000));
 		}
 		
-		public String[] getEntry()
+		public String[] getEntry(DateFormat df)
 		{
-			return new String[]{timestamp.toString(), subject, object, action};
+			return new String[]{df.format(timestamp), subject, object, action};
 		}
 	}
 
