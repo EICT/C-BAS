@@ -53,7 +53,7 @@ public class Slices extends JPanel {
 	private JTextField textFieldProjectURN;
 	private JTextField textFieldExpiry, textFieldCreation;
 	private JTextArea textAreaDesc;
-	MemberTableModel tableModel;
+	CustomTableModel tableModel;
 	final MainGUI mainGUI;
 
 	/**
@@ -267,7 +267,7 @@ public class Slices extends JPanel {
 		panelButtons.add(btnRole);
 		
 		
-		tableModel = new MemberTableModel(null, new String[]{"Member", "Role"});		
+		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});		
 		memberTable = new JTable(tableModel);
 		memberTable.addMouseListener(new MouseAdapter() {
 			@Override

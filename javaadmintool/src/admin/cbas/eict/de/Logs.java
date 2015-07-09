@@ -3,21 +3,14 @@ package admin.cbas.eict.de;
 import javax.swing.JPanel;
 
 import java.awt.BorderLayout;
-
-import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.JLabel;
-
 import admin.cbas.eict.de.LoggingAuthorityAPI.LogEvent;
-
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collections;
-
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.DefaultComboBoxModel;
@@ -37,19 +30,19 @@ public class Logs extends JPanel {
 	 */
 	private static final long serialVersionUID = -230633782772635859L;
 	private ColoredJTable table;
-	MemberTableModel tableModel;
+	CustomTableModel tableModel;
 	DateTimePicker datePanelFrom, datePanelTo;
 	JComboBox comboBoxSub;
 	JComboBox comboBoxObjType;
 	JComboBox comboBoxObjURN, comboBoxAct;
 	SimpleDateFormat dateFormatPicker = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 	SimpleDateFormat timeFormatPicker = new SimpleDateFormat("HH:mm:ss");
-	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("dd-MM-yyyy    HH:mm:ss.SSS");
+	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("yyyy-MM-dd    HH:mm:ss.SSS");
 	
 	/**
 	 * Create the panel.
 	 */
-	public Logs() {
+	public Logs(MainGUI parent, LogEvent[] logs) {
 		setLayout(new BorderLayout(0, 0));
 		
 		JPanel filterPanel = new JPanel();
@@ -175,33 +168,20 @@ public class Logs extends JPanel {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		add(scrollPane, BorderLayout.CENTER);
-				
-		LogEvent e[] = LoggingAuthorityAPI.lookupAll();
-		Arrays.sort(e);
-		String[][] data = new String[e.length][5];
-		for(int x=0; x<e.length; x++)
-			data[x] = e[x].getEntry(dateFormatTimestamp);
 		
-		tableModel = new MemberTableModel(data, new String[]{"Timestamp", "Subject", "Object", "Action", "Parameters"});		
+		String headers[] =  new String[]{"Timestamp", "Subject", "Object", "Action", "Parameters"};				
+		Arrays.sort(logs);
+		String[][] data = new String[logs.length][headers.length];
+		for(int x=0; x<logs.length; x++)
+			data[x] = logs[x].getEntry(dateFormatTimestamp);
+		
+		tableModel = new CustomTableModel(data,headers);		
 		table = new ColoredJTable(tableModel);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getColumnModel().getColumn(1).setPreferredWidth(75);
 		table.getColumnModel().getColumn(1).setMaxWidth(75);
 		JScrollPane memberScrollPane = new JScrollPane(table);
-//		memberScrollPane.setToolTipText("Double click an entry to see its details");
 		add(memberScrollPane, BorderLayout.CENTER);
-				
 
-	}
-	
-	public static void main(String args[]) throws Exception
-	{
-		
-		
-		
-		JFrame f = new JFrame("Logs");
-		f.getContentPane().add(new Logs());
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.pack();f.setVisible(true);
 	}
 }

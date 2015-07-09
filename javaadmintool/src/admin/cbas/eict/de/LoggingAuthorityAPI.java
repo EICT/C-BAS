@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import admin.cbas.eict.de.SliceAuthorityAPI.Project;
-
 public class LoggingAuthorityAPI {
 	
 	static String url;

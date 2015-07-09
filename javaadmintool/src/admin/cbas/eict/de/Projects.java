@@ -54,7 +54,7 @@ public class Projects extends JPanel {
 	private JTextField textFieldProjectURN;
 	private JTextField textFieldExpiry;
 	private JTextArea textAreaDesc;
-	MemberTableModel tableModel;
+	CustomTableModel tableModel;
 //	static LinkedList<SliceAuthorityAPI.Project> projectDetailsList;
 	private JTextField textFieldCreation;
 	MainGUI mainGUI;
@@ -275,7 +275,7 @@ public class Projects extends JPanel {
 		panelButtons.add(btnRole);
 		
 		
-		tableModel = new MemberTableModel(null, new String[]{"Member", "Role"});
+		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});
 		
 		JSplitPane splitPane_right = new JSplitPane();
 		splitPane_right.setOrientation(JSplitPane.VERTICAL_SPLIT);		

@@ -26,6 +26,7 @@ import java.io.File;
 
 import javax.swing.border.BevelBorder;
 
+import admin.cbas.eict.de.LoggingAuthorityAPI.LogEvent;
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.Project;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
@@ -330,8 +331,20 @@ public class Start extends JDialog {
 					return;					
 				}
 
+				//Load logging data
+				status.setText("Loading logging data...");
+				LogEvent[] logs = LoggingAuthorityAPI.lookupAll();
+				if(logs == null)
+				{
+					JOptionPane.showMessageDialog( Start.this, 
+						    "<html><body><p style='width: 300px;'>"+LoggingAuthorityAPI.output+"</p></body></html>", 
+						    "Error", JOptionPane.ERROR_MESSAGE);
+					status.setText("Ready");
+					return;					
+				}
+
 				status.setText("Initializing GUI...");
-				MainGUI mainGUI = new MainGUI(memberSet, projectSet, sliceSet);
+				MainGUI mainGUI = new MainGUI(memberSet, projectSet, sliceSet, logs);
 				
 				//Dispose dialog and show main GUI
 				Start.this.dispose();

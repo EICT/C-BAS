@@ -15,6 +15,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+import admin.cbas.eict.de.LoggingAuthorityAPI.LogEvent;
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
 import admin.cbas.eict.de.SliceAuthorityAPI.Project;
 import admin.cbas.eict.de.SliceAuthorityAPI.Slice;
@@ -38,7 +39,7 @@ public class MainGUI {
 	/**
 	 * Create the application.
 	 */
-	public MainGUI(Member[] memberSet, Project[] projectSet, Slice[] sliceSet) {
+	public MainGUI(Member[] memberSet, Project[] projectSet, Slice[] sliceSet, LogEvent[] logs) {
 
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,8 +59,8 @@ public class MainGUI {
 		panelSlices = new Slices(this, sliceSet);
 		tabbedPane.addTab("Slices", null, panelSlices, "Manage slices");
 
-		JPanel panelLog = new Logs();
-		tabbedPane.addTab("Logs", null, panelLog, null);
+		JPanel panelLog = new Logs(this, logs);
+		tabbedPane.addTab("Logs", null, panelLog, "View event logs");
 		
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
