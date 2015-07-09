@@ -168,9 +168,91 @@ public class Projects extends JPanel {
 		panelInfo.add(textFieldCreation, gbc_textFieldCreation);
 		
 		
+		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});
+		
+		JSplitPane splitPane_right = new JSplitPane();
+		splitPane_right.setOrientation(JSplitPane.VERTICAL_SPLIT);		
+		rightPanel.add(splitPane_right, BorderLayout.CENTER);
+		
+		memberTable = new JTable(tableModel);
+		memberTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		memberTable.getColumnModel().getColumn(0).setPreferredWidth(300);
+		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);
+		memberTable.getColumnModel().getColumn(1).setMaxWidth(75);
+		JScrollPane spMemberTable = new JScrollPane(memberTable);
+		spMemberTable.setToolTipText("Double click an entry to see its details");
+		//spMemberTable.setBorder(new TitledBorder("List of Members"));
+		spMemberTable.setPreferredSize(new Dimension(400, 220));
+		splitPane_right.setTopComponent(spMemberTable);
+		
+		memberTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					int row = ((JTable)e.getSource()).getSelectedRow();
+					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
+					String username = urn.substring(urn.lastIndexOf('+')+1);
+					mainGUI.setSelectedMember(username);
+				}				
+			}
+		});
+		
+		projectList.addListSelectionListener( new ListSelectionListener() {
+
+            @Override
+            public void valueChanged(ListSelectionEvent arg0) {
+                if (!arg0.getValueIsAdjusting()) {
+                  
+                  Project d = (Project) projectList.getSelectedValue();
+                  textAreaDesc.setText(d.desc);
+                  textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
+                  textFieldProjectURN.setText(d.urn);
+                  textFieldCreation.setText(Utils.utcTolocal(d.creation));
+                  
+                  //if(d.members.size() == 0)
+                  LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "PROJECT");
+                  if(members == null)
+                  {
+                	  showErrorMessage();
+                	  return;
+                  }
+                  d.members = members;
+                  tableModel.clear();
+                  for(int i=0; i<members.size(); i++)
+                	  tableModel.add(members.get(i).urn, members.get(i).role);
+
+                  Slice[] slices = SliceAuthorityAPI.lookupSlices(d.urn);
+                  if(slices == null)
+                  {
+                	  showErrorMessage();
+                	  return;
+                  }
+                  d.slices = slices;
+                  projectSliceListModel.clear();
+                  for(int i=0; i<slices.length; i++)
+                	  projectSliceListModel.add(slices[i].name);
+                }
+            }
+        }); 
+		
+		projectSliceListModel = new SortedListModel<String>();
+		projectSliceList = new JList(projectSliceListModel);
+		projectSliceList.setToolTipText("Double click an entry to see its details");
+		projectSliceList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2)
+				{
+					mainGUI.setSelectedSlice((String)((JList)e.getSource()).getSelectedValue());
+				}			
+			}
+		});
+		
+		
 		
 		JPanel panelButtons = new JPanel();
-		rightPanel.add(panelButtons, BorderLayout.SOUTH);
+		add(panelButtons, BorderLayout.SOUTH);
 		
 		JButton btnAddMember = new JButton("Add Member");
 		btnAddMember.addActionListener(new ActionListener() {
@@ -273,88 +355,6 @@ public class Projects extends JPanel {
 			}
 		});
 		panelButtons.add(btnRole);
-		
-		
-		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});
-		
-		JSplitPane splitPane_right = new JSplitPane();
-		splitPane_right.setOrientation(JSplitPane.VERTICAL_SPLIT);		
-		rightPanel.add(splitPane_right, BorderLayout.CENTER);
-		
-		memberTable = new JTable(tableModel);
-		memberTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		memberTable.getColumnModel().getColumn(0).setPreferredWidth(300);
-		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);
-		memberTable.getColumnModel().getColumn(1).setMaxWidth(75);
-		JScrollPane spMemberTable = new JScrollPane(memberTable);
-		spMemberTable.setToolTipText("Double click an entry to see its details");
-		//spMemberTable.setBorder(new TitledBorder("List of Members"));
-		spMemberTable.setPreferredSize(new Dimension(400, 220));
-		splitPane_right.setTopComponent(spMemberTable);
-		
-		memberTable.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2)
-				{
-					int row = ((JTable)e.getSource()).getSelectedRow();
-					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
-					String username = urn.substring(urn.lastIndexOf('+')+1);
-					mainGUI.setSelectedMember(username);
-				}				
-			}
-		});
-		
-		projectList.addListSelectionListener( new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent arg0) {
-                if (!arg0.getValueIsAdjusting()) {
-                  
-                  Project d = (Project) projectList.getSelectedValue();
-                  textAreaDesc.setText(d.desc);
-                  textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
-                  textFieldProjectURN.setText(d.urn);
-                  textFieldCreation.setText(Utils.utcTolocal(d.creation));
-                  
-                  //if(d.members.size() == 0)
-                  LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "PROJECT");
-                  if(members == null)
-                  {
-                	  showErrorMessage();
-                	  return;
-                  }
-                  d.members = members;
-                  tableModel.clear();
-                  for(int i=0; i<members.size(); i++)
-                	  tableModel.add(members.get(i).urn, members.get(i).role);
-
-                  Slice[] slices = SliceAuthorityAPI.lookupSlices(d.urn);
-                  if(slices == null)
-                  {
-                	  showErrorMessage();
-                	  return;
-                  }
-                  d.slices = slices;
-                  projectSliceListModel.clear();
-                  for(int i=0; i<slices.length; i++)
-                	  projectSliceListModel.add(slices[i].name);
-                }
-            }
-        }); 
-		
-		projectSliceListModel = new SortedListModel<String>();
-		projectSliceList = new JList(projectSliceListModel);
-		projectSliceList.setToolTipText("Double click an entry to see its details");
-		projectSliceList.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2)
-				{
-					mainGUI.setSelectedSlice((String)((JList)e.getSource()).getSelectedValue());
-				}			
-			}
-		});
 		JScrollPane sp = new JScrollPane(projectSliceList);
 		sp.setPreferredSize(new Dimension(400, 220));
 		sp.setBorder(new TitledBorder("List of Project Slices"));
@@ -529,7 +529,5 @@ public class Projects extends JPanel {
 	{
 		return projectListModel.toArray();
 	}
-
-	
 } //class
 

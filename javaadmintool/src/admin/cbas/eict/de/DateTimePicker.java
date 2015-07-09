@@ -6,8 +6,10 @@ import org.jdesktop.swingx.JXDatePicker;
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.DateFormatter;
+
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.awt.*;
 
@@ -61,8 +63,12 @@ public class DateTimePicker extends JXDatePicker {
         //newPanel.add(panelOriginal);
 
         SpinnerDateModel dateModel = new SpinnerDateModel();
-        timeSpinner = new JSpinner(dateModel);
-        if( timeFormat == null ) timeFormat = DateFormat.getTimeInstance( DateFormat.SHORT );
+        timeSpinner = new JSpinner(dateModel);        
+        ((JSpinner.DateEditor) timeSpinner.getEditor()).getFormat().applyPattern("HH:mm:ss");
+        //((JSpinner.DefaultEditor) timeSpinner.getEditor()).getTextField().setEditable(false);
+        if( timeFormat == null ) timeFormat = new SimpleDateFormat("HH:mm:ss");        
+        JFormattedTextField tf = ((JSpinner.DefaultEditor) timeSpinner.getEditor()).getTextField();
+        tf.setText(timeFormat.format(new Date()));
         updateTextFieldFormat();
         newPanel.add(new JLabel( "Time:" ) );
         newPanel.add(timeSpinner);
@@ -99,7 +105,7 @@ public class DateTimePicker extends JXDatePicker {
 
     }
 
-    private void setTimeSpinners() {
+    private void setTimeSpinners() {    	
         Date date = getDate();
         if (date != null) {
             timeSpinner.setValue( date );
@@ -115,20 +121,4 @@ public class DateTimePicker extends JXDatePicker {
         updateTextFieldFormat();
     }
 
-    public static void main(String[] args) {
-        Date date = new Date();
-        JFrame frame = new JFrame();
-        frame.setTitle("Date Time Picker");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        DateTimePicker dateTimePicker = new DateTimePicker();
-        dateTimePicker.setEditable(false);
-        dateTimePicker.setFormats( DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.MEDIUM ) );
-        dateTimePicker.setTimeFormat( DateFormat.getTimeInstance( DateFormat.MEDIUM ) );
-
-        dateTimePicker.setDate(date);
-
-        frame.getContentPane().add(dateTimePicker);
-        frame.pack();
-        frame.setVisible(true);
-    }
 }

@@ -39,7 +39,8 @@ public class ColoredJTable extends JTable {
         //Color coding for column 2 only
         if( column == 2) //Object Column
         {
-        	String value = (String) model.getValueAt(row, column);        	
+
+        	String value = (String) model.getValueAt(convertRowIndexToModel(row), column);        	
         	if(value.startsWith("slice"))
         		stamp.setForeground(sliceColor);
         	else if(value.startsWith("project"))

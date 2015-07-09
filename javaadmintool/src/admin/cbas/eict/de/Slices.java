@@ -73,6 +73,83 @@ public class Slices extends JPanel {
 		sliceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(sliceList);
 		TitledBorder titled = new TitledBorder("List of Slices");
+		
+		
+		JPanel panelButtons = new JPanel();
+		add(panelButtons, BorderLayout.SOUTH);
+		
+		JButton btnAddMember = new JButton("Add Member");
+		btnAddMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(sliceList.isSelectionEmpty())
+					JOptionPane.showMessageDialog(null, "Select the slice from list to add member.");
+				else
+					showAddMemberDialog();
+			}
+		});
+		
+		JButton btnNewSlice = new JButton("New Slice");
+		btnNewSlice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Slice d = showNewSliceDialog();
+				if (d != null)
+				{
+					d = SliceAuthorityAPI.addSlice(d);
+					if(d == null)						
+						showErrorMessage();
+					else
+					{
+						sliceListModel.add(d);
+						sliceList.setSelectedValue(d.name, true);
+					}
+				}
+			}
+		});
+		panelButtons.add(btnNewSlice);
+		panelButtons.add(btnAddMember);
+		
+		JButton btnRemoveMember = new JButton("Remove Member");
+		btnRemoveMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(memberTable.getSelectedRow()>=0)
+				{
+					Slice slice = (Slice) sliceList.getSelectedValue();
+					int row = memberTable.getSelectedRow();
+					String role = slice.members.get(row).role;
+					
+					if(role.toUpperCase().equals("LEAD"))
+					{
+						JOptionPane.showMessageDialog(null, "Sorry, a member with LEAD role cannot be removed.");
+					}
+					else
+					{					
+						boolean rsp = SliceAuthorityAPI.removeMember(slice.urn, slice.members.get(row).urn, slice.members.get(row).type);
+						if(rsp)
+						{
+							slice.members.remove(row);
+							tableModel.remove(row);
+						}
+						else
+							showErrorMessage();
+					}
+				}
+				else
+					JOptionPane.showMessageDialog(null, "Select a member from list to remove.");
+				
+			}
+		});
+		panelButtons.add(btnRemoveMember);
+		
+		JButton btnRole = new JButton("Alter Role");
+		btnRole.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(memberTable.getSelectedRow()>=0)
+					showChangeRoleDialog();
+				else
+					JOptionPane.showMessageDialog(null, "Select the member from list to change role.");
+			}
+		});
+		panelButtons.add(btnRole);
 		scrollPane.setBorder(titled);
 		scrollPane.setPreferredSize(new Dimension(300,400));
 		
@@ -188,83 +265,6 @@ public class Slices extends JPanel {
 		gbc_textArea.gridy = 4;
 		gbc_textArea.ipady = 40;
 		panelInfo.add(new JScrollPane(textAreaDesc), gbc_textArea);
-		
-		
-		JPanel panelButtons = new JPanel();
-		rightPanel.add(panelButtons, BorderLayout.SOUTH);
-		
-		JButton btnAddMember = new JButton("Add Member");
-		btnAddMember.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if(sliceList.isSelectionEmpty())
-					JOptionPane.showMessageDialog(null, "Select the slice from list to add member.");
-				else
-					showAddMemberDialog();
-			}
-		});
-		
-		JButton btnNewSlice = new JButton("New Slice");
-		btnNewSlice.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				Slice d = showNewSliceDialog();
-				if (d != null)
-				{
-					d = SliceAuthorityAPI.addSlice(d);
-					if(d == null)						
-						showErrorMessage();
-					else
-					{
-						sliceListModel.add(d);
-						sliceList.setSelectedValue(d.name, true);
-					}
-				}
-			}
-		});
-		panelButtons.add(btnNewSlice);
-		panelButtons.add(btnAddMember);
-		
-		JButton btnRemoveMember = new JButton("Remove Member");
-		btnRemoveMember.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if(memberTable.getSelectedRow()>=0)
-				{
-					Slice slice = (Slice) sliceList.getSelectedValue();
-					int row = memberTable.getSelectedRow();
-					String role = slice.members.get(row).role;
-					
-					if(role.toUpperCase().equals("LEAD"))
-					{
-						JOptionPane.showMessageDialog(null, "Sorry, a member with LEAD role cannot be removed.");
-					}
-					else
-					{					
-						boolean rsp = SliceAuthorityAPI.removeMember(slice.urn, slice.members.get(row).urn, slice.members.get(row).type);
-						if(rsp)
-						{
-							slice.members.remove(row);
-							tableModel.remove(row);
-						}
-						else
-							showErrorMessage();
-					}
-				}
-				else
-					JOptionPane.showMessageDialog(null, "Select a member from list to remove.");
-				
-			}
-		});
-		panelButtons.add(btnRemoveMember);
-		
-		JButton btnRole = new JButton("Alter Role");
-		btnRole.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if(memberTable.getSelectedRow()>=0)
-					showChangeRoleDialog();
-				else
-					JOptionPane.showMessageDialog(null, "Select the member from list to change role.");
-			}
-		});
-		panelButtons.add(btnRole);
 		
 		
 		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});		
