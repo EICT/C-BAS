@@ -15,7 +15,6 @@ public class PatternFilter extends DocumentFilter {
 
     public PatternFilter(String pat) {
         pattern = Pattern.compile(pat);
-        System.out.println(pattern);
     }
 
     public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)

@@ -101,6 +101,7 @@ public class FAPIClient {
 //			ex.printStackTrace(new PrintWriter(errors));
 //			String errorMessage = errors.toString();
 //			//rsp.put("output", errorMessage);
+			ex.printStackTrace();
 			String userFriendlyMessage = "";
 			if(ex.getMessage().contains("invalid"))
 				userFriendlyMessage = "Certificate or key file contents are unexpected.<br/> <br/> ("+ex.getMessage()+")";
@@ -111,7 +112,6 @@ public class FAPIClient {
 			else
 				userFriendlyMessage = ex.getMessage();
 			
-			System.out.println(ex.getCause()+"\n"+ex.getMessage());	
 			rsp = new HashMap<String, Object>();
 			rsp.put("code", new Integer(-1));			
 			rsp.put("output", userFriendlyMessage);

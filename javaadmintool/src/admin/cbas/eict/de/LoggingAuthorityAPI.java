@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import admin.cbas.eict.de.SliceAuthorityAPI.Project;
+
 public class LoggingAuthorityAPI {
 	
 	static String url;
@@ -51,8 +53,11 @@ public class LoggingAuthorityAPI {
         		Map<String, String> targetMap = (Map<String, String>) target;
         		object = targetMap.values().toString();
         	}
+        	
+        	Map<String, Object> opts = (Map<String, Object>)event.get("OPTIONS");        	
+        	
         		
-        	logs[i] = new LogEvent(subject, object, action, ts);	
+        	logs[i] = new LogEvent(subject, object, action, ts, opts);	
         }
         
         return logs;
@@ -60,22 +65,68 @@ public class LoggingAuthorityAPI {
 
 	
 	
-	static class LogEvent{
-		String subject, object, action;
+	static class LogEvent implements Comparable<LogEvent>{
+		String subject="", object="", action="", params="";
 		Date timestamp;
 		
-		public LogEvent(String sub, String obj, String act, double ts)
+		public LogEvent(String sub, String obj, String act, double ts, Map<String, Object> opts)
 		{
-			subject = sub;
-			object  = obj;
+			if(sub != null)
+			{
+				int i = sub.lastIndexOf('+');
+				if(i>=0)
+					subject = sub.substring(i+1);
+				else
+					subject = sub;
+			}
+			if(obj != null)
+			{
+				int i = obj.lastIndexOf('+');
+				int j = obj.lastIndexOf('+', i-1);
+				if(j>0)
+					object = obj.substring(j+1).replace('+', ':');
+				else
+					object  = obj;
+			}
+			
 			action  = act;
+			if(act != null && act.equals("modify_membership"))
+			{
+				String key = opts.keySet().iterator().next();
+				Object[] list = (Object[]) opts.get(key);
+				@SuppressWarnings("unchecked")
+				Map<String, String> dict = (Map<String, String>) list[0];
+				String objType = obj.contains("project")?"PROJECT":"SLICE";
+				String role = dict.get(objType+"_ROLE");
+				String urn = dict.get(objType+"_MEMBER");
+				String username = urn==null?"":urn.substring(urn.lastIndexOf('+')+1);
+				
+				if(key.equals("members_to_change"))
+				{
+					params = username+" -> "+role;
+				}
+				else if(key.equals("members_to_add"))
+				{
+					params = "Add "+username+(role==null?"":" as "+role);
+				}
+				else
+				{
+					params = "Remove "+ username;
+				}
+			}
+			
 			timestamp = new Date((long) (ts*1000));
 		}
 		
 		public String[] getEntry(DateFormat df)
 		{
-			return new String[]{df.format(timestamp), subject, object, action};
+			return new String[]{df.format(timestamp), subject, object, action, params};
 		}
+		
+		public int compareTo(LogEvent e) {			
+			return this.timestamp.compareTo(e.timestamp);
+		}
+		
 	}
 
 	

@@ -70,7 +70,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'PROJECT')
             ret_values =  self._slice_authority_resource_manager.create_project(credentials, fields, options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
-                    fields=fields_copy, options= options_copy, credentials=credentials)
+                    fields=fields_copy, options= options_copy, credentials=ret_values['PROJECT_CREDENTIALS'])
             return ret_values
 
         else:

@@ -217,7 +217,7 @@ public class MemberAuthorityAPI {
 	public static boolean reovkeMembership(Member memDetails)
 	{
 		
-        Object params[] = new Object[]{memDetails.urn, ""};        
+        Object params[] = new Object[]{memDetails.urn, credentials};        
         Map<String, Object> rsp = FAPIClient.execute(url, "revoke", params);
         Integer code = (Integer)rsp.get("code");
         if (code.intValue() != 0)

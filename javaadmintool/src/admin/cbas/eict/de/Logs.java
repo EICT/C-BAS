@@ -15,6 +15,8 @@ import admin.cbas.eict.de.LoggingAuthorityAPI.LogEvent;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
@@ -34,7 +36,7 @@ public class Logs extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -230633782772635859L;
-	private JTable table;
+	private ColoredJTable table;
 	MemberTableModel tableModel;
 	DateTimePicker datePanelFrom, datePanelTo;
 	JComboBox comboBoxSub;
@@ -42,7 +44,7 @@ public class Logs extends JPanel {
 	JComboBox comboBoxObjURN, comboBoxAct;
 	SimpleDateFormat dateFormatPicker = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 	SimpleDateFormat timeFormatPicker = new SimpleDateFormat("HH:mm:ss");
-	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.S");
+	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("dd-MM-yyyy    HH:mm:ss.SSS");
 	
 	/**
 	 * Create the panel.
@@ -175,16 +177,16 @@ public class Logs extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 				
 		LogEvent e[] = LoggingAuthorityAPI.lookupAll();
-		String[][] data = new String[e.length][4];
+		Arrays.sort(e);
+		String[][] data = new String[e.length][5];
 		for(int x=0; x<e.length; x++)
 			data[x] = e[x].getEntry(dateFormatTimestamp);
 		
-		tableModel = new MemberTableModel(data, new String[]{"Timestamp", "Subject", "Object", "Action"});		
-		table = new JTable(tableModel);
+		tableModel = new MemberTableModel(data, new String[]{"Timestamp", "Subject", "Object", "Action", "Parameters"});		
+		table = new ColoredJTable(tableModel);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//		table.getColumnModel().getColumn(0).setPreferredWidth(300);
-//		table.getColumnModel().getColumn(1).setPreferredWidth(75);
-//		table.getColumnModel().getColumn(1).setMaxWidth(75);
+		table.getColumnModel().getColumn(1).setPreferredWidth(75);
+		table.getColumnModel().getColumn(1).setMaxWidth(75);
 		JScrollPane memberScrollPane = new JScrollPane(table);
 //		memberScrollPane.setToolTipText("Double click an entry to see its details");
 		add(memberScrollPane, BorderLayout.CENTER);

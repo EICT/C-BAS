@@ -214,12 +214,14 @@ class TestGSAv2(unittest.TestCase):
         """
         Test object type 'SLIVER_INFO' methods: create, lookup, update and delete.
         """
-        create_data = { 'SLIVER_INFO_SLICE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLIVER_INFO_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE',
-            'SLIVER_INFO_AGGREGATE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLIVER_INFO_CREATOR_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE',
-            'SLIVER_INFO_EXPIRATION' : '2019-03-21T11:35:57Z', 'SLIVER_INFO_CREATION' : '2015-03-21T11:35:57Z'}
+        create_data = { 'SLIVER_INFO_SLICE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE', 'SLIVER_INFO_URN' : 'urn:publicid:IDN+this.sa+sliver+TESTSLIVER',
+            'SLIVER_INFO_AGGREGATE_URN' : 'urn:publicid:IDN+some.am+am+TESTAM', 'SLIVER_INFO_CREATOR_URN' : 'urn:publicid:IDN+this.am+user+TESTUSER',
+            'SLIVER_INFO_EXPIRATION' : '2019-03-21T11:35:57Z', }
         urn = self._test_create(create_data, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
         update_data = {'SLIVER_INFO_EXPIRATION' : '2019-04-21T11:35:57Z'}
         self._test_update(urn, update_data, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
+        lookup_data = {'SLIVER_INFO_SLICE_URN' : 'urn:publicid:IDN+this.sa+slice+TESTSLICE'}
+        self._test_lookup(lookup_data, None, 'SLIVER_INFO', 0, 1)
         self._test_delete(urn, 'SLIVER_INFO', 'SLIVER_INFO_URN', 0)
 
     def test_project(self):

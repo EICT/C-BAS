@@ -210,14 +210,11 @@ public class Members extends JPanel{
 					toRenew.cert = rsp.cert;
 					toRenew.certStr = rsp.certStr;
 					toRenew.privateKey = rsp.privateKey;
-					listModelMembers.add(rsp);
-					userList.setSelectedValue(rsp.username, true);
 					saveCertificateAndKey(toRenew, "Membership has been extended.");
 	                tfValidFrom.setText(Utils.formatDate(toRenew.cert.getNotBefore()));
 	                tfValidUntil.setText(Utils.formatDate(toRenew.cert.getNotAfter()));
 	                tfMembershipStatus.setText("Active");	
 	                tfMembershipStatus.setForeground(DARK_GREEN);
-	                
 				}
 				else
 					showErrorMessage();

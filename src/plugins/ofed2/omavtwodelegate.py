@@ -97,7 +97,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
             # Update
             ret_values = self._member_authority_resource_manager.update_member(urn, credentials, fields, options)
             # Logging
-            self._logging_authority_resource_manager.append_event_log(authority='ma', method='update', target_type=type_.upper(),
+            self._logging_authority_resource_manager.append_event_log(authority='ma', method='Renew' if 'MEMBER_CERTIFICATE' in fields.keys() else 'update', target_type=type_.upper(),
                     fields=fields_copy, options= options_copy, target_urn=urn, credentials=credentials)
             return ret_values
 
@@ -208,4 +208,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
         Return:
            None
         """
+        self._logging_authority_resource_manager.append_event_log(authority='ma', method='Revoke certificate', target_type='MEMBER',
+                    fields=None, options=None, target_urn=member_urn, credentials=credentials)
+
         return self._member_authority_resource_manager.revoke_certificate(member_urn)
