@@ -82,7 +82,7 @@ public class Slices extends JPanel {
 		btnAddMember.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(sliceList.isSelectionEmpty())
-					JOptionPane.showMessageDialog(null, "Select the slice from list to add member.");
+					JOptionPane.showMessageDialog(Slices.this, "Select a slice from list to add member.", "Add Member", JOptionPane.INFORMATION_MESSAGE);
 				else
 					showAddMemberDialog();
 			}
@@ -100,7 +100,7 @@ public class Slices extends JPanel {
 					else
 					{
 						sliceListModel.add(d);
-						sliceList.setSelectedValue(d.name, true);
+						sliceList.setSelectedValue(d, true);
 					}
 				}
 			}
@@ -114,12 +114,12 @@ public class Slices extends JPanel {
 				if(memberTable.getSelectedRow()>=0)
 				{
 					Slice slice = (Slice) sliceList.getSelectedValue();
-					int row = memberTable.getSelectedRow();
+					int row = memberTable.convertRowIndexToModel(memberTable.getSelectedRow());
 					String role = slice.members.get(row).role;
 					
 					if(role.toUpperCase().equals("LEAD"))
 					{
-						JOptionPane.showMessageDialog(null, "Sorry, a member with LEAD role cannot be removed.");
+						JOptionPane.showMessageDialog(Slices.this, "Sorry, a member with LEAD role cannot be removed.", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
 					}
 					else
 					{					
@@ -134,7 +134,7 @@ public class Slices extends JPanel {
 					}
 				}
 				else
-					JOptionPane.showMessageDialog(null, "Select a member from list to remove.");
+					JOptionPane.showMessageDialog(Slices.this, "Select a member from list to remove.", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
 				
 			}
 		});
@@ -146,7 +146,7 @@ public class Slices extends JPanel {
 				if(memberTable.getSelectedRow()>=0)
 					showChangeRoleDialog();
 				else
-					JOptionPane.showMessageDialog(null, "Select the member from list to change role.");
+					JOptionPane.showMessageDialog(Slices.this, "Select the member from list to change role.", "Alter role", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		panelButtons.add(btnRole);
@@ -275,10 +275,13 @@ public class Slices extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2)
 				{
-					int row = ((JTable)e.getSource()).getSelectedRow();
-					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
-					String username = urn.substring(urn.lastIndexOf('+')+1);
-					mainGUI.setSelectedMember(username);
+					JTable t = (JTable)e.getSource();					
+					String urn = (String)(t.getValueAt(t.getSelectedRow(),t.getSelectedColumn()));
+					if(urn.startsWith("urn:"))
+					{
+						String username = urn.substring(urn.lastIndexOf('+')+1);
+						mainGUI.setSelectedMember(username);
+					}
 				}				
 			}
 		});
@@ -333,7 +336,7 @@ public class Slices extends JPanel {
 		
 		if(allProjects.length == 0)
 		{
-			JOptionPane.showMessageDialog(this, "Please first create a project.");
+			JOptionPane.showMessageDialog(this, "Please first create a project.", "Create Slice", JOptionPane.INFORMATION_MESSAGE);
 			return null;
 		}
 		
@@ -424,7 +427,7 @@ public class Slices extends JPanel {
 		String[] choiceArray = nonMembers.toArray(new String[0]);
 		if(choiceArray.length == 0)
 		{
-			JOptionPane.showMessageDialog(null, "There are no more members to add to this slice.");
+			JOptionPane.showMessageDialog(Slices.this, "There are no more active members to add to this slice.", "Add Member", JOptionPane.INFORMATION_MESSAGE);
 		}
 		else
 		{
@@ -448,7 +451,7 @@ public class Slices extends JPanel {
 	private void showChangeRoleDialog()
 	{
 		Slice slice = (Slice) sliceList.getSelectedValue();
-		int row = memberTable.getSelectedRow();
+		int row = memberTable.convertRowIndexToModel(memberTable.getSelectedRow());
 		String role = slice.members.get(row).role;
 		String availableRoles[];
 		
@@ -458,7 +461,7 @@ public class Slices extends JPanel {
 			availableRoles = new String[]{"LEAD", "MEMBER"};
 		else
 		{
-			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a slice.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.");
+			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a slice.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.", "Alter Role", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		

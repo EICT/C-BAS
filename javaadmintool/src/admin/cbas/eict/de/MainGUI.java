@@ -6,11 +6,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
 import java.awt.BorderLayout;
 
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -19,6 +21,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.UIDefaults;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -31,6 +34,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.URI;
 
 public class MainGUI {
@@ -86,7 +90,6 @@ public class MainGUI {
 		JMenuItem mntmAbout = new JMenuItem("About");
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//JOptionPane.showMessageDialog(frame, "<html>Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: 1.0<br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</>, Berlin", "About", JOptionPane.INFORMATION_MESSAGE);
 				showAboutDialog();
 			}
 		});
@@ -96,7 +99,19 @@ public class MainGUI {
 		
 		frame.pack();
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);						
+		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);
+
+		//set icon image
+		try{
+			 
+			File iconFile = new File("icon.png");
+			
+			if(iconFile.exists())
+				frame.setIconImage(ImageIO.read(iconFile));
+			else
+				frame.setIconImage(new ImageIcon(getClass().getResource("icon.png")).getImage());
+		}catch(Exception ex){}
+		
 	}
 	
 	public void setVisible(boolean f)
@@ -166,7 +181,7 @@ public class MainGUI {
 	    style.append("font-size:" + font.getSize() + "pt;");
 
 	    JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
-	            + "Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: 1.0<br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</>, Berlin" //
+	            + "Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: 1.0<br/><a href=\"https://github.com/EICT/C-BAS/blob/master/LICENCE.txt\">License</a><br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</a>, Berlin, Germany" //
 	            + "</body></html>");
 
 	    ep.addHyperlinkListener(new HyperlinkListener()
@@ -185,9 +200,12 @@ public class MainGUI {
 	        }
 	    });
 	    ep.setEditable(false);
-	    //ep.setBackground(frame.getBackground());
-	    ep.setOpaque(true);
-	    ep.setBackground(Color.blue);
+	    Color bgColor = frame.getBackground();
+	    UIDefaults defaults = new UIDefaults();
+	    defaults.put("EditorPane[Enabled].backgroundPainter", bgColor);
+	    ep.putClientProperty("Nimbus.Overrides", defaults);
+	    ep.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+	    ep.setBackground(bgColor);	    
 
 	    // show
 	    JOptionPane.showMessageDialog(frame, ep, "About", JOptionPane.INFORMATION_MESSAGE);		

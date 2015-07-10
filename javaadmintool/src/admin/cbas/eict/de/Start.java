@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -232,8 +234,7 @@ public class Start extends JDialog {
 					prefs.flush();
 				} catch (BackingStoreException e) {}
 				
-				//Try connecting and loading data
-				
+				//Try connecting and loading data				
 				connectAndLoad();
 				
 			}
@@ -255,6 +256,19 @@ public class Start extends JDialog {
 		setSize(450,300);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);		
+		
+		//set icon image
+		try{
+			 
+			File iconFile = new File("icon.png");
+			
+			if(iconFile.exists())
+				setIconImage(ImageIO.read(iconFile));
+			else
+				setIconImage(new ImageIcon(getClass().getResource("icon.png")).getImage());
+		}catch(Exception ex){}
+		
+		//show
 		setVisible(true);		
 	}
 	

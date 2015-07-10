@@ -191,10 +191,13 @@ public class Projects extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2)
 				{
-					int row = ((JTable)e.getSource()).getSelectedRow();
-					String urn = (String)((JTable)e.getSource()).getModel().getValueAt(row, 0);
-					String username = urn.substring(urn.lastIndexOf('+')+1);
-					mainGUI.setSelectedMember(username);
+					JTable t = (JTable)e.getSource();					
+					String urn = (String)(t.getValueAt(t.getSelectedRow(),t.getSelectedColumn()));
+					if(urn.startsWith("urn:"))
+					{
+						String username = urn.substring(urn.lastIndexOf('+')+1);
+						mainGUI.setSelectedMember(username);
+					}
 				}				
 			}
 		});
@@ -291,7 +294,7 @@ public class Projects extends JPanel {
 				
 				if(projectList.isSelectionEmpty())
 				{
-					JOptionPane.showMessageDialog(null, "Select a project to delete.");
+					JOptionPane.showMessageDialog(Projects.this, "Select a project to delete.");
 					return;
 				}
 				
@@ -299,7 +302,7 @@ public class Projects extends JPanel {
 				
 				if(project.slices.length > 0)
 				{
-					JOptionPane.showMessageDialog(null, "Cannot delete a project containing slices.");
+					JOptionPane.showMessageDialog(Projects.this, "Cannot delete a project containing slices.", "Delete Project", JOptionPane.INFORMATION_MESSAGE);
 					return;					
 				}
 				
@@ -321,12 +324,12 @@ public class Projects extends JPanel {
 				if(memberTable.getSelectedRow()>=0)
 				{
 					Project project = (Project) projectList.getSelectedValue();
-					int row = memberTable.getSelectedRow();
+					int row = memberTable.convertRowIndexToModel(memberTable.getSelectedRow());
 					Membership mem = project.members.get(row);
 					
 					if(mem.role.toUpperCase().equals("LEAD"))
 					{
-						JOptionPane.showMessageDialog(null, "Sorry, a member with LEAD role cannot be removed.");
+						JOptionPane.showMessageDialog(Projects.this, "A member with LEAD role cannot be removed.", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
 					}
 					else
 					{					
@@ -340,7 +343,7 @@ public class Projects extends JPanel {
 					}
 				}
 				else
-					JOptionPane.showMessageDialog(null, "Select a member from list to remove.");
+					JOptionPane.showMessageDialog(Projects.this, "Select a member from list to remove.", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
 				
 			}
 		});
@@ -352,7 +355,7 @@ public class Projects extends JPanel {
 				if(memberTable.getSelectedRow()>=0)
 					showChangeRoleDialog();
 				else
-					JOptionPane.showMessageDialog(null, "Select the member from list to change role.");
+					JOptionPane.showMessageDialog(Projects.this, "Select the member from list to change role.", "Alter Role", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		panelButtons.add(btnRole);
@@ -455,7 +458,7 @@ public class Projects extends JPanel {
 		String[] choiceArray = nonMembers.toArray(new String[0]);
 		if(choiceArray.length == 0)
 		{
-			JOptionPane.showMessageDialog(null, "There are no more ACTIVE members to add to this project.");
+			JOptionPane.showMessageDialog(this, "There are no more ACTIVE members to add to this project.", "Add Member", JOptionPane.INFORMATION_MESSAGE);
 		}
 		else
 		{
@@ -479,7 +482,7 @@ public class Projects extends JPanel {
 	private void showChangeRoleDialog()
 	{
 		Project project = (Project) projectList.getSelectedValue();
-		int row = memberTable.getSelectedRow();
+		int row = memberTable.convertRowIndexToModel(memberTable.getSelectedRow());
 		Membership m = project.members.get(row);
 		String role = project.members.get(row).role;
 		String availableRoles[];
@@ -491,11 +494,11 @@ public class Projects extends JPanel {
 			availableRoles = new String[]{"LEAD", "MEMBER"};
 		else
 		{
-			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a project.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.");
+			JOptionPane.showMessageDialog(this, "There must always be a LEAD role for a project.\nAssigning LEAD role to another member would automatically change this user's role to MEMBER.","Alter Role", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
-		String newRole = (String) JOptionPane.showInputDialog(null, "Select new role member:", "Change Member Role", JOptionPane.PLAIN_MESSAGE, null, availableRoles, availableRoles[0]);
+		String newRole = (String) JOptionPane.showInputDialog(this, "Select new role member:", "Change Member Role", JOptionPane.PLAIN_MESSAGE, null, availableRoles, availableRoles[0]);
 		if(newRole != null)
 		{
 			Membership rsp = SliceAuthorityAPI.changeMemberRole(project.urn, m.urn , newRole, m.type);

@@ -97,7 +97,7 @@ public class Members extends JPanel{
 				
 				if(userList.isSelectionEmpty())
 				{
-					JOptionPane.showMessageDialog(null, "Select a user from list to edit.");
+					JOptionPane.showMessageDialog(Members.this, "Select a user from list to edit.", "Edit info", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
@@ -150,7 +150,7 @@ public class Members extends JPanel{
 				
 				if(userList.isSelectionEmpty())
 				{
-					JOptionPane.showMessageDialog(null, "First select a user from list.");
+					JOptionPane.showMessageDialog(Members.this, "First select a user from list.", "Revoke Certificate", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
@@ -160,14 +160,14 @@ public class Members extends JPanel{
                 
                 if(e!=null)
                 {
-					JOptionPane.showMessageDialog(null, "The certificate is already in revoked state.");
+					JOptionPane.showMessageDialog(Members.this, "The certificate is already in revoked state.", "Revoke Certificate", JOptionPane.INFORMATION_MESSAGE);
 					return;                	
                 }
                 
 				
 				if(toRevoke.username.equals("root") || toRevoke.username.equals("expedient"))
 				{
-					JOptionPane.showMessageDialog(null, toRevoke.username+" is a privileged user. This membership cannot be revoked.");
+					JOptionPane.showMessageDialog(Members.this, toRevoke.username+" is a privileged user. This membership cannot be revoked.", "Revoke Certificate", JOptionPane.INFORMATION_MESSAGE);
 					return;                						
 				}
 				
@@ -191,7 +191,7 @@ public class Members extends JPanel{
 
 				if(userList.isSelectionEmpty())
 				{
-					JOptionPane.showMessageDialog(null, "First select a user from list.");
+					JOptionPane.showMessageDialog(Members.this, "First select a user from list.", "Renew Certificate", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
@@ -200,7 +200,7 @@ public class Members extends JPanel{
 				
 				if(toRenew.username.equals("root") || toRenew.username.equals("expedient"))
 				{
-					JOptionPane.showMessageDialog(null, toRenew.username+" is a privileged user. This membership cannot be modified.");
+					JOptionPane.showMessageDialog(Members.this, toRenew.username+" is a privileged user. This membership cannot be modified.", "Renew Certificate", JOptionPane.INFORMATION_MESSAGE);
 					return;                						
 				}
 				
@@ -433,7 +433,7 @@ public class Members extends JPanel{
 	                	  listModelSlices.add(slices.get(i).name);
                   }
                   else
-                	  JOptionPane.showMessageDialog(null, "Could not fetch member slices.", "Error", JOptionPane.ERROR_MESSAGE);;
+                	  JOptionPane.showMessageDialog(Members.this, "Could not fetch member slices.", "Error", JOptionPane.ERROR_MESSAGE);;
                   
                   LinkedList<AnObject> projects = SliceAuthorityAPI.lookupForMembers(mem.urn, "PROJECT");                  
                   if(projects != null)
@@ -443,7 +443,7 @@ public class Members extends JPanel{
                 		  listModelProjects.add(projects.get(i).name);
                   }
                   else
-                	  JOptionPane.showMessageDialog(null, "Could not fetch member projects.", "Error", JOptionPane.ERROR_MESSAGE);;
+                	  JOptionPane.showMessageDialog(Members.this, "Could not fetch member projects.", "Error", JOptionPane.ERROR_MESSAGE);;
 
                 }
             }
