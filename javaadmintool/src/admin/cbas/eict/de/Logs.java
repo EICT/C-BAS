@@ -16,9 +16,6 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.DefaultComboBoxModel;
@@ -29,10 +26,10 @@ import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
-import javax.swing.Box;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.Box;
 
 public class Logs extends JPanel {
 	/**ad
@@ -44,13 +41,15 @@ public class Logs extends JPanel {
 	DateTimePicker datePanelFrom, datePanelTo;
 	JComboBox comboBoxSub;
 	JComboBox comboBoxObjType;
-	JComboBox comboBoxObjURN, comboBoxAct;
+	JComboBox comboBoxAct;
 	SimpleDateFormat timeFormatPicker = new SimpleDateFormat("HH:mm:ss");
 	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("yyyy-MM-dd    HH:mm:ss.SSS");
-	TableRowSorter<TableModel> tableSorter;
-	String[] readableActions, cbasActions;
+	TableRowSorter<TableModel> tableSorter;	
 	MainGUI mainGUI;
 	JCheckBox chckbxDate;
+	final String[] readableActions = new String[] {"Create", "Update", "Delete", "Modify slice/project membership", "Revoke certificate", "Renew membership"};
+	final String[] cbasActions     = new String[] {"create", "update", "delete", "modify_membership", "Revoke certificate", "Renew"};
+
 	
 	/**
 	 * Create the panel.
@@ -63,7 +62,7 @@ public class Logs extends JPanel {
 		JPanel filterPanel = new JPanel();
 		filterPanel.setBorder(new TitledBorder("Filters"));
 		add(filterPanel, BorderLayout.NORTH);
-		filterPanel.setLayout(new GridLayout(5, 1, 0, 0));
+		filterPanel.setLayout(new GridLayout(3, 1, 0, 0));
 		
 		JPanel panelDateFilter = new JPanel();
 		FlowLayout fl_panelDateFilter = (FlowLayout) panelDateFilter.getLayout();
@@ -77,11 +76,6 @@ public class Logs extends JPanel {
         		JCheckBox cb = (JCheckBox)e.getSource();
         		datePanelFrom.setEnabled(cb.isSelected());
         		datePanelTo.setEnabled(cb.isSelected());
-        		
-        		if(cb.isSelected())
-        		{
-        			
-        		}
         	}
         });
 		
@@ -102,45 +96,27 @@ public class Logs extends JPanel {
 		panelDateFilter.add((Component) datePanelTo);
 		datePanelTo.getEditor().setEditable(false);
 		
-		JPanel panelObjFilter = new JPanel();
-		FlowLayout fl_panelObjFilter = (FlowLayout) panelObjFilter.getLayout();
-		fl_panelObjFilter.setAlignment(FlowLayout.LEFT);
-		filterPanel.add(panelObjFilter);
+		JPanel panelSubFilter = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panelSubFilter.getLayout();
+		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		filterPanel.add(panelSubFilter);
 		
 		JCheckBox chbxObjType = new JCheckBox("Object Type:");
+		panelSubFilter.add(chbxObjType);
 		chbxObjType.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JCheckBox cb = (JCheckBox)e.getSource();
 				comboBoxObjType.setEnabled(cb.isSelected());
 			}
 		});
-		panelObjFilter.add(chbxObjType);
 		
 		comboBoxObjType = new JComboBox();
+		panelSubFilter.add(comboBoxObjType);
 		comboBoxObjType.setEnabled(false);
 		comboBoxObjType.setModel(new DefaultComboBoxModel(new String[] {"Slice", "Project", "User", "Key"}));
-		panelObjFilter.add(comboBoxObjType);
 		
-		Component horizontalStrut = Box.createHorizontalStrut(20);
-		panelObjFilter.add(horizontalStrut);
-		
-		JCheckBox chbxUrn = new JCheckBox("Object URN:");
-		chbxUrn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox cb = (JCheckBox)e.getSource();
-				comboBoxObjURN.setEnabled(cb.isSelected());
-			}
-		});
-		panelObjFilter.add(chbxUrn);
-		
-		comboBoxObjURN = new JComboBox();
-		comboBoxObjURN.setEnabled(false);
-		panelObjFilter.add(comboBoxObjURN);
-		
-		JPanel panelSubFilter = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panelSubFilter.getLayout();
-		flowLayout_1.setAlignment(FlowLayout.LEFT);
-		filterPanel.add(panelSubFilter);
+		Component horizontalStrut = Box.createHorizontalStrut(30);
+		panelSubFilter.add(horizontalStrut);
 		
 		JCheckBox chckbxSubject = new JCheckBox("Subject:");
 		chckbxSubject.setHorizontalAlignment(SwingConstants.LEFT);
@@ -150,34 +126,30 @@ public class Logs extends JPanel {
 		comboBoxSub.setEnabled(false);
 		panelSubFilter.add(comboBoxSub);
 		
-		JPanel panelActFilter = new JPanel();
-		FlowLayout flowLayout_2 = (FlowLayout) panelActFilter.getLayout();
-		flowLayout_2.setAlignment(FlowLayout.LEFT);
-		filterPanel.add(panelActFilter);
+		Component horizontalStrut_1 = Box.createHorizontalStrut(30);
+		panelSubFilter.add(horizontalStrut_1);
 		
 		JCheckBox chckbxAct = new JCheckBox("Action:");
+		panelSubFilter.add(chckbxAct);
+		
+		comboBoxAct = new JComboBox();
+		panelSubFilter.add(comboBoxAct);
+		comboBoxAct.setEnabled(false);
+		comboBoxAct.setModel(new DefaultComboBoxModel(readableActions));
 		chckbxAct.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JCheckBox cb = (JCheckBox)e.getSource();
 				comboBoxAct.setEnabled(cb.isSelected());
 			}
 		});
-		panelActFilter.add(chckbxAct);
 		
-		comboBoxAct = new JComboBox();
-		comboBoxAct.setEnabled(false);
-		panelActFilter.add(comboBoxAct);
-		
-		readableActions = new String[] {"Create", "Update", "Delete", "Modify slice/project membership", "Revoke certificate", "Renew membership"};
-		cbasActions = new String[] {"create", "update", "delete", "modify_membership", "Revoke certificate", "Renew"};
-		comboBoxAct.setModel(new DefaultComboBoxModel(readableActions));
 		
 		JPanel panelReload = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) panelReload.getLayout();
 		flowLayout.setAlignment(FlowLayout.LEFT);
 		filterPanel.add(panelReload);
 		
-		JButton btnReload = new JButton("Apply");
+		JButton btnReload = new JButton("Apply Filters");
 		btnReload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setFilter();
@@ -259,14 +231,11 @@ public class Logs extends JPanel {
 					 String from = datePanelFrom.getEditor().getText();
 					 String to = datePanelTo.getEditor().getText();
 					 
-					 if(from == null || from.length()==0)
-						 from = dateFormatTimestamp.format(new Date(0));
-					 
-					 if(to == null || to.length()==0)
-						 to = dateFormatTimestamp.format(new GregorianCalendar(2100, 1, 1).getTime());
-					 
-					 if(timestamp.compareTo(from) < 0 || timestamp.compareTo(to) > 0)
+					 if(from != null && from.length()>0 && timestamp.compareTo(from) < 0 )
 						 return false;
+					 
+					 if(to != null && to.length()>0 && timestamp.compareTo(to) > 0)
+						 return false;					 
 				 }
 				 
 			     return true;

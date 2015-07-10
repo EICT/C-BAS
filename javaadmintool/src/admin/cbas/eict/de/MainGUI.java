@@ -1,6 +1,9 @@
 package admin.cbas.eict.de;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
@@ -8,12 +11,16 @@ import javax.swing.JTabbedPane;
 
 import java.awt.BorderLayout;
 
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import admin.cbas.eict.de.LoggingAuthorityAPI.LogEvent;
 import admin.cbas.eict.de.MemberAuthorityAPI.Member;
@@ -24,6 +31,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.net.URI;
 
 public class MainGUI {
 
@@ -78,7 +86,8 @@ public class MainGUI {
 		JMenuItem mntmAbout = new JMenuItem("About");
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				JOptionPane.showMessageDialog(frame, "<html>Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: beta 1<br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</>, Berlin", "About", JOptionPane.INFORMATION_MESSAGE);
+				//JOptionPane.showMessageDialog(frame, "<html>Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: 1.0<br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</>, Berlin", "About", JOptionPane.INFORMATION_MESSAGE);
+				showAboutDialog();
 			}
 		});
 		mnFile.add(mntmAbout);
@@ -145,6 +154,43 @@ public class MainGUI {
 	public Object[] getProjectsArray()
 	{
 		return panelProjects.getProjectArray();
+	}
+	
+	private void showAboutDialog()
+	{
+	    JLabel label = new JLabel();
+	    Font font = label.getFont();
+
+	    StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+	    style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+	    style.append("font-size:" + font.getSize() + "pt;");
+
+	    JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
+	            + "Admin tool for <a href=\"http://eict.de/c-bas\">C-BAS</a><br/>Version: 1.0<br/><br/>Developed by <a href=\"http://www.eict.de\">EICT GmbH</>, Berlin" //
+	            + "</body></html>");
+
+	    ep.addHyperlinkListener(new HyperlinkListener()
+	    {
+	        @Override
+	        public void hyperlinkUpdate(HyperlinkEvent e)
+	        {
+	            if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+	            {
+	                if (Desktop.isDesktopSupported()) {
+	                    try {
+	                      Desktop.getDesktop().browse(URI.create(e.getURL().toString()));
+	                    } catch (Exception ex) {}
+	                }
+	            }
+	        }
+	    });
+	    ep.setEditable(false);
+	    //ep.setBackground(frame.getBackground());
+	    ep.setOpaque(true);
+	    ep.setBackground(Color.blue);
+
+	    // show
+	    JOptionPane.showMessageDialog(frame, ep, "About", JOptionPane.INFORMATION_MESSAGE);		
 	}
 
 }

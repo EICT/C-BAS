@@ -269,6 +269,7 @@ public class Slices extends JPanel {
 		
 		tableModel = new CustomTableModel(null, new String[]{"Member", "Role"});		
 		memberTable = new JTable(tableModel);
+		memberTable.setAutoCreateRowSorter(true);
 		memberTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

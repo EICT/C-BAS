@@ -12,6 +12,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -53,6 +55,23 @@ public class Start extends JDialog {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
+		//set Look and feel
+		try {
+		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+		        if ("Nimbus".equals(info.getName())) {
+		            UIManager.setLookAndFeel(info.getClassName());
+		            break;
+		        }
+		    }
+		} catch (Exception e) {
+		    // otherwise fall back to cross-platform
+		    try {
+		        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+		    } catch (Exception ex) {}
+		}		
+
+		//Start Application
 		try {
 			new Start();
 		} catch (Exception e) {

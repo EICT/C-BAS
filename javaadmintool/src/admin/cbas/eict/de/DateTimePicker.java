@@ -96,7 +96,7 @@ public class DateTimePicker extends JXDatePicker {
             calendar.setTime(date);
             calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get( Calendar.HOUR_OF_DAY ) );
             calendar.set(Calendar.MINUTE, timeCalendar.get( Calendar.MINUTE ) );
-            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.SECOND, timeCalendar.get( Calendar.SECOND) );
             calendar.set(Calendar.MILLISECOND, 0);
 
             Date newDate = calendar.getTime();

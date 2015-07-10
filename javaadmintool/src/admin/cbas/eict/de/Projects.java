@@ -175,6 +175,7 @@ public class Projects extends JPanel {
 		rightPanel.add(splitPane_right, BorderLayout.CENTER);
 		
 		memberTable = new JTable(tableModel);
+		memberTable.setAutoCreateRowSorter(true);
 		memberTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		memberTable.getColumnModel().getColumn(0).setPreferredWidth(300);
 		memberTable.getColumnModel().getColumn(1).setPreferredWidth(75);
