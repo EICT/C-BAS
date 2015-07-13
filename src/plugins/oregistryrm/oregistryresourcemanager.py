@@ -1,6 +1,9 @@
 import eisoil.core.pluginmanager as pm
+from eisoil.config import  expand_eisoil_path
+import os
 import eisoil.core.log
 logger=eisoil.core.log.getLogger('oregistryrm')
+
 
 from oregistryexceptions import *
 
@@ -25,7 +28,7 @@ class ORegistryResourceManager(object):
         """
         super(ORegistryResourceManager, self).__init__()
         self._resource_manager_tools = pm.getService('resourcemanagertools')
-        #TODO: this isn't a a delegate!
+        # TODO: this isn't a delegate!
         self._delegate_tools = pm.getService('delegatetools')
 
     def urn(self):
@@ -37,7 +40,7 @@ class ORegistryResourceManager(object):
 
         """
         config = pm.getService('config')
-        hostname = config.get('flask.hostname')
+        hostname = config.get('flask.cbas_hostname')
         return 'urn:publicid:IDN+' + hostname + '+authority+fr'
 
     def implementation(self):
@@ -65,7 +68,7 @@ class ORegistryResourceManager(object):
         Return the service types, as defined in the registry config file (registry.json).
         """
         service_types = set()
-        for e in  self._delegate_tools.get_registry()['SERVICES']:
+        for e in self._delegate_tools.get_registry()['SERVICES']:
             service_types.add(e['service_type'])
         return list(service_types)
 
@@ -73,7 +76,25 @@ class ORegistryResourceManager(object):
         """
         Return all service types as defined in the  registry config file (registry.json).
         """
-        return self._uppercase_keys_in_list([e for e in self._delegate_tools.get_registry()["SERVICES"] if (e['service_type'] in self.TYPES)])
+        # return self._uppercase_keys_in_list([e for e in self._delegate_tools.get_registry()["SERVICES"] if (e['service_type'] in self.TYPES)])
+        # Current deployments assume single SA and MA authorities
+
+        services = []
+        for e in self._delegate_tools.get_registry()["SERVICES"]:
+
+            if e['service_type'] in [self.SA_SERVICE_TYPE, self.MA_SERVICE_TYPE]:
+                rm = pm.getService('osliceauthorityrm') if e['service_type'] == self.SA_SERVICE_TYPE else pm.getService('omemberauthorityrm')
+
+                endpoints = pm.getService('apitools').get_endpoints(type=rm.AUTHORITY_NAME)
+                if endpoints:
+                    e['service_url'] = "https://"+pm.getService('gregistryv2handler').bindAddress()+endpoints[0]['url']
+
+                e['service_urn'] = rm.urn()
+                e['service_cert'] = '<certificate>'+rm.authority_certificate()+'</certificate>'
+
+            services.append(e)
+
+        return self._uppercase_keys_in_list(services)
 
     def all_aggregates(self):
         """
@@ -89,9 +110,11 @@ class ORegistryResourceManager(object):
 
     def all_slice_authorities(self):
         """
-        Return all slice authorities as defined in theregistry config file (registry.json).
+        Return all slice authorities as defined in the registry config file (registry.json).
         """
-        return self._uppercase_keys_in_list([e for e in self._delegate_tools.get_registry()["SERVICES"] if (e['service_type']==self.SA_SERVICE_TYPE)])
+        # return self._uppercase_keys_in_list([e for e in self._delegate_tools.get_registry()["SERVICES"] if (e['service_type']==self.SA_SERVICE_TYPE)])
+        # Current deployments assume single slice authority
+
 
     def all_trusted_certs(self):
         """
@@ -107,6 +130,19 @@ class ORegistryResourceManager(object):
             certs.remove("INFER_MAs")
             for s in self.all_member_authorities():
                 certs.append(s['SERVICE_CERT'])
+
+        config = pm.getService('config')
+        trusted_cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
+
+        # Go through the dir and fetch trusted certificates
+        src_files = os.listdir(trusted_cert_path)
+        for file_name in src_files:
+            full_file_name = os.path.join(trusted_cert_path, file_name)
+            if os.path.isfile(full_file_name):
+                with open (full_file_name, "r") as cert_file:
+                    cert_str =cert_file.read()
+                certs.append(cert_str)
+
         return certs
 
     def get_authory_mappings(self, urns):

@@ -23,6 +23,7 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         self._delegate_tools = pm.getService('delegatetools')
         for service in self._delegate_tools.get_registry()['SERVICES']:
             self._delegate_tools.object_consistency_check('SERVICE', service)
+        self._gregv2handler = pm.getService('gregistryv2handler')
 
     def get_version(self):
         """
@@ -42,7 +43,7 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         if (type_.upper()=='SERVICE'):
              return self._delegate_tools.match_and_filter(self._federation_registry_resource_manager.lookup_services(), filter_, match)
         else:
-            raise gfed_ex.GFedv2NotImplementedError("No create method found for object type: " + str(type_))
+            raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
 
     def lookup_authorities_for_urns(self, client_cert, urns):
         """

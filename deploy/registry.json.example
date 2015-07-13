@@ -20,24 +20,25 @@
             "_ofelia_island_name" : "island 2"
         }, {
             "service_type" : "SLICE_AUTHORITY",
-            "service_url" : "https://localhost:8008/sa/2",
-            "service_cert" : "<certificate>foo_sa</certificate>",
+            "service_url" : "_Resolved realtime_",
+            "service_cert" : "<certificate>_Resolved realtime_</certificate>",
             "service_name" : "chapI-SA",
-            "service_description" : "CHAPI Service Authority",
-            "service_urn" : "urn:publicid:IDN+cbas.eict.de+authority+sa"
+            "service_description" : "CHAPI Slice Authority",
+            "service_urn" : "_Resolved realtime_"
         }, {
             "service_type" : "MEMBER_AUTHORITY",
-            "service_url" : "https://localhost:8008/ma/2",
-            "service_cert" : "<certificate>foo_ma</certificate>",
+            "service_url" : "_Resolved realtime_",
+            "service_cert" : "<certificate>_Resolved realtime_</certificate>",
             "service_name" : "CHAPI-MAv2",
             "service_description" : "CHAPI Member Authority",
-            "service_urn" : "urn:publicid:IDN+cbas.eict.de+authority+ma"
+            "service_urn" : "_Resolved realtime_"
         } 
     ],
     "TRUST_ROOTS" : [
-        "__comment: may contain certificates as strings. if there is an entry 'INFER_SAs' the certificates from the slice authorities in 'services' will be included. Same goes for 'INFER_MAs'",
-        "<certificate>additional certificate which does not show up above</certificate>",
-        "INFER_SAs", "INFER_MAs"
+        "__comment: The certificates under deploy/trusted/certs are returned by default. Additional entries can be mentioned here (see two examples below)",
+        "__comment: <certificate>additional certificate which does not show up above</certificate>",
+        "__Comment: if there is an entry 'INFER_SAs' the certificates from the slice authorities in 'services' will be included. Same goes for 'INFER_MAs'",
+        "__comment: 'INFER_SAs', 'INFER_MAs' "
         ]
 
 }

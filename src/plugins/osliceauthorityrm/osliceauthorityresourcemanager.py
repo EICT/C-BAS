@@ -97,7 +97,7 @@ class OSliceAuthorityResourceManager(object):
 
     def api_versions(self):
         """
-        Get the different endpoints (of type 'ma'), registered with eiSoil.
+        Get the different endpoints (of type 'sa'), registered with eiSoil.
 
         Form these endpoints into a dictionary suitable for the API call response.
 
@@ -114,6 +114,11 @@ class OSliceAuthorityResourceManager(object):
         """
         return self.SUPPORTED_CREDENTIAL_TYPES
 
+    def authority_certificate(self):
+        """
+        Returns this authority's certificate
+        """
+        return self._sa_c
 
     #--- object methods
     def create_slice(self, credentials, fields, options):

@@ -54,7 +54,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
         if (type_.upper()=='SLICE'):
             self._delegate_tools.object_creation_check(fields, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
-            self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) #Specific check for slice name restrictionas
+            self._delegate_tools.slice_name_check(fields.get('SLICE_NAME')) # Specific check for slice name restrictions
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SLICE', fields=fields)
             ret_values = self._slice_authority_resource_manager.create_slice(credentials, fields, options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),

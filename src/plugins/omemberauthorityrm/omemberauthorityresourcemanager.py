@@ -130,6 +130,12 @@ class OMemberAuthorityResourceManager(object):
         """
         return self._resource_manager_tools.supplementary_fields(self.SUPPLEMENTARY_FIELDS)
 
+    def authority_certificate(self):
+        """
+        Returns this authority's certificate
+        """
+        return self._ma_cert_str
+
     #--- object methods
     def update_member(self, urn, credentials, fields, options):
         """

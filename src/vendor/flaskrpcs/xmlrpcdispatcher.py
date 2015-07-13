@@ -24,6 +24,11 @@ class XMLRPCDispatcher(object):
             return request.environ['SSL_CLIENT_CERT']
         return None
 
+    @serviceinterface
+    def bindAddress(self):
+        """" Extracts binding address/hostname:port from incoming request"""
+        return request.host
+
     def _dispatch(self, method, params):
         self._log.info("Called: <%s>" % (method))
         try:

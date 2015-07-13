@@ -76,7 +76,7 @@ if __name__ == '__main__':
         print "Assuming default host %s" % (DEFAULT_HOST_AND_PORT,)
         host_name = DEFAULT_HOST_AND_PORT
     else:
-        host_name = args[0]
+        host_name = args[1]
         if host_name.find(':') == -1:
             raise ValueError("Please specify host _and_ port.")
 
