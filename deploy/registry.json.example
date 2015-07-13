@@ -20,19 +20,19 @@
             "_ofelia_island_name" : "island 2"
         }, {
             "service_type" : "SLICE_AUTHORITY",
-            "service_url" : "_Resolved realtime_",
-            "service_cert" : "<certificate>_Resolved realtime_</certificate>",
+            "service_url" : "https://Resolved.runtime:0000",
+            "service_cert" : "<certificate>_Resolved runtime_</certificate>",
             "service_name" : "chapI-SA",
             "service_description" : "CHAPI Slice Authority",
-            "service_urn" : "_Resolved realtime_"
+            "service_urn" : "urn:publicid:IDN+Resolved.runtime+authority+sa"
         }, {
             "service_type" : "MEMBER_AUTHORITY",
-            "service_url" : "_Resolved realtime_",
-            "service_cert" : "<certificate>_Resolved realtime_</certificate>",
+            "service_url" : "https://Resolved.runtime:0000",
+            "service_cert" : "<certificate>_Resolved runtime_</certificate>",
             "service_name" : "CHAPI-MAv2",
             "service_description" : "CHAPI Member Authority",
-            "service_urn" : "_Resolved realtime_"
-        } 
+            "service_urn" : "urn:publicid:IDN+Resolved.runtime+authority+ma"
+        }
     ],
     "TRUST_ROOTS" : [
         "__comment: The certificates under deploy/trusted/certs are returned by default. Additional entries can be mentioned here (see two examples below)",
