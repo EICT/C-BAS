@@ -29,7 +29,7 @@ class OMemberAuthorityResourceManager(object):
 
     SUPPORTED_SERVICES = ['MEMBER', 'KEY'] #: The objects supported by this authority
 
-    SUPPORTED_CREDENTIAL_TYPES = [{"type" : "SFA", "version" : 1}] #: The credential type supported by this authority
+    SUPPORTED_CREDENTIAL_TYPES = [{"type" : "SFA", "version" : "1"}] #: The credential type supported by this authority
 
     def __init__(self):
         """
@@ -404,7 +404,7 @@ class OMemberAuthorityResourceManager(object):
                 geniutil = pm.getService('geniutil')
                 cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
                 u_urn,_,_ = geniutil.extract_certificate_info(u_c)
-                privileges = ["PROJECT_MEMBER_ADD", "PROJECT_MEMBER_REMOVE", "PROJECT_MEMBER_UPDATE", "PROJECT_MEMBER_VIEW", "PROJECT_MONITOR", "PROJECT_SET_ADMIN_ROLE", "PROJECT_UPDATE", "PROJECT_SLICES_WILDCARDS", "PROJECT_VIEW", "PROJECT_SET_MONITOR_ROLE", "SLICE_CREATE"]
+                privileges = []
                 u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
                                                        issuer_cert=self._ma_cert_str, privileges_list=privileges,
                                                        expiration=cred_expiry)
@@ -437,11 +437,20 @@ class OMemberAuthorityResourceManager(object):
             member_lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': member_urn}, [])
             if member_lookup_result:
                 member_creds = [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': member_lookup_result[0]['MEMBER_CREDENTIALS']}]
-                slice_authority_resource_manager = pm.getService('osliceauthorityrm')
-                project_memberships = slice_authority_resource_manager.lookup_project_membership_for_member(member_urn, credentials=None, options=None)
-
-                for membership in project_memberships:
-                    member_creds.append({'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': membership['PROJECT_CREDENTIALS']})
+                # slice_authority_resource_manager = pm.getService('osliceauthorityrm')
+                # project_memberships = slice_authority_resource_manager.lookup_project_membership_for_member(member_urn, credentials=None, options=None)
+                #
+                # for membership in project_memberships:
+                #     member_creds.append({'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': membership['PROJECT_CREDENTIALS']})
                 return member_creds
             else:
                 raise self.gfed_ex.GFedv2ArgumentError("The specified user does not exist: "+member_urn)
+
+    def assign_privileges(self, member_urn, credentials, privileges_list):
+        """
+
+        :param member_urn:
+        :param credentials:
+        :param privileges_list:
+        :return:
+        """

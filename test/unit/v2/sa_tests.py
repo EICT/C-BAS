@@ -55,7 +55,7 @@ class TestGSAv2(unittest.TestCase):
         self.assertTrue(len(creds) > 0)
         for cred in creds:
             self.assertIsInstance(cred['type'], str)
-            self.assertIsInstance(cred['version'], int)
+            self.assertIsInstance(cred['version'], str)
         if 'FIELDS' in value:
             self.assertIsInstance(value['FIELDS'], dict)
             for fk, fv in value['FIELDS'].iteritems():
@@ -328,19 +328,30 @@ class TestGSAv2(unittest.TestCase):
         Test the 'add', 'change' and 'remove' methods for 'PROJECT' membership
         object.
         """
-        #Create a project as it is a prerequisite
-        create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'kajsdh', 'PROJECT_DESCRIPTION':'My test project'}
-        project_urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
+        # Create a project as it is a prerequisite
+        project_create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'kajsdh', 'PROJECT_DESCRIPTION':'My test project'}
+        project_urn = self._test_create(project_create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
-        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn123', 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
-        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : 'test_urn123', 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
-        remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : 'test_urn123'}]}
-        lookup_data = {'match':{'PROJECT_MEMBER' : 'test_urn123'}}
+        member_urn = "urn:publicid:IDN+this.ma+user+alice"
+        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
+        change_data = {'members_to_change' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
+        remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : member_urn}]}
+        lookup_data = {'match':{'PROJECT_MEMBER' : member_urn}}
         self._test_modify_membership(project_urn, 'PROJECT', add_data, 0)
+
+        # Try creating slice in project as MEMBER
+        slice_create_data = {'SLICE_NAME':'ALICE', 'SLICE_DESCRIPTION' : 'Alice Slice', 'SLICE_PROJECT_URN' : project_urn}
+        self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 2, "alice")
+
+        # Change membership to ADMIN
         self._test_modify_membership(project_urn, 'PROJECT', change_data, 0)
+
+        # try creating a slice after receiving ADMIN role
+        self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 2, "alice")
+
         self._test_lookup_members(project_urn, 'PROJECT', lookup_data, 1, 0)
-        self._test_lookup_for_members(project_urn, 'test_urn123','PROJECT', {}, 1, 0)
+        self._test_lookup_for_members(project_urn, member_urn,'PROJECT', {}, 1, 0)
         self._test_modify_membership(project_urn, 'PROJECT', remove_data, 0)
         self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
 
@@ -399,8 +410,9 @@ class TestGSAv2(unittest.TestCase):
         #Try to delegate slice credentials to another member
         delgatee_cert = get_creds_file_contents('alice-cert.pem')
         issuer_key = get_creds_file_contents('root-key.pem')
-        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['SLICE_MEMBER_ADD'], '2016-10-21T11:35:57Z',
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert, issuer_key, ['embed'], '2016-10-21T11:35:57Z',
                                                                True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': slice_creds}]], user_name="root")
+
         self.assertEquals(code, 0)
         #write_file("delegated_creds.xml", value)
 
@@ -414,7 +426,7 @@ class TestGSAv2(unittest.TestCase):
         #Try to further delegate delegated credentials
         delgatee_cert2 = get_creds_file_contents('root-cert.pem')
         issuer_key2 = get_creds_file_contents('alice-key.pem')
-        code, value, output = sa_call('delegate_credentials', [delgatee_cert2, issuer_key2, ['SLICE_MEMBER_ADD'], '2016-10-21T11:35:57Z',
+        code, value, output = sa_call('delegate_credentials', [delgatee_cert2, issuer_key2, ['embed'], '2016-10-21T11:35:57Z',
                                                                True, [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': delegated_creds}]])
 
         self.assertEquals(code, 0)

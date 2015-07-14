@@ -21,7 +21,7 @@ class OSliceAuthorityResourceManager(object):
 
     AUTHORITY_NAME = 'sa' #: The short-name for this authority
     SUPPORTED_SERVICES = ['SLICE', 'SLICE_MEMBER', 'SLIVER_INFO', 'PROJECT', 'PROJECT_MEMBER'] #: The objects supported by this authority
-    SUPPORTED_CREDENTIAL_TYPES = [{"type" : "SFA", "version" : 1}] #: The credential type supported by this authority
+    SUPPORTED_CREDENTIAL_TYPES = [{"type": "SFA", "version": "1"}] #: The credential type supported by this authority
 
     def __init__(self):
         """
@@ -37,7 +37,6 @@ class OSliceAuthorityResourceManager(object):
         config = pm.getService("config")
         cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
         cert_key_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_keys_path"))
-
 
         self._sa_c = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OSliceAuthorityResourceManager.SA_CERT_FILE)
@@ -162,17 +161,14 @@ class OSliceAuthorityResourceManager(object):
         s_cert, s_pu, s_pr = geniutil.create_certificate(slice_urn, self._sa_pr, self._sa_c, life_days=3650)
         fields['SLICE_CERTIFICATE'] = s_cert
 
-        # Try to get the user credentials for use as owner
+        # Try to get the user certificate for use as owner
         user_cert = geniutil.extract_owner_certificate(credentials)
 
         # Extract user info from his certificate
         user_urn, user_uuid, user_email = geniutil.extract_certificate_info(user_cert)
 
-        # Get the privileges user would get as owner in the slice credential
-        user_pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='SLICE')
-
-        # For compatability with GAPI
-        user_pri.extend(['*', 'refresh', 'embed', 'bind', 'control', 'info'])
+        # User privileges to be embedded in slice cred
+        user_pri = ['*', 'refresh', 'embed', 'bind', 'control', 'info']
         # Create slice cred for owner
         slice_cred = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=s_cert, issuer_key=self._sa_pr,
                                                    issuer_cert=self._sa_c, privileges_list=user_pri, expiration=fields['SLICE_EXPIRATION'])
@@ -187,7 +183,9 @@ class OSliceAuthorityResourceManager(object):
         ret_values['SLICE_CREDENTIALS'] = slice_cred
 
         # Create SLICE_MEMBER object
-        options = {'members_to_add' : [{'SLICE_MEMBER' : user_urn, 'SLICE_CREDENTIALS': slice_cred, 'SLICE_CERTIFICATE': s_cert, 'SLICE_ROLE': 'LEAD'}]}
+        # First, get the privileges user would get as an owner of the slice
+        pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='SLICE')
+        options = {'members_to_add': [{'SLICE_MEMBER': user_urn, 'SLICE_CREDENTIALS': slice_cred, 'SLICE_CERTIFICATE': s_cert, 'SLICE_ROLE': 'LEAD', 'PRIVILEGES': pri}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', slice_urn, options, 'SLICE_MEMBER', 'SLICE_URN')
 
         return ret_values
@@ -200,10 +198,10 @@ class OSliceAuthorityResourceManager(object):
             lookup_results = self.lookup_slice_membership(urn, credentials, {}, {}, options)
             for entry in lookup_results:
                 newCred = self._update_cred_expiry(cred=entry['SLICE_CREDENTIALS'], obj_cert=entry['SLICE_CERTIFICATE'], expiry=fields['SLICE_EXPIRATION'])
-                opt = {'members_to_change': [{'SLICE_MEMBER' : entry['SLICE_MEMBER'], 'SLICE_CREDENTIALS': newCred}]}
+                opt = {'members_to_change': [{'SLICE_MEMBER': entry['SLICE_MEMBER'], 'SLICE_CREDENTIALS': newCred}]}
                 self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'slice_member', urn, opt, 'SLICE_MEMBER', 'SLICE_URN')
 
-        return self._resource_manager_tools.object_update(self.AUTHORITY_NAME, fields, 'slice', {'SLICE_URN':urn})
+        return self._resource_manager_tools.object_update(self.AUTHORITY_NAME, fields, 'slice', {'SLICE_URN': urn})
 
     def lookup_slice(self, credentials, match, filter_, options):
         """
@@ -271,7 +269,7 @@ class OSliceAuthorityResourceManager(object):
         # Generating Project Certificate
         p_cert, p_pu, p_pr = geniutil.create_certificate(p_urn, self._sa_pr, self._sa_c)
         fields['PROJECT_CERTIFICATE'] = p_cert
-
+        #
         # Try to get the user credentials for use as owner
         user_cert = geniutil.extract_owner_certificate(credentials)
 
@@ -279,9 +277,9 @@ class OSliceAuthorityResourceManager(object):
         user_urn, user_uuid_int, user_email = geniutil.extract_certificate_info(user_cert)
         # Get the privileges user would get as owner in the project credential
         user_pri = self._delegate_tools.get_default_privilege_list(role_='LEAD', context_='PROJECT')
-        # Create project cred for owner
-        p_creds = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=p_cert, issuer_key=self._sa_pr, issuer_cert=self._sa_c, privileges_list=user_pri,
-                                                    expiration=OSliceAuthorityResourceManager.CRED_EXPIRY)
+        # # Create project cred for owner
+        # p_creds = geniutil.create_credential_ex(owner_cert=user_cert, target_cert=p_cert, issuer_key=self._sa_pr, issuer_cert=self._sa_c, privileges_list=user_pri,
+        #                                             expiration=OSliceAuthorityResourceManager.CRED_EXPIRY)
 
         # Let's make the owner as LEAD
         fields['PROJECT_LEAD'] = user_urn
@@ -289,21 +287,21 @@ class OSliceAuthorityResourceManager(object):
         # Finally, create project object
         ret_values = self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'project')
 
-        # Add Project credentials to ret values
-        ret_values['PROJECT_CREDENTIALS'] = p_creds
+        # # Add Project credentials to ret values
+        # ret_values['PROJECT_CREDENTIALS'] = p_creds
 
         user_uuid = uuid.UUID(int=user_uuid_int).urn[9:]
         # Create PROJECT_MEMBER object
-        options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_MEMBER_UID': user_uuid, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_CERTIFICATE': p_cert, 'PROJECT_ROLE': 'LEAD'}]}
+        # options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_MEMBER_UID': user_uuid, 'PROJECT_CREDENTIALS': p_creds, 'PROJECT_CERTIFICATE': p_cert, 'PROJECT_ROLE': 'LEAD'}]}
+        options = {'members_to_add' : [{'PROJECT_MEMBER': user_urn, 'PROJECT_MEMBER_UID': user_uuid, 'PRIVILEGES': user_pri, 'PROJECT_ROLE': 'LEAD'}]}
         self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', p_urn, options, 'PROJECT_MEMBER', 'PROJECT_URN')
         return ret_values
-
 
     def update_project(self, urn, credentials, fields, options):
         """
         Update a project object.
         """
-        return self._resource_manager_tools.object_update(self.AUTHORITY_NAME, fields, 'project', {'PROJECT_URN':urn})
+        return self._resource_manager_tools.object_update(self.AUTHORITY_NAME, fields, 'project', {'PROJECT_URN': urn})
 
     def delete_project(self, urn, credentials, options):
         """
@@ -336,7 +334,7 @@ class OSliceAuthorityResourceManager(object):
         Modify a slice membership object.
         """
         # <UT>
-        slice_lookup_result = self.lookup_slice(None, match={'SLICE_URN':urn}, filter_=[], options=None)
+        slice_lookup_result = self.lookup_slice(None, match={'SLICE_URN': urn}, filter_=[], options=None)
 
         if not len(slice_lookup_result):
             raise self.gfed_ex.GFedv2ArgumentError("The specified slice does not exist: "+ str(urn))
@@ -371,22 +369,27 @@ class OSliceAuthorityResourceManager(object):
 
                     # Manage privileges
                     member_role = member_dict['SLICE_ROLE'] if 'SLICE_ROLE' in member_dict else 'MEMBER'
-                    member_pri = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='SLICE')
-                    if 'EXTRA_PRIVILEGES' in member_dict:
-                        member_pri = member_pri+member_dict['EXTRA_PRIVILEGES']
-                        member_dict.pop('EXTRA_PRIVILEGES', None)
+                    # User privileges to be embedded in slice cred
+                    user_pri = ['*', 'refresh', 'embed', 'bind', 'control', 'info']
 
                     # LEAD role can be changed by LEAD member himself or by the ROOT
                     if member_dict['SLICE_MEMBER'] == slice_lead or member_role == 'LEAD':
                         if user_urn_from_cert != slice_lead and user_urn_from_cert != target_urn_from_cred:
                             raise self.gfed_ex.GFedv2ArgumentError("Only slice LEAD or ROOT can modify lead membership "+ str(urn))
 
-                    # Create slice creds
-                    member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
-                                                                                     issuer_key=self._sa_pr, issuer_cert=self._sa_c,
-                                                                                     privileges_list=member_pri, expiration=self.CRED_EXPIRY)
-                    # Populate slice certificate
-                    member_dict['SLICE_CERTIFICATE'] = slice_cert
+                    # Create slice cred for new member
+                    if option_key == 'members_to_add':
+                        member_dict['SLICE_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=slice_cert,
+                                                                                         issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                                                                                         privileges_list=user_pri, expiration=self.CRED_EXPIRY)
+                        # Populate slice certificate for new member
+                        member_dict['SLICE_CERTIFICATE'] = slice_cert
+
+                    # Populate privileges (internal)
+                    member_dict['PRIVILEGES'] = self._delegate_tools.get_default_privilege_list(role_=member_role, context_='SLICE')
+                    if 'EXTRA_PRIVILEGES' in member_dict:
+                        member_dict['PRIVILEGES'] = member_dict['PRIVILEGES']+member_dict['EXTRA_PRIVILEGES']
+                        member_dict.pop('EXTRA_PRIVILEGES', None)
 
                     # Update slice object if necessary
                     if member_role == 'LEAD':
@@ -491,14 +494,17 @@ class OSliceAuthorityResourceManager(object):
                             raise self.gfed_ex.GFedv2ArgumentError("Only project LEAD or ROOT can modify lead membership "+ str(urn))
 
                     # Create Project creds
-                    member_dict['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
-                                                                                       issuer_key=self._sa_pr, issuer_cert=self._sa_c,
-                                                                                       privileges_list=member_pri, expiration=self.CRED_EXPIRY)
-                    _, member_uuid_int, _ = geniutil.extract_certificate_info(member_cert)
-                    member_uuid = uuid.UUID(int=member_uuid_int).urn[9:]
+                    # member_dict['PROJECT_CREDENTIALS'] = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
+                    #                                                                    issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+                    #                                                                    privileges_list=member_pri, expiration=self.CRED_EXPIRY)
+                    if option_key == 'members_to_add':
+                        _, member_uuid_int, _ = geniutil.extract_certificate_info(member_cert)
+                        member_uuid = uuid.UUID(int=member_uuid_int).urn[9:]
+                        member_dict['PROJECT_MEMBER_UID'] = str(member_uuid)
+                        member_dict['PROJECT_CERTIFICATE'] = project_cert
 
-                    member_dict['PROJECT_MEMBER_UID'] = str(member_uuid)
-                    member_dict['PROJECT_CERTIFICATE'] = project_cert
+                    # Populate modified privileges
+                    member_dict['PRIVILEGES'] = member_pri
 
                     # Update project object if necessary
                     if member_role == 'LEAD':
@@ -548,22 +554,23 @@ class OSliceAuthorityResourceManager(object):
         """
         updates project credentials after member certificate update due to membership renewal or revocation
         """
-        member_cert = options['MEMBER_CERTIFICATE']
-        project_memberships = self.lookup_project_membership_for_member(member_urn, credentials, None)
-        geniutil = pm.getService('geniutil')
-
-        for membership in project_memberships:
-            project_cert = membership['PROJECT_CERTIFICATE']
-            project_creds_old = membership['PROJECT_CREDENTIALS']
-            project_prvlg, project_urn = geniutil.get_privileges_and_target_urn([{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': project_creds_old}])
-            project_exp = geniutil.get_expiration(project_creds_old)
-            project_creds_new = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
-                                                              issuer_key=self._sa_pr, issuer_cert=self._sa_c,
-                                                              privileges_list=project_prvlg, expiration=project_exp)
-
-            update_data = {'members_to_change': [{'PROJECT_CREDENTIALS': project_creds_new}]}
-            self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', project_urn,
-                                                       update_data, 'PROJECT_MEMBER', 'PROJECT_URN')
+        pass
+        # member_cert = options['MEMBER_CERTIFICATE']
+        # project_memberships = self.lookup_project_membership_for_member(member_urn, credentials, None)
+        # geniutil = pm.getService('geniutil')
+        #
+        # for membership in project_memberships:
+        #     project_cert = membership['PROJECT_CERTIFICATE']
+        #     project_creds_old = membership['PROJECT_CREDENTIALS']
+        #     project_prvlg, project_urn = geniutil.get_privileges_and_target_urn([{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': project_creds_old}])
+        #     project_exp = geniutil.get_expiration(project_creds_old)
+        #     project_creds_new = geniutil.create_credential_ex(owner_cert=member_cert, target_cert=project_cert,
+        #                                                       issuer_key=self._sa_pr, issuer_cert=self._sa_c,
+        #                                                       privileges_list=project_prvlg, expiration=project_exp)
+        #
+        #     update_data = {'members_to_change': [{'PROJECT_CREDENTIALS': project_creds_new}]}
+        #     self._resource_manager_tools.member_modify(self.AUTHORITY_NAME, 'project_member', project_urn,
+        #                                                update_data, 'PROJECT_MEMBER', 'PROJECT_URN')
 
     def lookup_slice_membership(self, urn, credentials, match, filter_, options):
         """
@@ -635,3 +642,33 @@ class OSliceAuthorityResourceManager(object):
             now = datetime.datetime.utcnow()
             if now < expDate:
                 raise self.gfed_ex.GFedv2ArgumentError("A project with specified name already exists under the following URN:"+ str(project_urn))
+
+    def lookup_privileges_for_slice_membership(self, member_urn, slice_urn):
+        """
+        Lookup slice membership for given slice and returns privileges if membership is found
+        :param member_urn: URN of member
+        :param slice_urn: URN of slice
+        :return: list of privileges for this slice member
+        """
+
+        lookup_results = self.lookup_slice_membership_for_member(member_urn=member_urn, credentials=None, match={'SLICE_URN': slice_urn}, options=None)
+
+        if lookup_results:
+            return lookup_results[0]['PRIVILEGES']
+        else:
+            return []
+
+    def lookup_privileges_for_project_membership(self, member_urn, project_urn):
+        """
+        Lookup project membership for given slice and returns privileges if membership is found
+        :param member_urn: URN of member
+        :param project_urn: URN of project
+        :return: list of privileges for this project member
+        """
+
+        lookup_results = self.lookup_project_membership_for_member(member_urn=member_urn, credentials=None, match={'PROJECT_URN': project_urn}, options=None)
+
+        if lookup_results:
+            return lookup_results[0]['PRIVILEGES']
+        else:
+            return []

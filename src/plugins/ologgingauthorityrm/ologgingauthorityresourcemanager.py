@@ -19,7 +19,7 @@ class OLoggingAuthorityResourceManager(object):
 
     SUPPORTED_SERVICES = ['Logging', 'Accounting']  #: The objects supported by this authority
 
-    SUPPORTED_CREDENTIAL_TYPES = [{"type": "SFA", "version": 1}]  #: The credential type supported by this authority
+    SUPPORTED_CREDENTIAL_TYPES = [{"type": "SFA", "version": "1"}]  #: The credential type supported by this authority
 
     def __init__(self):
         """

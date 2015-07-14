@@ -49,7 +49,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
 
         if (type_.upper()=='KEY'):
             # Authorization
-            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'KEY')
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'KEY', None, fields)
             # Consistency checks
             self._delegate_tools.object_creation_check(fields, self._key_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
@@ -65,9 +65,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
             # Authorization
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SYSTEM_MEMBER')
             # Registration
-            print "Going to call register..."
             ret_values = self._member_authority_resource_manager.register_member(credentials, fields, options)
-            print "...registered."
             # Logging
             user_name = fields_copy['MEMBER_USERNAME'] if 'MEMBER_USERNAME' in fields_copy.keys() else None
             user_urn = ret_values['MEMBER_URN'] if 'MEMBER_URN' in ret_values.keys() else None
