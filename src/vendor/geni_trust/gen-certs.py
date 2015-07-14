@@ -27,6 +27,7 @@ USER_EMAIL = '%s@example.com' % (USER_NAME,)
 USER_KEY_FILE = '%s-key.pem' % (USER_NAME,)
 USER_CERT_FILE = '%s-cert.pem' % (USER_NAME,)
 USER_CRED_FILE = '%s-cred.xml' % (USER_NAME,)
+USER_URN_FILE = '%s-urn.xml' % (USER_NAME,)
 BAD_USER_NAME = 'malcom'
 BAD_USER_EMAIL = '%s@example.org' % (BAD_USER_NAME,)
 BAD_USER_KEY_FILE = '%s-key.pem' % (BAD_USER_NAME,)
@@ -167,6 +168,7 @@ if __name__ == "__main__":
     write_file(dir_path, USER_KEY_FILE, u_pr, opts.silent)
     u_cred = geniutil.create_credential(u_c, u_c, ma_pr, ma_c, "user", CRED_EXPIRY)
     write_file(dir_path, USER_CRED_FILE, u_cred, opts.silent)
+    write_file(dir_path, USER_URN_FILE, urn, opts.silent)
 
 
     if not opts.silent:

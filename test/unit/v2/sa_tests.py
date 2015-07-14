@@ -333,7 +333,7 @@ class TestGSAv2(unittest.TestCase):
         project_urn = self._test_create(project_create_data, 'PROJECT', 'PROJECT_URN', 0)
 
         member_cert = get_creds_file_contents('alice-cert.pem')
-        member_urn = "urn:publicid:IDN+this.ma+user+alice"
+        member_urn = get_creds_file_contents('alice-urn.xml')
         add_data = {'members_to_add' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
         change_data = {'members_to_change' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
         remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : member_urn}]}
@@ -348,12 +348,12 @@ class TestGSAv2(unittest.TestCase):
         self._test_modify_membership(project_urn, 'PROJECT', change_data, 0)
 
         # try creating a slice after receiving ADMIN role
-        self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 2, "alice")
+        self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 0, "alice")
 
         self._test_lookup_members(project_urn, 'PROJECT', lookup_data, 1, 0)
         self._test_lookup_for_members(project_urn, member_urn,'PROJECT', {}, 1, 0)
         self._test_modify_membership(project_urn, 'PROJECT', remove_data, 0)
-        self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
+        # self._test_delete(project_urn, 'PROJECT', 'PROJECT_URN', 0)
 
     def test_slice_membership(self):
         """
