@@ -12,6 +12,8 @@ cp tmp/sa-cert.pem deploy/trusted/certs/
 cp tmp/sa-key.pem deploy/trusted/cert_keys/
 cp tmp/ma-cert.pem deploy/trusted/certs/
 cp tmp/ma-key.pem deploy/trusted/cert_keys/
+cp tmp/ch-cert.pem deploy/trusted/certs/
+cp tmp/ch-key.pem deploy/trusted/cert_keys/
 cp tmp/root-*.pem admin/
 cp tmp/*.pem test/creds/
 cp tmp/*.xml test/creds/

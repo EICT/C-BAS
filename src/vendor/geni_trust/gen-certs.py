@@ -16,6 +16,8 @@ MA_CERT_FILE = 'ma-cert.pem'
 MA_KEY_FILE = 'ma-key.pem'
 AM_CERT_FILE = 'am-cert.pem'
 AM_KEY_FILE = 'am-key.pem'
+SERVER_CERT_FILE = 'ch-cert.pem'
+SERVER_KEY_FILE = 'ch-key.pem'
 
 ADMIN_NAME = 'root'
 ADMIN_EMAIL = '%s@example.net' %  (ADMIN_NAME,)
@@ -157,6 +159,14 @@ if __name__ == "__main__":
         print "You may want to configure the above certificates & private keys in your SA/MA/AM servers."
         print "Also, you may want to add the SA & MA certificates to the trusted_roots of the AM servers."
         print "--------------------"
+
+    if not opts.silent:
+        print "Creating server certificate"
+    urn = geniutil.encode_urn(authority, 'authority', 'ch')
+    cert_serial_number += 1
+    server_c, _, server_pr = geniutil.create_certificate(urn, ca_pr, ca_c, serial_number=cert_serial_number, life_days=10000)
+    write_file(dir_path, SERVER_CERT_FILE, server_c, opts.silent)
+    write_file(dir_path, SERVER_KEY_FILE, server_pr, opts.silent)
 
     if not opts.silent:
         print "Creating test user cert and cred (valid, signed by MA)"

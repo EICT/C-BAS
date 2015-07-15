@@ -5,9 +5,11 @@ import eisoil.core.log
 logger=eisoil.core.log.getLogger('flaskrpcs')
 
 from eisoil.core import serviceinterface
-
+from eisoil.config import  expand_eisoil_path
 from werkzeug import serving
 from OpenSSL import SSL, crypto
+import os
+import sys
 
 class ClientCertHTTPRequestHandler(serving.WSGIRequestHandler):
     """Overwrite the werkzeug handler, so we can extract the client cert and put it into the request's environment."""
@@ -88,8 +90,24 @@ class FlaskServer(object):
                 from werkzeug.debug import DebuggedApplication
                 import socket
                 application = DebuggedApplication(self._app, True)
+
+                # Set up an SSL context
+                cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
+                cert_key_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_keys_path"))
+
+                context = SSL.Context(SSL.SSLv23_METHOD)
+                context_crt = os.path.join(cert_path, "ch-cert.pem")
+                context_key = os.path.join(cert_key_path, "ch-key.pem")
+                try:
+                    context.use_certificate_file(context_crt)
+                    context.use_privatekey_file(context_key)
+                except Exception as e:
+                    logger.critical("error starting flask server. Cert or key is missing under %s", cert_path)
+                    sys.exit(e)
+
                 def inner():
-                    server = serving.make_server(host, app_port, self._app, False, 1, ClientCertHTTPRequestHandler, False, 'adhoc')
+                    # server = serving.make_server(host, app_port, self._app, False, 1, ClientCertHTTPRequestHandler, False, 'adhoc')
+                    server = serving.make_server(host, app_port, self._app, False, 1, ClientCertHTTPRequestHandler, False, ssl_context=context)
                     # The following line is the reason why I copied all that code!
                     if must_have_client_cert:
                         server.ssl_context.set_verify(SSL.VERIFY_PEER | SSL.VERIFY_FAIL_IF_NO_PEER_CERT, lambda a,b,c,d,e: True)
