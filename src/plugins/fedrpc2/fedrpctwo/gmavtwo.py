@@ -163,6 +163,19 @@ class GMAv2Handler(xmlrpc.Dispatcher):
             return self._api_tools.form_error_return(logger, e)
         return self._api_tools.form_success_return(result)
 
+    def assign_privileges(self, member_urn, credentials, privileges):
+        """
+        Assigns given privileges to a system member
+        :param member_urn: URN of member
+        :param credentials: Actor's credentials usually root
+        :param privileges_list: list of privileges to be assigned
+        :return: Updated member credential
+        """
+        try:
+             result = self._delegate.assign_privileges(member_urn, credentials, privileges)
+        except Exception as e:
+            return self._api_tools.form_error_return(logger, e)
+        return self._api_tools.form_success_return(result)
 
 class GMAv2DelegateBase(object):
     """

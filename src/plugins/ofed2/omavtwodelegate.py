@@ -35,7 +35,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
         """
         version = self._delegate_tools.get_version(self._member_authority_resource_manager)
         version['VERSION'] = VERSION
-        version['FIELDS'] = self._delegate_tools.get_supplementary_fields(['MEMBER', 'KEY'])
+        # version['FIELDS'] = self._delegate_tools.get_supplementary_fields(['MEMBER', 'KEY'])
         return version
 
     def create(self, type_, credentials, fields, options):
@@ -48,6 +48,8 @@ class OMAv2Delegate(GMAv2DelegateBase):
         client_ssl_cert = self._gmav2handler.requestCertificate()
 
         if (type_.upper()=='KEY'):
+            print ">>>>>>>>>>>>>>>>>>> "+str(self._key_whitelist)
+            print fields
             # Authorization
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'KEY', None, fields)
             # Consistency checks
@@ -143,13 +145,22 @@ class OMAv2Delegate(GMAv2DelegateBase):
         # Turn off logging for lookups
         # options_copy = copy.copy(options) if options else None
 
-        if (type_.upper()=='MEMBER'):
+        if type_.upper() == 'MEMBER':
             # Authorization
-            #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
+            # self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
+            remove_anchor_key = False
             if filter_ and 'MEMBER_URN' not in filter_:
                 filter_.append('MEMBER_URN')
+                remove_anchor_key = True
+
+            match_urn_list = self._delegate_tools.decompose_urns(match, 'MEMBER_URN')
+
             # Lookup
-            ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_member(credentials, match, filter_, options), "MEMBER_URN")
+            result_list = []
+            for urn in match_urn_list:
+                result_list = result_list+self._member_authority_resource_manager.lookup_member(credentials, urn, [] if filter_ is None else filter_, options)
+
+            ret_values = self._delegate_tools.to_keyed_dict(result_list, "MEMBER_URN", filter_, remove_anchor_key)
             # self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
             #         fields=None, options= options_copy, credentials=credentials)
             return ret_values
@@ -157,10 +168,13 @@ class OMAv2Delegate(GMAv2DelegateBase):
         elif (type_.upper()=='KEY'):
             # Authorization
             #self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'KEY')
+            remove_anchor_key = False
             if filter_ and 'KEY_ID' not in filter_:
                 filter_.append('KEY_ID')
+                remove_anchor_key = True
             # Lookup
-            ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(credentials, match, filter_, options), "KEY_ID")
+            ret_values = self._delegate_tools.to_keyed_dict(self._member_authority_resource_manager.lookup_key(
+                credentials, match, [] if filter_ is None else filter_, options), "KEY_ID", filter_, remove_anchor_key)
             # self._logging_authority_resource_manager.append_event_log(authority='ma', method='lookup', target_type=type_.upper(),
             #         fields=None, options= options_copy, credentials=credentials)
             return ret_values
@@ -210,3 +224,16 @@ class OMAv2Delegate(GMAv2DelegateBase):
                     fields=None, options=None, target_urn=member_urn, credentials=credentials)
 
         return self._member_authority_resource_manager.revoke_certificate(member_urn)
+
+    def assign_privileges(self, member_urn, credentials, privileges):
+        """
+        Assigns given privileges to a system member
+        :param member_urn: URN of member
+        :param credentials: Actor's credentials usually root
+        :param privileges_list: list of privileges to be assigned
+        :return: Updated member credential
+        """
+        self._logging_authority_resource_manager.append_event_log(authority='ma', method='Assign privileges', target_type='MEMBER',
+                    fields=privileges, options=None, target_urn=member_urn, credentials=credentials)
+
+        return self._member_authority_resource_manager.assign_privileges(member_urn, credentials, privileges)

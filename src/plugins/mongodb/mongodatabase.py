@@ -115,7 +115,7 @@ class MongoDB(object):
         """
         Prune the results to remove both predefined and given key-value fields.
 
-        Removing these supplemtary keys allows a direct return of the result in
+        Removing these supplementary keys allows a direct return of the result in
         response to a user's API call.
 
         Predefined fields to remove are:

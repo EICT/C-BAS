@@ -91,25 +91,29 @@ public class LoggingAuthorityAPI {
 			if(act != null && act.equals("modify_membership"))
 			{
 				String key = opts.keySet().iterator().next();
-				Object[] list = (Object[]) opts.get(key);
-				@SuppressWarnings("unchecked")
-				Map<String, String> dict = (Map<String, String>) list[0];
 				String objType = obj.contains("project")?"PROJECT":"SLICE";
-				String role = dict.get(objType+"_ROLE");
-				String urn = dict.get(objType+"_MEMBER");
-				String username = urn==null?"":urn.substring(urn.lastIndexOf('+')+1);
-				
-				if(key.equals("members_to_change"))
+
+				Object[] list = (Object[]) opts.get(key);
+				if(list.length > 0)
 				{
-					params = username+" -> "+role;
-				}
-				else if(key.equals("members_to_add"))
-				{
-					params = "Add "+username+(role==null?"":" as "+role);
-				}
-				else
-				{
-					params = "Remove "+ username;
+					@SuppressWarnings("unchecked")
+					Map<String, String> dict = (Map<String, String>) list[0];
+					String role = dict.get(objType+"_ROLE");
+					String urn = dict.get(objType+"_MEMBER");
+					String username = urn==null?"":urn.substring(urn.lastIndexOf('+')+1);
+					
+					if(key.equals("members_to_change"))
+					{
+						params = username+" -> "+role;
+					}
+					else if(key.equals("members_to_add"))
+					{
+						params = "Add "+username+(role==null?"":" as "+role);
+					}
+					else
+					{
+						params = "Remove "+ username;
+					}
 				}
 			}
 			

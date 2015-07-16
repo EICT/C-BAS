@@ -65,11 +65,11 @@ class OMemberAuthorityResourceManager(object):
         """
         #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_UID')
         #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_URN')
-        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_ID')
+        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_ID')
         #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'CERT_SERIAL_NUMBER')
         #<UT> Let's add username and key member
         self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'MEMBER_USERNAME')
-        self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_MEMBER')
+        #self._resource_manager_tools.set_index(self.AUTHORITY_NAME, 'KEY_MEMBER')
 
     #--- 'get_version' methods
     def urn(self):
@@ -162,7 +162,9 @@ class OMemberAuthorityResourceManager(object):
             * KEY_ID: hash of the existing 'KEY_PUBLIC' value
 
         """
+
         fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
+        fields['KEY_PRIVATE'] = '' # Private key is not stored by policy
         return self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
             fields, 'key')
 
@@ -446,11 +448,23 @@ class OMemberAuthorityResourceManager(object):
             else:
                 raise self.gfed_ex.GFedv2ArgumentError("The specified user does not exist: "+member_urn)
 
-    def assign_privileges(self, member_urn, credentials, privileges_list):
+    def assign_privileges(self, member_urn, credentials, privileges):
         """
-
-        :param member_urn:
-        :param credentials:
-        :param privileges_list:
-        :return:
+        Assigns given privileges to a system member
+        :param member_urn: URN of member
+        :param credentials: Actor's credentials usually root
+        :param privileges_list: list of privileges to be assigned
+        :return: Updated member credential
         """
+        geniutil = pm.getService('geniutil')
+        member_lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': member_urn}, [])
+        if member_lookup_result:
+            member_details = member_lookup_result[0]
+            u_c = member_details['MEMBER_CERTIFICATE']
+            cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)
+            u_cred = geniutil.create_credential_ex(owner_cert=u_c, target_cert=u_c, issuer_key=self._ma_cert_key_str,
+                                                       issuer_cert=self._ma_cert_str, privileges_list=privileges,
+                                                       expiration=cred_expiry)
+            member_details['MEMBER_CREDENTIALS'] = u_cred
+            self._resource_manager_tools.object_update(self.AUTHORITY_NAME, member_details, 'member', {'MEMBER_URN': member_urn})
+            return u_cred

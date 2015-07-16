@@ -101,6 +101,7 @@ public class Slices extends JPanel {
 					{
 						sliceListModel.add(d);
 						sliceList.setSelectedValue(d, true);
+						updateDisplays();
 					}
 				}
 			}
@@ -298,26 +299,7 @@ public class Slices extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-
-                  Slice d = (Slice) sliceList.getSelectedValue();
-                  textFieldSliceURN.setText(d.urn);
-                  textAreaDesc.setText(d.desc);
-                  textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
-                  textFieldCreation.setText(Utils.utcTolocal(d.creation));
-                  textFieldProjectURN.setText(d.urnProject);
-                  tableModel.clear();
-                  //if(d.members.size() == 0)
-                  LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "SLICE");
-                  if(members == null)
-                  {
-                	  showErrorMessage();
-                	  return;
-                  }
-                  d.members = members;
-                  
-                  for(int i=0; i<members.size(); i++){
-                	  tableModel.add(members.get(i).urn, members.get(i).role);
-                  }
+                	updateDisplays();
                 }
             }
         }); 
@@ -329,7 +311,36 @@ public class Slices extends JPanel {
 		
 	}
 	
-	
+	private void updateDisplays()
+	{
+		if(sliceList.isSelectionEmpty())
+			return;
+		
+        Slice d = (Slice) sliceList.getSelectedValue();
+        
+        if(d.urn.equals(textFieldSliceURN.getText())) //is an updated really necessary?
+        	return;
+        
+        textFieldSliceURN.setText(d.urn);
+        textAreaDesc.setText(d.desc);
+        textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
+        textFieldCreation.setText(Utils.utcTolocal(d.creation));
+        textFieldProjectURN.setText(d.urnProject);
+        tableModel.clear();
+        //if(d.members.size() == 0)
+        LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "SLICE");
+        if(members == null)
+        {
+      	  showErrorMessage();
+      	  return;
+        }
+        d.members = members;
+        
+        for(int i=0; i<members.size(); i++){
+      	  tableModel.add(members.get(i).urn, members.get(i).role);
+        }
+		
+	}
 	private Slice showNewSliceDialog()
 	{
 		Object[] allProjects = mainGUI.getProjectsArray();

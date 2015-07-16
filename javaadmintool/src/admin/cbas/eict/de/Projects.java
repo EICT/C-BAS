@@ -2,6 +2,7 @@ package admin.cbas.eict.de;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.JList;
@@ -26,8 +27,13 @@ import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
 
 import java.awt.Insets;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.TimeZone;
 
 import javax.swing.JTextArea;
 
@@ -57,6 +63,7 @@ public class Projects extends JPanel {
 	CustomTableModel tableModel;
 //	static LinkedList<SliceAuthorityAPI.Project> projectDetailsList;
 	private JTextField textFieldCreation;
+	SimpleDateFormat dateFormatterToUTC;	
 	MainGUI mainGUI;
 	
 
@@ -196,7 +203,7 @@ public class Projects extends JPanel {
 					if(urn.startsWith("urn:"))
 					{
 						String username = urn.substring(urn.lastIndexOf('+')+1);
-						mainGUI.setSelectedMember(username);
+						mainGUI.setSelectedMember(username);						
 					}
 				}				
 			}
@@ -207,35 +214,7 @@ public class Projects extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                  
-                  Project d = (Project) projectList.getSelectedValue();
-                  textAreaDesc.setText(d.desc);
-                  textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
-                  textFieldProjectURN.setText(d.urn);
-                  textFieldCreation.setText(Utils.utcTolocal(d.creation));
-                  
-                  //if(d.members.size() == 0)
-                  LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "PROJECT");
-                  if(members == null)
-                  {
-                	  showErrorMessage();
-                	  return;
-                  }
-                  d.members = members;
-                  tableModel.clear();
-                  for(int i=0; i<members.size(); i++)
-                	  tableModel.add(members.get(i).urn, members.get(i).role);
-
-                  Slice[] slices = SliceAuthorityAPI.lookupSlices(d.urn);
-                  if(slices == null)
-                  {
-                	  showErrorMessage();
-                	  return;
-                  }
-                  d.slices = slices;
-                  projectSliceListModel.clear();
-                  for(int i=0; i<slices.length; i++)
-                	  projectSliceListModel.add(slices[i].name);
+                	updateDisplays();
                 }
             }
         }); 
@@ -281,6 +260,7 @@ public class Projects extends JPanel {
 				{					
 					projectListModel.add(d);
 					projectList.setSelectedValue(d, true);
+					updateDisplays();
 				}else
 					showErrorMessage();
 				
@@ -310,6 +290,8 @@ public class Projects extends JPanel {
 				if(rsp)
 				{
 					projectListModel.removeElement(project);
+					projectList.setSelectedIndex(0);
+					updateDisplays();
 				}else
 					showErrorMessage();
 				
@@ -373,9 +355,50 @@ public class Projects extends JPanel {
 		//Select first element in the list for display
 		if(projectListModel.getSize()>0)
 			projectList.setSelectedIndex(0);
-
+		
+		dateFormatterToUTC = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		dateFormatterToUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	
+	private void updateDisplays()
+	{
+		if(projectList.isSelectionEmpty())
+			return;
+		
+        Project d = (Project) projectList.getSelectedValue();
+        
+        if(d.urn.equals(textFieldProjectURN.getText())) //Is update is really needed?
+        	return;
+        
+        textAreaDesc.setText(d.desc);
+        textFieldExpiry.setText(Utils.utcTolocal(d.expiry));
+        textFieldProjectURN.setText(d.urn);
+        textFieldCreation.setText(Utils.utcTolocal(d.creation));
+        
+        //if(d.members.size() == 0)
+        LinkedList<Membership> members = SliceAuthorityAPI.lookupMembers(d.urn, "PROJECT");
+        if(members == null)
+        {
+      	  showErrorMessage();
+      	  return;
+        }
+        d.members = members;
+        tableModel.clear();
+        for(int i=0; i<members.size(); i++)
+      	  tableModel.add(members.get(i).urn, members.get(i).role);
+
+        Slice[] slices = SliceAuthorityAPI.lookupSlices(d.urn);
+        if(slices == null)
+        {
+      	  showErrorMessage();
+      	  return;
+        }
+        d.slices = slices;
+        projectSliceListModel.clear();
+        for(int i=0; i<slices.length; i++)
+      	  projectSliceListModel.add(slices[i].name);
+		
+	}
 	
 	private Project showNewProjectDialog()
 	{
@@ -390,7 +413,11 @@ public class Projects extends JPanel {
 		c.gridy = 0;				
 		infoPanel.add(new JLabel("Name:"),c);
 		c.gridy = 1;						
+		infoPanel.add(new JLabel("Expiration:"),c);
+		c.gridy = 2;
 		infoPanel.add(new JLabel("Description:"),c);
+		
+		
 		
 		JTextField name;
 		JTextArea desc;
@@ -400,14 +427,23 @@ public class Projects extends JPanel {
 	    doc.setDocumentFilter(new PatternFilter("^[a-zA-Z0-9][-a-zA-Z0-9]{0,18}"));
 		
 		desc = new JTextArea("");
+		DateTimePicker expiry = new DateTimePicker();
+		expiry.setFormats( Logs.dateFormatTimestamp);
+		expiry.setTimeFormat( Logs.timeFormatPicker );
+		expiry.getEditor().setEditable(false);
+		Calendar suggestedExpiry = Calendar.getInstance();
+		suggestedExpiry.add(Calendar.DATE, 500);
+		expiry.setDate(suggestedExpiry.getTime());
 		
 		c.weightx = 0.9;
 		c.gridx = 1;
 		c.gridy = 0;		
 		infoPanel.add(name, c);
-		c.gridy = 1;		
+		c.gridy = 1;
+		infoPanel.add((Component) expiry, c);
 		c.ipady = 100;
-		infoPanel.add(new JScrollPane(desc), c);		
+		c.gridy = 2;
+		infoPanel.add(new JScrollPane(desc), c);
 		
 		int response; 
 		do{
@@ -415,10 +451,12 @@ public class Projects extends JPanel {
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 			name.setBackground(name.getText().trim().length()==0?Color.pink:Color.white);
 			desc.setBackground(desc.getText().trim().length()==0?Color.pink:Color.white);
+			expiry.getEditor().setBackground(expiry.getDate().before(new Date())?Color.pink:Color.white);
 		}
 		while( (name.getText().length()==0   ||
+				expiry.getDate().before(new Date()) ||
 			    desc.getText().length()==0 ) &&	
-			   response == JOptionPane.OK_OPTION);
+			    response == JOptionPane.OK_OPTION);
 		
 		if(response != JOptionPane.OK_OPTION)
 			return null;
@@ -427,7 +465,7 @@ public class Projects extends JPanel {
 			Project d = new Project();
 			d.name = name.getText().trim();
 			d.desc = desc.getText().trim();
-			
+			d.expiry = dateFormatterToUTC.format(expiry.getDate());
 			return d;
 		}
 		

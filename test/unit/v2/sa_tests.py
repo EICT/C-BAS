@@ -132,7 +132,7 @@ class TestGSAv2(unittest.TestCase):
         Note: We are only testing projects here because otherwise we would end up with slices left over (we can not remove slices).
         """
         create_data = {
-                       'PROJECT_NAME' : 'TEST-PROJECT-12',
+                       'PROJECT_NAME': 'TEST-PROJECT-12', 'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z',
                        'PROJECT_DESCRIPTION' : 'Time_Expiry'}
 
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
@@ -315,14 +315,6 @@ class TestGSAv2(unittest.TestCase):
         self.assertEqual(code, expected_code)
 
 
-    def test_malformed_membership(self):
-        """
-        Test type checking by passing incorrect (project) parameters in a slice
-        membership call.
-        """
-        add_data = {'members_to_add' : [{'PROJECT_MEMBER' : 'test_urn', 'PROJECT_ROLE' : 'test_role'}]}
-        self._test_lookup_members('urn:publicid:IDN+this.sa+project+SLICE', 'SLICE', add_data, 0, 3)
-
     def test_project_membership(self):
         """
         Test the 'add', 'change' and 'remove' methods for 'PROJECT' membership
@@ -337,7 +329,7 @@ class TestGSAv2(unittest.TestCase):
         add_data = {'members_to_add' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'MEMBER', 'MEMBER_CERTIFICATE': member_cert}]}
         change_data = {'members_to_change' : [{'PROJECT_MEMBER' : member_urn, 'PROJECT_ROLE' : 'ADMIN', 'MEMBER_CERTIFICATE': member_cert, 'EXTRA_PRIVILEGES': ['GLOBAL_PROJECTS_MONITOR']}]}
         remove_data = {'members_to_remove' : [{'PROJECT_MEMBER' : member_urn}]}
-        lookup_data = {'match':{'PROJECT_MEMBER' : member_urn}}
+        lookup_data = {'match':{'PROJECT_MEMBER' : member_urn}, 'filter': []}
         self._test_modify_membership(project_urn, 'PROJECT', add_data, 0)
 
         # Try creating slice in project as MEMBER
@@ -461,7 +453,9 @@ class TestGSAv2(unittest.TestCase):
         Helper method to test object membership lookup.
         """
         code, value, output = sa_call('lookup_members', [object_type, urn, self._credential_list(op_user_name), data], user_name=op_user_name)
-        self.assertEqual(code, 0)
+        if not code == expected_code:
+            print code, value, output
+        self.assertEqual(code, expected_code)
         if not len(value) == expected_length:
             print value
         self.assertEqual(len(value), expected_length)

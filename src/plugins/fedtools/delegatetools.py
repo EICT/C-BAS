@@ -278,7 +278,14 @@ class DelegateTools(object):
             try:
                 priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn([cred])
                 user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
-                geniutil.verify_credential_ex([cred], owner_cert, user_urn_from_cert, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
+                _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
+
+                if cred_typ == 'slice':
+                    target_urn_for_validation = target_urn
+                else:
+                    target_urn_for_validation = user_urn_from_cert
+
+                geniutil.verify_credential_ex([cred], owner_cert, target_urn_for_validation, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
 
                 # Fetch privileges
                 privileges = []
@@ -380,24 +387,27 @@ class DelegateTools(object):
             raise GFedv2AuthorizationError("Your project credentials do not provide enough privileges to execute "+ method + " call on slice object")
 
     @serviceinterface
-    def check_if_modify_membership_authorized(self, credentials, options, type_):
+    def check_if_modify_membership_authorized(self, credentials, options, type_, urn):
         """
         Check if credentials have any of the given privileges; NOTE: target_urn is assumed to be already checked
         Moreover, authorization for remove member is not performed here
         :param credentials: credential string in SFA format
         :param method: Name of the method e.g., CREATE, UPDATE, LOOKUP, DELETE, CHANGE_ROLE etc.
         :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
+        :param urn: URN of the slice or project
         """
 
         geniutil = pm.getService('geniutil')
-
+        slice_authority_resource_manager = pm.getService('osliceauthorityrm')
         priv_from_cred, _ = geniutil.get_privileges_and_target_urn(credentials)
         required_privileges = []
 
         for option_key, option_value in options.iteritems():
             for member_dict in option_value:
+                object_priv = []
                 #Authorization check for ADMIN and LEAD roles
                 if type_ == 'PROJECT':
+                    object_priv = slice_authority_resource_manager.lookup_privileges_for_project_membership(member_urn=member_dict['PROJECT_MEMBER'], project_urn=urn)
                     if 'PROJECT_ROLE' in member_dict:
                         if member_dict['PROJECT_ROLE'] == 'ADMIN':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'ADMIN')
@@ -406,15 +416,15 @@ class DelegateTools(object):
                         elif member_dict['PROJECT_ROLE'] == 'MONITOR':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'PROJECT_MEMBER', 'MONITOR')
                 elif type_ == 'SLICE':
+                    object_priv = slice_authority_resource_manager.lookup_privileges_for_slice_membership(member_urn=member_dict['SLICE_MEMBER'], slice_urn= urn)
                     if 'SLICE_ROLE' in member_dict:
                         if member_dict['SLICE_ROLE'] == 'ADMIN':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'ADMIN')
                         elif member_dict['SLICE_ROLE'] == 'LEAD':
                             required_privileges = self.get_required_privilege_for('CHANGE_ROLE', 'SLICE_MEMBER', 'LEAD')
-
-                if required_privileges and not set(priv_from_cred).intersection(required_privileges):
+                if required_privileges and not set(priv_from_cred+object_priv).intersection(required_privileges):
                     raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to modify "+ type_ +
-                                                   " membership\nYour Privileges: "+str(priv_from_cred)+" Required one of following privileges "+str(required_privileges))
+                                                   " membership\n Your Privileges: "+str(priv_from_cred+object_priv)+" Required one of following privileges "+str(required_privileges))
 
                 # Only self owned privileges can be assigned to others
                 if 'EXTRA_PRIVILEGES' in member_dict:
@@ -553,7 +563,7 @@ class DelegateTools(object):
         """
         if field_value.get('CREATE', 'NOT ALLOWED') in ['REQUIRED', 'ALLOWED']:
             whitelist['create_whitelist'].append(field_key)
-            if field_value.get('CREATE', False) is 'REQUIRED':
+            if field_value.get('CREATE', 'NOT ALLOWED') == 'REQUIRED':
                 whitelist['create_required'].append(field_key)
         if field_value.get('MATCH', True):
             whitelist['lookup_match'].append(field_key)
@@ -617,8 +627,10 @@ class DelegateTools(object):
             GFedv2ArgumentError: There is a required field missing or it is not possible to pass this field during object creation.
 
         """
+
         required = set(whitelist.get('create_required')).difference(set(fields))
         whitelist = set(fields).difference(set(whitelist.get('create_whitelist')))
+
         if required:
             raise GFedv2ArgumentError('Required key(s) missing for object creation: ' + ', '.join(required))
         if whitelist:
@@ -673,29 +685,29 @@ class DelegateTools(object):
  
     @staticmethod
     @serviceinterface
-    def decompose_slice_urns(match_value_to_decompose):
+    def decompose_urns(match_value_to_decompose, key):
         """
-        Create individual SLICE_URN entries to match from a list of SLICE_URN Values. For example,
+        Create individual URN entries to match from a list of URN Values. For example,
         input = {SLICE_URN: [urn1, unr2, urn3}
         output =[{SLICE_URN: urn1}, {SLICE_URN:urn2}, {SLICE_URN:urn3}]
 
         Args:
-            match_value_to_decompose: dictionary of individual slice URN list with other match values
+            match_value_to_decompose: dictionary of individual URN list with other match values
 
         Returns:
-            match_urn_list: A list of dictionaries for each slice URN
+            match_urn_list: A list of dictionaries for each URN
 
         """
         match_urn_list=[]
-        if 'SLICE_URN' in match_value_to_decompose:
-            get_result=match_value_to_decompose.get('SLICE_URN')
+        if key in match_value_to_decompose:
+            get_result=match_value_to_decompose.get(key)
 
             if isinstance(get_result,list):
-                urns_to_query=match_value_to_decompose.pop('SLICE_URN')
+                urns_to_query=match_value_to_decompose.pop(key)
 
                 for value in urns_to_query:
                     match_value_to_decompose_copy=match_value_to_decompose.copy()
-                    match_value_to_decompose_copy['SLICE_URN']=value
+                    match_value_to_decompose_copy[key]=value
                     match_urn_list.append(match_value_to_decompose_copy)
             else:
                 match_urn_list.append(match_value_to_decompose)
@@ -706,7 +718,7 @@ class DelegateTools(object):
 
     @staticmethod
     @serviceinterface
-    def to_keyed_dict(list_, key):
+    def to_keyed_dict(list_, key, filters=None, remove_anchor_key=True):
         """
         Convert a list to a dictionary, keyed to given key.
 
@@ -718,10 +730,21 @@ class DelegateTools(object):
             keyed dictionary
 
         """
+
+        if not list_:
+            return {}
+
         for d in list_:
             if not key in d:
                 raise ValueError("Can not convert to dict because the key_field name (%s) is not in the dictionary (%s)" % (key, d))
-        return { d[key] : dict(filter(lambda (k,v): (k != key), d.iteritems())) for d in list_}
+
+        if filters is None or len(filters) > 0:
+            if remove_anchor_key:
+                return { d[key] : dict(filter(lambda (k,v): (k != key), d.iteritems())) for d in list_}
+            else:
+                return { d[key] : dict(d.iteritems()) for d in list_}
+        else:
+            return { d[key] : dict() for d in list_}
 
     @serviceinterface
     def match_and_filter(self, list_of_dicts, field_filter, field_match):

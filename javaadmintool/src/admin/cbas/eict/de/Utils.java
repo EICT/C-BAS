@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -18,10 +19,18 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 public class Utils {
 
 	static SimpleDateFormat dateFormatter = new SimpleDateFormat("E, MMMM d, yyyy HH:mm:ss, z");
+		
 	
 	public static String readFile(File file){
 		
@@ -125,6 +134,54 @@ public class Utils {
 		return "";
 	}
 	
+	public static ArrayList<String> extractPrivileges(String credential)
+	{
+	    ArrayList<String> privileges = new ArrayList<String>();
+	    
+		try {
+		    //Get the DOM Builder 		    
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+		    //Parse the XML string
+		    Document document = builder.parse(new InputSource(new StringReader(credential)));
 	
+		    //Iterating through the nodes and extracting the data.
+		    NodeList nodeList = document.getDocumentElement().getChildNodes();
 	
-}
+		    for (int i = 0; i < nodeList.getLength(); i++) {
+		    	
+		    	Node node = nodeList.item(i);
+		    	if(node.getNodeName().equals("credential"))
+		    	{
+		    		NodeList childNodes = node.getChildNodes();
+		    		for (int j = 0; j < childNodes.getLength(); j++) 	    			      
+		    			if(childNodes.item(j).getNodeName().equals("privileges"))
+		    			{
+		    				NodeList privilegeNodes = childNodes.item(j).getChildNodes();
+		    				for(int k=0; k<privilegeNodes.getLength(); k++)
+		    					privileges.add(privilegeNodes.item(k).getChildNodes().item(0).getFirstChild().getNodeValue());		    				
+		    				
+		    				break;
+		    			}
+		    	}
+		    }
+		} catch (Exception e) {
+//			e.printStackTrace();
+		}
+		
+		return privileges;
+	}
+	
+	public static String join(List<String> list)
+	{
+		if( list == null || list.size() == 0)
+			return "";
+		
+		StringBuilder sb = new StringBuilder();
+		for(String i: list)
+			sb.append(i+", ");
+		
+		return sb.substring(0, sb.length()-2);
+	}
+	
+} //class

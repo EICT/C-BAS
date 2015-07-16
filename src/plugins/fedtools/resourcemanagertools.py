@@ -106,6 +106,7 @@ class ResourceManagerTools(object):
             extra_fields = []
         match['type'] = type_
         match[key] = value
+        filter_ = self._convert_filter_to_projection(filter_)
         result = self._database.lookup(authority, match, filter_)
         for member in result:
             member = self._database.prune_result(member, extra_fields)

@@ -26,6 +26,6 @@ class OLoggingDelegate(GLoggingDelegateBase):
         using the resource manager.
         """
         if target_type:
-            return self._logging_authority_resource_manager.lookup(target_type.upper(), match, filters)
+            return self._logging_authority_resource_manager.lookup(target_type.upper(), match, [] if filters is None else filters)
         else:
             raise gfed_ex.GFedv2ArgumentError("Target type should be one of the followings: slice, project, member, key, sliver_info, all" )

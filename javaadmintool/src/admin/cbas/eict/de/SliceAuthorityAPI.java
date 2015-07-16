@@ -22,13 +22,7 @@ public class SliceAuthorityAPI {
 	public static Slice[] lookupSlices(String projectURN)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();				
-		Map<String, Object> filter = new HashMap<String, Object>();
-		filter.put("SLICE_NAME", new Integer(1));				
-		filter.put("SLICE_EXPIRATION", new Integer(1));				
-		filter.put("SLICE_UID", new Integer(1));				
-		filter.put("SLICE_URN", new Integer(1));				
-		filter.put("SLICE_DESCRIPTION", new Integer(1));				
-		filter.put("SLICE_CREATION", new Integer(1));				
+		String filter[] = {"SLICE_NAME", "SLICE_EXPIRATION", "SLICE_UID", "SLICE_URN", "SLICE_DESCRIPTION", "SLICE_CREATION"};				
 		options.put("filter", filter);
 
 		if(projectURN != null)
@@ -47,7 +41,6 @@ public class SliceAuthorityAPI {
         	output = (String)rsp.get("output");
         	return null;
         }
-        	
 
         Map<String, Object> x = (Map<String, Object>) rsp.get("value");
         
@@ -84,9 +77,7 @@ public class SliceAuthorityAPI {
 	public static LinkedList<Membership> lookupMembers(String objURN, String objType)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
-		Map<String, Object> filter = new HashMap<String, Object>();
-		filter.put(objType+"_MEMBER", new Integer(1));				
-		filter.put(objType+"_ROLE", new Integer(1));				
+		String filter[] = {objType+"_MEMBER", objType+"_ROLE"};				
 		options.put("filter", filter);
 		
 		
@@ -233,13 +224,7 @@ public class SliceAuthorityAPI {
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"PROJECT", "", options};
-		Map<String, Object> filter = new HashMap<String, Object>();
-		filter.put("PROJECT_NAME", new Integer(1));				
-		filter.put("PROJECT_EXPIRATION", new Integer(1));				
-		filter.put("PROJECT_UID", new Integer(1));				
-		filter.put("PROJECT_URN", new Integer(1));				
-		filter.put("PROJECT_DESCRIPTION", new Integer(1));				
-		filter.put("PROJECT_CREATION", new Integer(1));				
+		String[] filter = {"PROJECT_NAME", "PROJECT_EXPIRATION", "PROJECT_UID", "PROJECT_URN", "PROJECT_DESCRIPTION", "PROJECT_CREATION"};				
 		options.put("filter", filter);
         
 		
@@ -282,6 +267,7 @@ public class SliceAuthorityAPI {
 		Map<String, String> create_data = new HashMap<String, String>();
 		create_data.put("PROJECT_NAME", project.name);
 		create_data.put("PROJECT_DESCRIPTION", project.desc);
+		create_data.put("PROJECT_EXPIRATION", project.expiry);
 		
 		
 		
@@ -333,8 +319,7 @@ public class SliceAuthorityAPI {
 	public static LinkedList<AnObject> lookupForMembers(String memberURN, String objType)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
-		Map<String, Object> filter = new HashMap<String, Object>();
-		filter.put(objType+"_URN", new Boolean(true));				
+		String filter[] = {objType+"_URN"};				
 		options.put("filter", filter);
 		
         Object params[] = new Object[]{objType, memberURN, "", options};
@@ -411,6 +396,7 @@ public class SliceAuthorityAPI {
 		Project()
 		{
 			members = new LinkedList<Membership>();
+			slices = new Slice[0];
 		}
 			
 		@Override

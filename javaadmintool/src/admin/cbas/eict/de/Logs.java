@@ -42,8 +42,8 @@ public class Logs extends JPanel {
 	JComboBox comboBoxSub;
 	JComboBox comboBoxObjType;
 	JComboBox comboBoxAct;
-	SimpleDateFormat timeFormatPicker = new SimpleDateFormat("HH:mm:ss");
-	SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("yyyy-MM-dd    HH:mm:ss.SSS");
+	final static SimpleDateFormat timeFormatPicker = new SimpleDateFormat("HH:mm:ss");
+	final static SimpleDateFormat dateFormatTimestamp = new SimpleDateFormat("yyyy-MM-dd    HH:mm:ss.SSS");
 	TableRowSorter<TableModel> tableSorter;	
 	MainGUI mainGUI;
 	JCheckBox chckbxDate;

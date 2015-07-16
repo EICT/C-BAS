@@ -22,6 +22,7 @@ class OSliceAuthorityResourceManager(object):
     AUTHORITY_NAME = 'sa' #: The short-name for this authority
     SUPPORTED_SERVICES = ['SLICE', 'SLICE_MEMBER', 'SLIVER_INFO', 'PROJECT', 'PROJECT_MEMBER'] #: The objects supported by this authority
     SUPPORTED_CREDENTIAL_TYPES = [{"type": "SFA", "version": "1"}] #: The credential type supported by this authority
+    SUPPORTED_ROLES = ['LEAD', 'ADMIN', 'MEMBET']
 
     def __init__(self):
         """
@@ -84,7 +85,7 @@ class OSliceAuthorityResourceManager(object):
         """
         manifest = pm.getManifest('osliceauthorityrm')
         if len(manifest) > 0:
-            return {'code_version' : str(manifest['version'])}
+            return {'code_version': str(manifest['version'])}
         else:
             return None
 
@@ -112,6 +113,12 @@ class OSliceAuthorityResourceManager(object):
         Return the  credential types implemented by this Slice Authority.
         """
         return self.SUPPORTED_CREDENTIAL_TYPES
+
+    def roles(self):
+        """
+        Return the member roles supported by this Slice Authority.
+        """
+        return self.SUPPORTED_ROLES
 
     def authority_certificate(self):
         """
@@ -331,7 +338,30 @@ class OSliceAuthorityResourceManager(object):
 
     def modify_slice_membership(self, urn, credentials, options):
         """
-        Modify a slice membership object.
+        # Modify object membership, adding, removing and changing roles of members
+        #    with respect to given object
+        #
+        # Arguments:
+        #   type: type of object for whom to lookup membership (
+        #       in the case of Slice Member Service, "SLICE",
+        #       in the case of Project Member Service, "PROJECT")
+        #   urn: URN of slice/project for which to modify membership
+        #   Options:
+        #       members_to_add: List of member_urn/role tuples for members to add to
+        #              slice/project of form
+        #                 {'SLICE_MEMBER' : member_urn, 'SLICE_ROLE' : role}
+        #                    (or 'PROJECT_MEMBER/PROJECT_ROLE
+        #                    for Project Member Service)
+        #       members_to_remove: List of member_urn of members to
+        #                remove from slice/project
+        #       members_to_change: List of member_urn/role tuples for
+        #                 members whose role
+        #                should change as specified for given slice/project of form
+        #                {'SLICE_MEMBER' : member_urn, 'SLICE_ROLE' : role}
+        #                (or 'PROJECT_MEMBER/PROJECT_ROLE for Project Member Service)
+        #
+        # Return:
+        #   None
         """
         # <UT>
         slice_lookup_result = self.lookup_slice(None, match={'SLICE_URN': urn}, filter_=[], options=None)
@@ -354,8 +384,8 @@ class OSliceAuthorityResourceManager(object):
         # (a) System member credentials (b) Slice credentials (c) project credentials
         #
 
-        # For compatability with OMNI which passes urn str list instead of dict for members_to_remove
-        if 'members_to_remove' in options and type(options['members_to_remove'][0]) is str:
+        # If urn str list is passed instead of dict for members_to_remove
+        if 'members_to_remove' in options and options['members_to_remove'] and type(options['members_to_remove'][0]) is str:
             for i in range(0, len(options['members_to_remove'])):
                 options['members_to_remove'][i] = {'SLICE_MEMBER': options['members_to_remove'][i]}
 
@@ -470,7 +500,7 @@ class OSliceAuthorityResourceManager(object):
         resetCurrentLead = False
 
         # For compatability with OMNI which passes urn str list instead of dict for members_to_remove
-        if 'members_to_remove' in options and type(options['members_to_remove'][0]) is str:
+        if 'members_to_remove' in options and options['members_to_remove'] and type(options['members_to_remove'][0]) is str:
             for i in range(0, len(options['members_to_remove'])):
                 options['members_to_remove'][i] = {'PROJECT_MEMBER': options['members_to_remove'][i]}
 
@@ -582,16 +612,15 @@ class OSliceAuthorityResourceManager(object):
         """
         Lookup a project membership object.
         """
-
         return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'project_member', 'PROJECT_URN', urn, ['PROJECT_URN'], match, filter_)
 
-    def lookup_slice_membership_for_member(self, member_urn, credentials, options, match={}, filter_={}):
+    def lookup_slice_membership_for_member(self, member_urn, credentials, options, match={}, filter_=[]):
         """
         Lookup a slice membership object for a given member.
         """
         return self._resource_manager_tools.member_lookup(self.AUTHORITY_NAME, 'slice_member', 'SLICE_MEMBER', member_urn, ['SLICE_MEMBER'], match, filter_)
 
-    def lookup_project_membership_for_member(self, member_urn, credentials, options, match={}, filter_={}):
+    def lookup_project_membership_for_member(self, member_urn, credentials, options, match={}, filter_=[]):
         """
         Lookup a project membership object for a given member.
         """

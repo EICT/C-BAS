@@ -5,9 +5,16 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.DefaultListModel;
+import javax.swing.DropMode;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -15,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.TransferHandler;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -25,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.security.cert.X509CRLEntry;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.swing.JPanel;
@@ -40,6 +49,8 @@ import admin.cbas.eict.de.SliceAuthorityAPI.AnObject;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JTextArea;
 
 public class Members extends JPanel{
 	
@@ -70,6 +81,9 @@ public class Members extends JPanel{
 	JFileChooser fileChooser;
 	static Color DARK_GREEN = new Color(30,200,60);
 	final MainGUI mainGUI;
+	private JLabel lblPrivileges;
+	private JTextArea taPrivileges;
+	private JButton btnManagePrivileges;
 
 	/**
 	 * Create the application.
@@ -118,27 +132,6 @@ public class Members extends JPanel{
 					}
 					else
 						showErrorMessage();
-				}
-			}			
-		});
-		buttonAddUser = new JButton("New Member");
-		buttonAddUser.addActionListener( new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-								
-				Member d = getMemberDetailInput(null);
-				if( d != null)
-				{
-					Member rsp = MemberAuthorityAPI.addMember(d);
-					if(rsp != null)
-					{
-						listModelMembers.add(rsp);
-						saveCertificateAndKey(rsp, "Member has been added.");
-						userList.setSelectedValue(rsp, true);
-					}
-					else
-						showErrorMessage();
-					
 				}
 			}			
 		});
@@ -229,6 +222,7 @@ public class Members extends JPanel{
 		panelRight.add(infoPanel, BorderLayout.NORTH);
 		infoPanel.setBorder(new TitledBorder("Member Information"));
 		GridBagLayout gbl_infoPanel = new GridBagLayout();
+		gbl_infoPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		gbl_infoPanel.columnWeights = new double[]{0.0, 1.0};
 		infoPanel.setLayout(gbl_infoPanel);
 		
@@ -358,6 +352,25 @@ public class Members extends JPanel{
 		infoPanel.add(tfMembershipStatus, gbc_tfMembershipStatus);
 		tfMembershipStatus.setColumns(10);
 		
+		lblPrivileges = new JLabel("Privileges:");
+		GridBagConstraints gbc_lblPrivileges = new GridBagConstraints();
+		gbc_lblPrivileges.anchor = GridBagConstraints.EAST;
+		gbc_lblPrivileges.insets = new Insets(0, 0, 0, 5);
+		gbc_lblPrivileges.gridx = 0;
+		gbc_lblPrivileges.gridy = 7;
+		infoPanel.add(lblPrivileges, gbc_lblPrivileges);
+		
+		taPrivileges = new JTextArea();
+		taPrivileges.setEditable(false);
+		taPrivileges.setWrapStyleWord(true);
+		taPrivileges.setLineWrap(true);
+		taPrivileges.setRows(2);
+		GridBagConstraints gbc_taPrivileges= new GridBagConstraints();
+		gbc_taPrivileges.fill = GridBagConstraints.BOTH;
+		gbc_taPrivileges.gridx = 1;
+		gbc_taPrivileges.gridy = 7;
+		infoPanel.add(new JScrollPane(taPrivileges), gbc_taPrivileges);
+		
 		JSplitPane mid = new JSplitPane();		
 		mid.setLeftComponent(scrollPane);
 		mid.setRightComponent(panelRight);
@@ -400,11 +413,47 @@ public class Members extends JPanel{
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout());
+		buttonAddUser = new JButton("New Member");
+		buttonPanel.add(buttonAddUser);
+		buttonAddUser.addActionListener( new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+								
+				Member d = getMemberDetailInput(null);
+				if( d != null)
+				{
+					Member rsp = MemberAuthorityAPI.addMember(d);
+					if(rsp != null)
+					{
+						listModelMembers.add(rsp);
+						saveCertificateAndKey(rsp, "Member has been added.");
+						userList.setSelectedValue(rsp, true);
+					}
+					else
+						showErrorMessage();
+					
+				}
+			}			
+		});
 		buttonPanel.add(buttonRevokeUser);
 		buttonPanel.add(buttonExtendMembership);
 		buttonPanel.add(buttonEditUser);
-		buttonPanel.add(buttonAddUser);
 		add(buttonPanel, BorderLayout.SOUTH);
+		
+		btnManagePrivileges = new JButton("Manage Privileges");
+		btnManagePrivileges.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Member mem = (Member) userList.getSelectedValue();
+				if(mem.username.equals("root") || mem.username.equals("expedient"))
+				{
+					JOptionPane.showMessageDialog(Members.this, mem.username+" is a privileged user. This membership cannot be modified.", "Assign Privileges", JOptionPane.INFORMATION_MESSAGE);
+					return;                						
+				}
+				else
+					showPrivilegesManagementDialog();
+			}
+		});
+		buttonPanel.add(btnManagePrivileges);
 		
 		userList.addListSelectionListener( new ListSelectionListener() {
 
@@ -424,6 +473,7 @@ public class Members extends JPanel{
                   X509CRLEntry e = MemberAuthorityAPI.crl.getRevokedCertificate(mem.cert);
                   tfMembershipStatus.setText(e==null?"Active":"Revoked");
                   tfMembershipStatus.setForeground(e==null?DARK_GREEN:Color.RED);
+                  taPrivileges.setText(Utils.join(mem.privileges));
                   
                   LinkedList<AnObject> slices = SliceAuthorityAPI.lookupForMembers(mem.urn, "SLICE"); 
                   if(slices != null)
@@ -492,6 +542,9 @@ public class Members extends JPanel{
 		tfUsername = new JTextField(memDetails==null?"":memDetails.username);
 	    ((AbstractDocument) tfUsername.getDocument()).setDocumentFilter(new PatternFilter("^[a-zA-Z][\\w]{0,7}"));
 		
+	    JCheckBox allowProjectCreation = new JCheckBox("Can create projects");
+	    allowProjectCreation.setSelected(true);
+	    
 		c.weightx = 0.9;
 		c.gridx = 1;
 		c.gridy = 0;		
@@ -508,11 +561,16 @@ public class Members extends JPanel{
 			c.weightx = 0.1;
 			c.gridx = 0;						
 			infoPanel.add(new JLabel("Username:"),c);
+			
+			c.gridy = 4;
+			c.gridx = 0;
+			c.gridwidth=2;
+			infoPanel.add(allowProjectCreation, c);
 		}
 		
 		int response; 
 		do{
-			response = JOptionPane.showConfirmDialog(null, infoPanel,memDetails==null?"Add New Member":"Edit Member Details ",
+			response = JOptionPane.showConfirmDialog(this, infoPanel,memDetails==null?"Add New Member":"Edit Member Details ",
 	                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 			tfUsername.setBackground(tfUsername.getText().trim().length()==0?Color.pink:Color.white);
 			tfFirstName.setBackground(tfFirstName.getText().trim().length()==0?Color.pink:Color.white);
@@ -534,7 +592,8 @@ public class Members extends JPanel{
 			d.lName = tfLastName.getText().trim();
 			d.email = tfEmail.getText().trim();
 			d.username = tfUsername.getText().trim();
-			
+			if( memDetails==null && allowProjectCreation.isSelected()) //new member creation dialog
+				d.privileges.add("PROJECT_CREATE");
 			return d;
 		}
 	}
@@ -546,6 +605,7 @@ public class Members extends JPanel{
 									 JOptionPane.INFORMATION_MESSAGE, JOptionPane.YES_OPTION, null, options, options[0]);
 		
 		final JDialog dialog = new JDialog();
+		dialog.setTitle("Save Files");
 		dialog.setContentPane(optionPane);
 		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		optionPane.addPropertyChangeListener(
@@ -587,5 +647,82 @@ public class Members extends JPanel{
 		return listModelMembers.toArray();
 	}
 	
-	
+	@SuppressWarnings("serial")
+	private void showPrivilegesManagementDialog()
+	{
+		final String[] allPrivileges = { "PROJECT_CREATE"};
+		Member member = (Member) userList.getSelectedValue();
+		
+		TransferHandler handler = new ListItemTransferHandler();
+		DefaultListModel listModelAvailable = new DefaultListModel();
+		for(int i=0; i<allPrivileges.length; i++)
+			if(member.privileges.contains(allPrivileges[i]) == false)
+				listModelAvailable.addElement(allPrivileges[i]);
+		
+        JList listAvailable = new JList(listModelAvailable);
+        listAvailable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        listAvailable.setDropMode(DropMode.INSERT);
+        listAvailable.setDragEnabled(true);
+        listAvailable.setTransferHandler(handler);
+        JScrollPane splistAvailable = new JScrollPane(listAvailable);
+        splistAvailable.setBorder(new TitledBorder("Unassigned Privileges"));
+        listAvailable.setToolTipText("Use mouse to drag & drop elements between lists");
+        
+
+        //Disable row Cut, Copy, Paste
+        ActionMap map = listAvailable.getActionMap();
+        AbstractAction dummy = new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { /* Dummy action */ }
+        };
+        map.put(TransferHandler.getCutAction().getValue(Action.NAME),   dummy);
+        map.put(TransferHandler.getCopyAction().getValue(Action.NAME),  dummy);
+        map.put(TransferHandler.getPasteAction().getValue(Action.NAME), dummy);
+
+		DefaultListModel listModelAssigned = new DefaultListModel();
+		for(int i=0; i<member.privileges.size(); i++)
+			listModelAssigned.addElement(member.privileges.get(i));
+
+		JList listAssigned = new JList(listModelAssigned);
+        listAssigned.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        listAssigned.setDropMode(DropMode.INSERT);
+        listAssigned.setDragEnabled(true);
+        listAssigned.setTransferHandler(handler);
+        JScrollPane splistAssigned = new JScrollPane(listAssigned);
+        splistAssigned.setBorder(new TitledBorder("Assigned Privileges"));
+        listAssigned.setToolTipText("Use mouse to drag & drop elements between lists");
+
+        //Disable row Cut, Copy, Paste
+        map = listAssigned.getActionMap();
+        map.put(TransferHandler.getCutAction().getValue(Action.NAME),   dummy);
+        map.put(TransferHandler.getCopyAction().getValue(Action.NAME),  dummy);
+        map.put(TransferHandler.getPasteAction().getValue(Action.NAME), dummy);
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(1,2,5,5));
+        panel.add(splistAvailable);
+        panel.add(splistAssigned);
+        panel.setMinimumSize(new Dimension(500,200));
+        panel.setPreferredSize(new Dimension(500,200));
+        
+		int response = JOptionPane.showConfirmDialog(this, panel, "Manage member privileges", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+		if(response == JOptionPane.OK_OPTION)
+		{
+			Object selectedPriveleges[] = listModelAssigned.toArray();
+
+			if( Arrays.equals(selectedPriveleges, member.privileges.toArray()))
+				return;
+				
+			Object res = MemberAuthorityAPI.assignPrivileges(member.urn, selectedPriveleges);
+			if(res != null)
+			{
+				member.privileges.clear();
+				for(int x=0; x<selectedPriveleges.length;x++)
+					member.privileges.add((String) selectedPriveleges[x]);
+				taPrivileges.setText(Utils.join(member.privileges));
+			}
+			else
+				JOptionPane.showMessageDialog(Members.this, "Could not assign privileges.", "Error", JOptionPane.ERROR_MESSAGE);;
+		}
+		
+	}
 }

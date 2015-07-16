@@ -2,6 +2,7 @@ package admin.cbas.eict.de;
 
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,14 +26,7 @@ public class MemberAuthorityAPI {
 	{
 		Map<String, Object> options = new HashMap<String, Object>();
         Object params[] = new Object[]{"MEMBER", "", options};
-		Map<String, Object> filter = new HashMap<String, Object>();
-		filter.put("MEMBER_CERTIFICATE", new Integer(1));				
-		filter.put("MEMBER_EMAIL", new Integer(1));				
-		filter.put("MEMBER_FIRSTNAME", new Integer(1));				
-		filter.put("MEMBER_LASTNAME", new Integer(1));				
-		filter.put("MEMBER_UID", new Integer(1));				
-		filter.put("MEMBER_URN", new Integer(1));				
-		filter.put("MEMBER_USERNAME", new Integer(1));				
+		String[] filter = {"MEMBER_CERTIFICATE", "MEMBER_EMAIL", "MEMBER_FIRSTNAME", "MEMBER_LASTNAME", "MEMBER_UID", "MEMBER_URN", "MEMBER_USERNAME", "MEMBER_CREDENTIALS"};
 		options.put("filter", filter);
                 
 		
@@ -64,6 +58,7 @@ public class MemberAuthorityAPI {
         	d.urn = urn;
         	d.uuid = m.get("MEMBER_UID");
         	d.username = m.get("MEMBER_USERNAME");
+        	d.privileges = Utils.extractPrivileges(m.get("MEMBER_CREDENTIALS"));
         	memDetails[index++] = d;
         }
         
@@ -100,6 +95,7 @@ public class MemberAuthorityAPI {
     	d.urn = urn;
     	d.uuid = m.get("MEMBER_UID");
     	d.username = m.get("MEMBER_USERNAME");
+    	d.privileges = Utils.extractPrivileges(m.get("MEMBER_CREDENTIALS"));
         
         return d;
 	}
@@ -116,6 +112,9 @@ public class MemberAuthorityAPI {
 		
 		Map<String, Object> options = new HashMap<String, Object>();
 		options.put("fields", fields);
+
+		if(memDetails.privileges.size()>0)
+			options.put("privileges", memDetails.privileges.toArray());
 						
         Object params[] = new Object[]{"MEMBER", credentials, options};
         
@@ -138,7 +137,7 @@ public class MemberAuthorityAPI {
     	d.urn = m.get("MEMBER_URN");;
     	d.uuid = m.get("MEMBER_UID");
     	d.username = m.get("MEMBER_USERNAME");
-        
+    	d.privileges = Utils.extractPrivileges(m.get("MEMBER_CREDENTIALS"));
         return d;
 	}
 
@@ -262,12 +261,32 @@ public class MemberAuthorityAPI {
 
 	}
 	
+	public static Object assignPrivileges(String memberURN, Object[] privileges)
+	{
+        Object params[] = new Object[]{memberURN, credentials, privileges};
+		
+		Map<String, Object> rsp = FAPIClient.execute(url, "assign_privileges", params);
+        Integer code = (Integer)rsp.get("code");
+        if (code.intValue() != 0)
+        {
+        	output = (String)rsp.get("output");
+        	return null;
+        }
+
+        return rsp.get("value");
+
+	}
 	
 	static class Member implements Comparable<Member>
 	{
 		String fName, lName, username, email, urn, uuid, certStr, privateKey;
 		X509Certificate cert;
+		ArrayList<String> privileges;
 
+		Member()
+		{
+			privileges = new ArrayList<String>();
+		}
 		@Override
 		public int compareTo(Member o2) {
 			return this.username.toLowerCase().compareTo(o2.username.toLowerCase());

@@ -19,7 +19,7 @@ class APITools(object):
     @serviceinterface
     def fetch_match_and_filter(options):
         field_match = options.get('match', {})
-        field_filter = options.get('filter', {})
+        field_filter = options.get('filter', None)
         return field_match, field_filter
 
     @staticmethod
