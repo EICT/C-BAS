@@ -48,8 +48,6 @@ class OMAv2Delegate(GMAv2DelegateBase):
         client_ssl_cert = self._gmav2handler.requestCertificate()
 
         if (type_.upper()=='KEY'):
-            print ">>>>>>>>>>>>>>>>>>> "+str(self._key_whitelist)
-            print fields
             # Authorization
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'KEY', None, fields)
             # Consistency checks

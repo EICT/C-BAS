@@ -444,9 +444,17 @@ class DelegateTools(object):
             raise GFedv2ArgumentError("Passed invalid or no credentials")
 
         geniutil = pm.getService('geniutil')
+        member_authority_resource_manager = pm.getService('omemberauthorityrm')
         user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
 
-        #Update is allowed for owner himself. Otherwise, proper credentials should be presented
+        # Update is allowed for owner himself. Otherwise, proper credentials should be presented
+        if type_ == 'KEY':
+            lookup_values = member_authority_resource_manager.lookup_key(credentials, {'KEY_ID':target_urn}, [], None)
+            if lookup_values:
+                target_urn = lookup_values[0]['KEY_MEMBER']
+            else:
+                raise GFedv2ArgumentError("Could not find the specified key with KEY_ID: "+str(target_urn))
+
         if user_urn_from_cert == target_urn:
             geniutil.verify_credential_ex(credentials, owner_cert, target_urn, self.TRUSTED_CERT_PATH, crl_path=self.TRUSTED_CRL_PATH)
         else:
@@ -651,7 +659,6 @@ class DelegateTools(object):
             GFedv2ArgumentError: It is not possible to pass this field during an object update.
 
         """
-
         whitelist = set(fields).difference(set(whitelist.get('update_whitelist')))
         if whitelist:
             raise GFedv2ArgumentError('Cannot pass the following key(s) when updating an object : ' + ', '.join(whitelist))

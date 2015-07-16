@@ -172,10 +172,8 @@ class OMemberAuthorityResourceManager(object):
         """
         Update a key object.
         """
-        if 'KEY_PUBLIC' in fields.keys():
-            fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
         return self._resource_manager_tools.object_update(self.AUTHORITY_NAME,
-            fields, 'key', {'KEY_MEMBER': urn})
+            fields, 'key', {'KEY_ID': urn})
 
     def lookup_key(self, credentials, match, filter_, options):
         """
