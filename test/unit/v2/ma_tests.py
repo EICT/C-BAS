@@ -155,10 +155,10 @@ class TestGMAv2(unittest.TestCase):
         """
         urn = 'urn:publicid:IDN+mych+user+abrown'
         create_data = {'KEY_MEMBER':urn, 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for user Arlene Brown.', 'KEY_PUBLIC':'ssh-rsa CAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
-        self._test_create(create_data, 'KEY', 'KEY_ID', 0)
+        id = self._test_create(create_data, 'KEY', 'KEY_ID', 0)
         update_data = {'KEY_TYPE' : 'UNAUTHORIZED_UPDATE'}
-        self._test_update(urn, update_data, 'KEY', 'KEY_ID', 3)
-        self._test_delete(urn, 'KEY', 'KEY_ID', 0)
+        self._test_update(id, update_data, 'KEY', 'KEY_ID', 3)
+        self._test_delete(id, 'KEY', 'KEY_ID', 0)
 
     def _test_lookup(self, match, _filter, object_type, expected_length, expected_code):
         """
@@ -207,10 +207,10 @@ class TestGMAv2(unittest.TestCase):
 
         urn = values['MEMBER_URN']
         create_data = {'KEY_MEMBER': urn, 'KEY_TYPE':'rsa-ssh', 'KEY_DESCRIPTION':'SSH key for test user Arlene Browni.', 'KEY_PUBLIC':'ssh-rsa EAAAB3NzaW1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Y5'}
-        self._test_create(create_data, 'KEY', 'KEY_MEMBER', 0, user_name='memx')
+        id = self._test_create(create_data, 'KEY', 'KEY_ID', 0, user_name='memx')
         update_data = {'KEY_DESCRIPTION':'SSH key for user A. Browni.'}
-        self._test_update(urn, update_data, 'KEY', 'KEY_MEMBER', 0, user_name='memx')
-        self._test_delete(urn, 'KEY', 'KEY_MEMBER', 0, user_name='memx')
+        self._test_update(id, update_data, 'KEY', 'KEY_ID', 0, user_name='memx')
+        self._test_delete(id, 'KEY', 'KEY_MEMBER', 0, user_name='memx')
 
     def _test_create(self, fields, object_type, expected_urn, expected_code, user_name="root", return_value=False):
         """
