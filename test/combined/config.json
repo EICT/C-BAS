@@ -10,22 +10,6 @@
             "name": "MEMBER_AUTHORITY",
             "required": false,
             "object": "service"
-        }, {
-            "name": "AGGREGATE_MANAGER",
-            "required": false,
-            "object": "service"
-        }, {
-            "name": "STITCHING_COMPUTATION_SERVICE",
-            "required": false,
-            "object": "service"
-        }, {
-            "name": "CREDENTIAL_STORE",
-            "required": false,
-            "object": "service"
-        }, {
-            "name": "LOGGING_SERVICE",
-            "required": false,
-            "object": "service"
         }]
     },
     "ma": {

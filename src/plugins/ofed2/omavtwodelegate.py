@@ -64,6 +64,9 @@ class OMAv2Delegate(GMAv2DelegateBase):
         elif (type_.upper() =='MEMBER'):
             # Authorization
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SYSTEM_MEMBER')
+            # Consistency checks
+            self._delegate_tools.object_creation_check(fields, self._member_whitelist)
+            self._delegate_tools.object_consistency_check(type_, fields)
             # Registration
             ret_values = self._member_authority_resource_manager.register_member(credentials, fields, options)
             # Logging
@@ -144,6 +147,10 @@ class OMAv2Delegate(GMAv2DelegateBase):
         # options_copy = copy.copy(options) if options else None
 
         if type_.upper() == 'MEMBER':
+            # Consistency checks
+            self._delegate_tools.object_lookup_check(match, self._member_whitelist)
+            self._delegate_tools.object_consistency_check(type_, match)
+
             # Authorization
             # self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SYSTEM_MEMBER')
             remove_anchor_key = False

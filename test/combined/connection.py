@@ -42,6 +42,7 @@ def api_call(method_name, endpoint,
              verbose=False,
              key_path='root-key.pem',
              cert_path='root-cert.pem'):
+
     res = ssl_call(method_name, params, endpoint,
                    key_path=key_path,
                    cert_path=cert_path)

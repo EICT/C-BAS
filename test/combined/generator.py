@@ -28,7 +28,7 @@ def _generate_url(invalid=False):
         return ''
     else:
         logging.debug('Generating URL')
-        return ''
+        return 'https://'+_generate_string(length=5)+'.org:8008'
 
 
 def _generate_uid(invalid=False):
@@ -42,8 +42,7 @@ def _generate_uid(invalid=False):
 def _generate_string(length=19, invalid=False):
     if invalid:
         logging.debug('Generating invalid string')
-        logging.error(
-            'Cannot generate invalid string due to UTF-8 restrictions in Python.')
+        # logging.error('Cannot generate invalid string due to UTF-8 restrictions in Python.')
         return ''
     else:
         logging.debug('Generating string')
@@ -65,9 +64,10 @@ def _generate_datetime(invalid=False):
         return _random_string_generator()
     else:
         logging.debug('Generating datetime object')
-        return str(pyrfc3339.generator.generate(datetime.datetime.now(),
+        _generate_datetime.counter += 1
+        return str(pyrfc3339.generator.generate(datetime.datetime.now()+datetime.timedelta(days=10+_generate_datetime.counter),
                                                 accept_naive=True))
-
+_generate_datetime.counter = 0
 
 def _generate_email(length=19, invalid=False):
     if invalid:
@@ -75,10 +75,10 @@ def _generate_email(length=19, invalid=False):
         email = _random_string_generator(length)
     else:
         logging.debug('Generating email address')
-        length = int(length / 3) - 2
+        length = int(length / 2) - 5
         email = _random_string_generator(length) + '@' + \
             _random_string_generator(length) + '.' + \
-            _random_string_generator(length)
+            _random_string_generator(length=3)
     return email
 
 
@@ -88,7 +88,16 @@ def _generate_key(invalid=False):
         return ''
     else:
         logging.debug('Generating key')
+        return 'ssh-rsa '+_random_string_generator(length=372)
+
+
+def _generate_username(invalid=False):
+    if invalid:
+        logging.debug('Generating invalid username')
         return ''
+    else:
+        logging.debug('Generating username')
+        return _random_string_generator(length=8)
 
 
 def _generate_cert(invalid=False):

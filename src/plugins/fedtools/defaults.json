@@ -101,8 +101,8 @@
         "SLICE_LEAD": {
             "TYPE": "STRING",
             "DESC": "Owner of the slice",
-            "MATCH": true,
-            "CREATE": "ALLOWED",
+            "MATCH": false,
+            "CREATE": "NOT ALLOWED",
             "UPDATE": true
         },
         "SLICE_CERTIFICATE": {
@@ -229,41 +229,47 @@
             "TYPE": "URN",
             "DESC": "URN of given member",
             "MATCH": true,
-            "PROTECT": "PUBLIC"
+            "PROTECT": "PUBLIC",
+            "CREATE": "NOT ALLOWED"
         },
         "MEMBER_UID": {
             "TYPE": "UID",
             "DESC": "UID (unique within authority) of member",
             "MATCH": true,
-            "PROTECT": "PUBLIC"
+            "PROTECT": "PUBLIC",
+            "CREATE": "NOT ALLOWED"
         },
         "MEMBER_FIRSTNAME": {
             "TYPE": "STRING",
             "DESC": "First name of member",
             "MATCH": true,
             "PROTECT": "IDENTIFYING",
-            "UPDATE" : true
+            "UPDATE" : true,
+            "CREATE": "REQUIRED"
         },
         "MEMBER_LASTNAME": {
             "TYPE": "STRING",
             "DESC": "Last name of member",
             "MATCH": true,
             "PROTECT": "IDENTIFYING",
-            "UPDATE" : true
+            "UPDATE" : true,
+            "CREATE": "REQUIRED"
         },
         "MEMBER_USERNAME": {
             "TYPE": "STRING",
             "DESC": "Username of user",
             "MATCH": true,
             "PROTECT": "PUBLIC",
-            "UPDATE" : false
+            "UPDATE" : false,
+            "CREATE": "REQUIRED"
         },
         "MEMBER_EMAIL": {
             "TYPE": "STRING",
             "DESC": "Email of user",
-            "MATCH": false,
+            "MATCH": true,
             "PROTECT": "IDENTIFYING",
-            "UPDATE" : true
+            "UPDATE" : true,
+            "CREATE": "REQUIRED"
         },
         "MEMBER_CREDENTIALS": {
             "TYPE": "STRING",

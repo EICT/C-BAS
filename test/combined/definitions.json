@@ -35,49 +35,55 @@
         }, {
             "name": "KEY_DESCRIPTION",
             "type": "STRING",
-            "match": false,
+            "match": true,
             "creation": "allowed",
             "update": true
         }]
     },
     "member": {
-        "methods": ["update", "lookup"],
+        "methods": ["create", "update", "lookup"],
         "request_template": [{
             "name": "MEMBER_URN",
             "type": "URN",
             "match": true,
             "update" : false,
-            "protection": "public"
+            "protection": "public",
+            "creation": "no"
         }, {
             "name": "MEMBER_UID",
             "type": "UID",
             "match": true,
-            "update" : true,
-            "protection": "public"
+            "update" : false,
+            "protection": "public",
+            "creation": "no"
         }, {
-            "name": "MEMBER_FIRST_NAME",
+            "name": "MEMBER_FIRSTNAME",
             "type": "STRING",
             "match": true,
             "update" : true,
-            "protection": "identifying"
+            "protection": "identifying",
+            "creation": "required"
         }, {
-            "name": "MEMBER_LAST_NAME",
+            "name": "MEMBER_LASTNAME",
             "type": "STRING",
             "match": true,
             "update" : true,
-            "protection": "identifying"
+            "protection": "identifying",
+            "creation": "required"
         }, {
-            "name": "MEMBER_USER_NAME",
+            "name": "MEMBER_USERNAME",
             "type": "STRING",
             "match": true,
-            "update" : true,
-            "protection": "public"
+            "update" : false,
+            "protection": "public",
+            "creation": "required"
         }, {
             "name": "MEMBER_EMAIL",
             "type": "STRING",
             "match": true,
             "update" : true,
-            "protection": "identifying"
+            "protection": "identifying",
+            "creation": "required"
         }]
     },
     "project": {
@@ -183,7 +189,7 @@
             "creation": "no",
             "update": false
         }, {
-            "name": "SLICE_creation",
+            "name": "SLICE_CREATION",
             "type": "DATETIME",
             "match": false,
             "creation": "no",
@@ -236,12 +242,12 @@
             "name": "SERVICE_NAME",
             "type": "STRING",
             "required": true,
-            "match": true
+            "match": false
         }, {
             "name": "SERVICE_CERT",
             "type": "CERT",
             "required": false,
-            "match": true
+            "match": false
         }, {
             "name": "SERVICE_NAME",
             "type": "STRING",

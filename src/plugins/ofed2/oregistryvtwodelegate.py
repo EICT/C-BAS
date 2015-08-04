@@ -24,6 +24,7 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         for service in self._delegate_tools.get_registry()['SERVICES']:
             self._delegate_tools.object_consistency_check('SERVICE', service)
         self._gregv2handler = pm.getService('gregistryv2handler')
+        self._service_whitelist = self._delegate_tools.get_whitelist('SERVICE')
 
     def get_version(self):
         """
@@ -41,7 +42,11 @@ class ORegistryv2Delegate(GRegistryv2DelegateBase):
         using the resource manager.
         """
         if type_.upper()=='SERVICE':
-             return self._delegate_tools.match_and_filter(self._federation_registry_resource_manager.lookup_services(), [] if filter_ is None else filter_, match)
+            # Consistency check
+            self._delegate_tools.object_lookup_check(match, self._service_whitelist)
+            self._delegate_tools.object_consistency_check(type_, match)
+
+            return self._delegate_tools.match_and_filter(self._federation_registry_resource_manager.lookup_services(), [] if filter_ is None else filter_, match)
         else:
             raise gfed_ex.GFedv2NotImplementedError("No lookup method found for object type: " + str(type_))
 

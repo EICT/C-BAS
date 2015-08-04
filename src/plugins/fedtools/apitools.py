@@ -25,7 +25,10 @@ class APITools(object):
     @staticmethod
     @serviceinterface
     def pop_fields(options):
-        return options.pop('fields',{})
+        if type(options) is dict:
+            return options.pop('fields', {})
+        else:
+            return {}
 
     # --- deal with the GENI CH API returns
     @staticmethod

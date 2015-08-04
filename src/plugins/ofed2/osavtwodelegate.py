@@ -64,10 +64,12 @@ class OSAv2Delegate(GSAv2DelegateBase):
         elif (type_.upper()=='SLIVER_INFO'):
             self._delegate_tools.object_creation_check(fields, self._sliver_info_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
+            self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'SLIVER_INFO', fields=fields)
             return self._slice_authority_resource_manager.create_sliver_info(credentials, fields, options)
         elif (type_.upper()=='PROJECT'):
             self._delegate_tools.object_creation_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)
+            self._delegate_tools.project_name_check(fields.get('PROJECT_NAME')) # Specific check for slice name restrictions
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'CREATE', 'PROJECT')
             ret_values =  self._slice_authority_resource_manager.create_project(credentials, fields, options)
             self._logging_authority_resource_manager.append_event_log(authority='sa', method='create', target_type=type_.upper(),
@@ -103,16 +105,17 @@ class OSAv2Delegate(GSAv2DelegateBase):
                 update_expiration_time = fields.get('SLICE_EXPIRATION')
                 lookup_result = self._slice_authority_resource_manager.lookup_slice(credentials,
                                                                                     {'SLICE_URN' : str(urn)}, [], {})
-
-                # keyed_lookup_result enables referencing an dictionary with any chosen key_name. For example,
-                # SLICE_URN can be used as the key for the dictionary return when looking up a slice.
-                # This is needed here to enable fetching out the SLICE_CREATION time belonging to a certain SLICE_URN
-                keyed_lookup_result = self._delegate_tools.to_keyed_dict(lookup_result, "SLICE_URN")
-                is_valid = self._delegate_tools.validate_expiration_time(str(keyed_lookup_result[urn]['SLICE_EXPIRATION']),
-                                                                            update_expiration_time, type_)
-
-                if not is_valid:
-                    raise gfed_ex.GFedv2ArgumentError("Invalid expiry date for object type: " + str(type_))
+                if lookup_result:
+                    # keyed_lookup_result enables referencing an dictionary with any chosen key_name. For example,
+                    # SLICE_URN can be used as the key for the dictionary return when looking up a slice.
+                    # This is needed here to enable fetching out the SLICE_CREATION time belonging to a certain SLICE_URN
+                    keyed_lookup_result = self._delegate_tools.to_keyed_dict(lookup_result, "SLICE_URN")
+                    is_valid = self._delegate_tools.validate_expiration_time(str(keyed_lookup_result[urn]['SLICE_EXPIRATION']),
+                                                                                update_expiration_time, type_)
+                    if not is_valid:
+                        raise gfed_ex.GFedv2ArgumentError("Invalid expiry date for object type: " + str(type_))
+                else:
+                    raise gfed_ex.GFedv2ArgumentError("Specified slice object does not exist: " + urn)
 
             # Consistency check
             self._delegate_tools.object_update_check(fields, self._slice_whitelist)
@@ -141,7 +144,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
                 # SLICE_URN can be used as the key for the dictionary return when looking up a slice.
                 # This is needed here to enable fetching out the SLICE_CREATION time belonging to a certain SLICE_URN
                 keyed_lookup_result = self._delegate_tools.to_keyed_dict(lookup_result, "PROJECT_URN")
-                is_valid = self._delegate_tools.validate_expiration_time(str(keyed_lookup_result[urn]['PROJECT_CREATION']),
+                is_valid = self._delegate_tools.validate_expiration_time(str(keyed_lookup_result[urn]['PROJECT_EXPIRATION']),
                                                                         update_expiration_time)
 
                 if not is_valid:
@@ -165,11 +168,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
         options_copy = copy.copy(options) if options else None
         client_ssl_cert = self._gsav2handler.requestCertificate()
 
-        if (type_.upper()=='SLICE'):
+        if type_.upper()=='SLICE':
             raise gfed_ex.GFedv2NotImplementedError("No authoritative way to know that there aren't live slivers associated with a slice.")
-        elif (type_.upper()=='SLIVER_INFO'):
+        elif type_.upper()=='SLIVER_INFO':
             return self._slice_authority_resource_manager.delete_sliver_info(urn,  credentials, options)
-        elif (type_.upper()=='PROJECT'):
+        elif type_.upper()=='PROJECT':
 
             self._delegate_tools.check_if_authorized(credentials, client_ssl_cert, 'DELETE', 'PROJECT', target_urn=urn)
             ret_values = self._slice_authority_resource_manager.delete_project(urn, credentials,  options)
@@ -189,8 +192,13 @@ class OSAv2Delegate(GSAv2DelegateBase):
         # options_copy = copy.copy(options) if options else None
 
         if type_.upper() == 'SLICE':
+            # Consistency check
+            self._delegate_tools.object_lookup_check(match, self._slice_whitelist)
+            self._delegate_tools.object_consistency_check(type_, match)
+
             # Temporarily lookup call are not authorized
             # self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'SLICE')
+
             remove_anchor_key = False
             if filter_ and 'SLICE_URN' not in filter_:
                 filter_.append('SLICE_URN')
@@ -211,6 +219,9 @@ class OSAv2Delegate(GSAv2DelegateBase):
             return self._delegate_tools.to_keyed_dict(result_list, "SLICE_URN", filter_, remove_anchor_key)
 
         elif type_.upper() == 'SLIVER_INFO':
+            # Consistency check
+            self._delegate_tools.object_lookup_check(match, self._sliver_info_whitelist)
+            self._delegate_tools.object_consistency_check(type_, match)
 
             remove_anchor_key = False
             if filter_ and 'SLIVER_INFO_URN' not in filter_:
@@ -222,6 +233,11 @@ class OSAv2Delegate(GSAv2DelegateBase):
 
         elif type_.upper() == 'PROJECT':
             # self._delegate_tools.check_if_authorized(credentials, 'LOOKUP', 'PROJECT')
+
+            # Consistency check
+            self._delegate_tools.object_lookup_check(match, self._project_whitelist)
+            self._delegate_tools.object_consistency_check(type_, match)
+
             remove_anchor_key = False
             if filter_ and 'PROJECT_URN' not in filter_:
                 filter_.append('PROJECT_URN')

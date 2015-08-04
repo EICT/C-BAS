@@ -17,10 +17,10 @@ class Tests():
     fail_details = []
 
     def __init__(self, options):
-        definitions_file = open('definitions.json')
+        definitions_file = open('./test/combined/definitions.json')
         self.definitions = json.load(definitions_file)
         self.options = options
-        config_file = open('config.json')
+        config_file = open('./test/combined/config.json')
         self.config = json.load(config_file)
         self._add_authorities()
 
@@ -39,7 +39,7 @@ class Tests():
 
     def _credential_list(self, path):
         """Returns the _user_ credential for the given user_name."""
-        return [{"SFA": self._get_file_contents(path)}]
+        return [{'geni_type': 'geni_sfa', 'geni_version':'3', 'geni_value': self._get_file_contents(path)}]
 
     def _get_file_contents(self, path):
         contents = None
@@ -53,6 +53,14 @@ class Tests():
         cred_path = self.options.creds + '%s-cred.xml' % (user, )
         return (key_path, cert_path, cred_path)
 
+    def get_urn(self, user):
+        key_path, cert_path, cred_path = self._get_paths(user)
+        cred = self._get_file_contents(cred_path)
+        f = cred.find('<owner_urn>')
+        e = cred.find('</owner_urn>')
+        if f and e:
+            return cred[f+len('<owner_urn>'):e]
+
     def make_calls(self, calls, outcome,
                    create=False,
                    lookup=False,
@@ -65,13 +73,14 @@ class Tests():
         cert = self._get_file_contents(cert_path)
         for call in calls:
             if 'urn' in call.keys():
-                params = [call['type'].upper(), call['urn'], cert,
+                params = [call['type'].upper(), call['urn'],
                           self._credential_list(cred_path),
-                          {'fields': call['options']}]
+                          {'match': call['options']} if lookup else {'fields': call['options']}]
             else:
-                params = [call['type'].upper(), cert,
+                params = [call['type'].upper(),
                           self._credential_list(cred_path),
-                          {'fields': call['options']}]
+                          {'match': call['options']} if lookup else {'fields': call['options']}]
+
             code, value, reason = connection.api_call(call['method'],
                                                       call['endpoint'],
                                                       params=params,
@@ -85,6 +94,14 @@ class Tests():
                         assert outcome['code'] == result['code']
                         logging.debug('Code matches')
                         self.success += 1
+                        # self.fail_details.append({
+                        #     'expected_code': outcome['code'],
+                        #     'actual_code': code,
+                        #     'value': '#',
+                        #     'reason': reason,
+                        #     'call': call,
+                        #     'user': user
+                        # })
                     except AssertionError:
                         logging.error('Codes do not match!')
                         self.fail += 1
@@ -93,16 +110,31 @@ class Tests():
                             'actual_code': code,
                             'value': value,
                             'reason': reason,
-                            'call': call
+                            'call': call,
+                            'user': user
                         })
             if cleanup:
                 try:
+                    if 'urn' in call.keys():
+                        params = [call['type'].upper(), call['urn'],
+                                  self._credential_list(cred_path),
+                                  {'fields': call['options']}]
+                    else:
+                        params = [call['type'].upper(),
+                                  self._credential_list(cred_path),
+                                  {'fields': call['options']}]
                     code, value, reason = connection.api_call(
                         'delete', call['endpoint'],
                         params=params,
                         key_path=key_path,
                         cert_path=cert_path)
+                    if not code == 0:
+                        print code, value, reason
+                    else:
+                        print 'clean up succeeded!'
                 except:
+                    # import traceback
+                    # traceback.print_exc()
                     pass
         return results
 
@@ -133,7 +165,7 @@ def parse_options():
     parser.add_option('-c', '--creds',
                       action="store",
                       dest='creds',
-                      default='creds/')
+                      default='test/creds/')
     options, _ = parser.parse_args()
     return options
 

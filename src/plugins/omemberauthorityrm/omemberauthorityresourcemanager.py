@@ -162,11 +162,15 @@ class OMemberAuthorityResourceManager(object):
             * KEY_ID: hash of the existing 'KEY_PUBLIC' value
 
         """
-
         fields['KEY_ID'] = hashlib.sha224(fields['KEY_PUBLIC']).hexdigest()
-        fields['KEY_PRIVATE'] = '' # Private key is not stored by policy
-        return self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
-            fields, 'key')
+        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'key', {'KEY_ID': fields['KEY_ID']}, [])
+        if not lookup_result:
+            fields['KEY_PRIVATE'] = '' # Private key is not stored by policy
+            return self._resource_manager_tools.object_create(self.AUTHORITY_NAME,
+                fields, 'key')
+        else:
+            raise self.gfed_ex.GFedv2DuplicateError("Key already exists under KEY_ID: "+fields['KEY_ID'])
+
 
     def update_key(self, urn, credentials, fields, options):
         """
@@ -333,8 +337,7 @@ class OMemberAuthorityResourceManager(object):
         hostname = config.get('flask.cbas_hostname')
 
         u_urn = geniutil.encode_urn(hostname, 'user', str(user_name))
-        #lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': u_urn}, [])
-        lookup_result = False
+        lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': u_urn}, [])
         if not lookup_result:
 
             cred_expiry = dt.datetime.utcnow() + dt.timedelta(days=self.CERT_VALIDITY_PERIOD)

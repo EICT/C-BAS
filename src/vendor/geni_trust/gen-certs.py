@@ -176,7 +176,7 @@ if __name__ == "__main__":
                                                 serial_number=cert_serial_number, uuidarg=str(uuid.uuid4()))
     write_file(dir_path, USER_CERT_FILE, u_c, opts.silent)
     write_file(dir_path, USER_KEY_FILE, u_pr, opts.silent)
-    u_cred = geniutil.create_credential(u_c, u_c, ma_pr, ma_c, "user", CRED_EXPIRY)
+    u_cred = geniutil.create_credential_ex(u_c, u_c, ma_pr, ma_c, ['PROJECT_CREATE', 'PROJECT_REMOVE', 'SLICE_CREATE'], CRED_EXPIRY)
     write_file(dir_path, USER_CRED_FILE, u_cred, opts.silent)
     write_file(dir_path, USER_URN_FILE, urn, opts.silent)
 

@@ -220,6 +220,12 @@ class OSliceAuthorityResourceManager(object):
         """
         Create a sliver information object.
         """
+        # Verify the uniqueness of sliver urn
+        lookup_results = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'sliver_info',
+                                                                    {'SLIVER_INFO_URN': fields['SLIVER_INFO_URN']}, {})
+        if len(lookup_results) > 0:
+                raise self.gfed_ex.GFedv2DuplicateError("A sliver_info with specified urn already exists.")
+
         return self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'sliver_info')
 
     def update_sliver_info(self, urn, credentials, fields, options):
@@ -321,7 +327,7 @@ class OSliceAuthorityResourceManager(object):
             raise self.gfed_ex.GFedv2ArgumentError("This project cannot be deleted as it has "+str(len(slice_lookup_result))+" active slices: "+ str(urn))
         member_lookup_result = self.lookup_project_membership(urn, credentials, {}, {}, None)
 
-        # Remove all members including LEAD
+        # Remove all project members including LEAD
         if len(member_lookup_result) > 0:
             remove_data = []
             for member in member_lookup_result:
@@ -654,7 +660,7 @@ class OSliceAuthorityResourceManager(object):
             expDate = datetime.datetime.strptime(lookup_results[0]['SLICE_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
             now = datetime.datetime.utcnow()
             if now < expDate:
-                raise self.gfed_ex.GFedv2ArgumentError("A slice with specified name already exists under the following URN:"+ str(slice_urn))
+                raise self.gfed_ex.GFedv2DuplicateError("A slice with specified name already exists under the following URN:"+ str(slice_urn))
 
     def _validate_project_urn(self, project_urn):
         """
@@ -670,7 +676,7 @@ class OSliceAuthorityResourceManager(object):
             expDate = datetime.datetime.strptime(lookup_results[0]['PROJECT_EXPIRATION'], '%Y-%m-%dT%H:%M:%SZ')
             now = datetime.datetime.utcnow()
             if now < expDate:
-                raise self.gfed_ex.GFedv2ArgumentError("A project with specified name already exists under the following URN:"+ str(project_urn))
+                raise self.gfed_ex.GFedv2DuplicateError("A project with specified name already exists under the following URN:"+ str(project_urn))
 
     def lookup_privileges_for_slice_membership(self, member_urn, slice_urn):
         """

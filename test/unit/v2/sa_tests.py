@@ -120,7 +120,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test update rules by passing an unauthorized field ('KEY_TYPE') during creation.
         """
-        create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2017-01-21T11:35:57Z', 'PROJECT_NAME': 'TEST-PROJECT', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_NAME' : 'UNAUTHORIZED_UPDATE'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 3)
@@ -198,6 +198,7 @@ class TestGSAv2(unittest.TestCase):
         """
         create_data = {'SLICE_NAME':'AUTHORIZED-CREATION', 'SLICE_DESCRIPTION' : 'My Clean Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
         lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
+        lookup_data = _remove_key(lookup_data, 'SLICE_NAME')
         presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None)
         if len(presence_check) is 1:
             create_code = 5
@@ -228,7 +229,7 @@ class TestGSAv2(unittest.TestCase):
         """
         Test object type 'PROJECT' methods: create, lookup, update and delete.
         """
-        create_data = {'PROJECT_EXPIRATION':'2017-02-01T11:35:57Z', 'PROJECT_NAME': 'TEST_PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
+        create_data = {'PROJECT_EXPIRATION':'2017-02-01T11:35:57Z', 'PROJECT_NAME': 'TEST-PROJECT191', 'PROJECT_DESCRIPTION':'My test project'}
         urn = self._test_create(create_data, 'PROJECT', 'PROJECT_URN', 0)
         update_data = {'PROJECT_DESCRIPTION' : 'M. Broadbent Test Project'}
         self._test_update(urn, update_data, 'PROJECT', 'PROJECT_URN', 0)
@@ -332,14 +333,11 @@ class TestGSAv2(unittest.TestCase):
         lookup_data = {'match':{'PROJECT_MEMBER' : member_urn}, 'filter': []}
         self._test_modify_membership(project_urn, 'PROJECT', add_data, 0)
 
-        # Try creating slice in project as MEMBER
-        slice_create_data = {'SLICE_NAME':'ALICE', 'SLICE_DESCRIPTION' : 'Alice Slice', 'SLICE_PROJECT_URN' : project_urn}
-        self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 2, "alice")
-
         # Change membership to ADMIN
         self._test_modify_membership(project_urn, 'PROJECT', change_data, 0)
 
         # try creating a slice after receiving ADMIN role
+        slice_create_data = {'SLICE_NAME':'ALICE', 'SLICE_DESCRIPTION' : 'Alice Slice', 'SLICE_PROJECT_URN' : project_urn}
         self._test_create(slice_create_data, 'SLICE', 'SLICE_URN', 0, "alice")
 
         self._test_lookup_members(project_urn, 'PROJECT', lookup_data, 1, 0)
@@ -354,8 +352,9 @@ class TestGSAv2(unittest.TestCase):
         """
 
         #Create a slice as it is a prerequisite
-        create_data = {'SLICE_NAME':'CREATION-MEMBER-TEST', 'SLICE_DESCRIPTION' : 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+project+myproject'}
+        create_data = {'SLICE_NAME':'CREATION-MEMBER-TEST', 'SLICE_DESCRIPTION' : 'My test Slice', 'SLICE_PROJECT_URN' : 'urn:publicid:IDN+this_sa+slice+CREATION-MEMBER-TEST'}
         lookup_data = _remove_key(create_data, 'SLICE_DESCRIPTION')
+        lookup_data = _remove_key(lookup_data, 'SLICE_NAME')
         presence_check = self._test_lookup(lookup_data, None, 'SLICE', 0, None)
         if len(presence_check) is 1:
             create_code = 5

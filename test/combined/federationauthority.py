@@ -16,7 +16,8 @@ class Authority(IterMixin):
         self.logger = logging.getLogger(name)
         self.objs = []
         self.name = name
-        self.logger.debug('Federation authority created')
+
+        self.logger.debug(name+' Federation authority created')
         for object_ in self.supported_object_types:
             if "object" in object_:
                 name = object_["object"].lower()

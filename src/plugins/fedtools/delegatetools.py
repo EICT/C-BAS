@@ -129,13 +129,14 @@ class DelegateTools(object):
 
         # Check if the object has already expired
         if now > parsed_original_value:
-            raise GFedv2ArgumentError("Update is not possible because the object has already expired.")
+            raise GFedv2ArgumentError("Update is not possible because the object has already expired: "+str(now)+" > "+str(parsed_original_value))
 
         if type_:
             maximum_expansion_duration = self.STATIC['CONFIG'][type_]['max_%s_extension_time' %type_.lower()]
             configuration_delta = datetime.timedelta(days=maximum_expansion_duration)
             delta_time_days =  parsed_value_in_question - parsed_original_value
-            return True if parsed_original_value < parsed_value_in_question and delta_time_days < configuration_delta  else False
+            print str(parsed_original_value)+' < '+str(parsed_value_in_question)+ '\t '+str(delta_time_days)+' < '+str()
+            return True if parsed_original_value < parsed_value_in_question and delta_time_days < configuration_delta else False
         else:
             return parsed_original_value < parsed_value_in_question
 
@@ -267,7 +268,7 @@ class DelegateTools(object):
         :param type_: Type of Object e.g., SLICE, SLICE_MEMBER, PROJECT, PROJECT_MEMBER etc.
         """
         if credentials is None or len(credentials) <= 0:
-            raise GFedv2ArgumentError("Passed invalid or no credentials")
+            raise GFedv2AuthorizationError("Passed invalid or no credentials")
 
         required_privileges = self.get_required_privilege_for(method, type_)
         geniutil = pm.getService('geniutil')
@@ -313,6 +314,7 @@ class DelegateTools(object):
 
         if not cred_accepted:
             raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")
+            print credentials
 
 
     # def check_if_authorized(self, credentials, owner_cert, method, type_, target_urn=None, fields=None):
@@ -623,6 +625,13 @@ class DelegateTools(object):
 
     @staticmethod
     @serviceinterface
+    def project_name_check(project_name):
+        if not re.match(r'^[a-zA-Z0-9][A-Za-z0-9-]{1,25}$', project_name):
+            raise GFedv2ArgumentError('PROJECT_NAME field must be <= 25 characters, must only contain alphanumeric '
+                                      'characters or hyphens and those hyphens must not be leading.')
+
+    @staticmethod
+    @serviceinterface
     def object_creation_check(fields, whitelist):
         """
         Check if the given fields can be used in creating an object.
@@ -637,13 +646,17 @@ class DelegateTools(object):
         """
 
         required = set(whitelist.get('create_required')).difference(set(fields))
-        whitelist = set(fields).difference(set(whitelist.get('create_whitelist')))
+        restricted = set(fields).difference(set(whitelist.get('create_whitelist')))
 
         if required:
             raise GFedv2ArgumentError('Required key(s) missing for object creation: ' + ', '.join(required))
-        if whitelist:
+        else:
+            for key in whitelist.get('create_required'):
+                if not fields[key]:
+                    raise GFedv2ArgumentError('Required key missing for object creation: ' + key)
+        if restricted:
             raise GFedv2ArgumentError('Cannot pass the following key(s) when creating an object : ' +
-                                      ', '.join(whitelist))
+                                      ', '.join(restricted))
 
     @staticmethod
     @serviceinterface
@@ -662,6 +675,24 @@ class DelegateTools(object):
         whitelist = set(fields).difference(set(whitelist.get('update_whitelist')))
         if whitelist:
             raise GFedv2ArgumentError('Cannot pass the following key(s) when updating an object : ' + ', '.join(whitelist))
+
+    @staticmethod
+    @serviceinterface
+    def object_lookup_check(match, whitelist):
+        """
+        Check if the given matchs can be used in an object lookup.
+
+        Args:
+            match: field names to match
+            whitelist: field names to check against
+
+        Raises:
+            GFedv2ArgumentError: It is not possible to pass this field during an object lookup.
+
+        """
+        whitelist = set(match.keys()).difference(set(whitelist.get('lookup_match')))
+        if whitelist:
+            raise GFedv2ArgumentError('Cannot pass the following key(s) when looking up an object : ' + ', '.join(whitelist))
 
     @serviceinterface
     def object_consistency_check(self, type_, fields):
@@ -810,8 +841,13 @@ class TypeCheck():
             Exception: value is not of valid URN string
 
         """
-        if not re.match(r"^urn:publicid:IDN+\+[A-Za-z0-9\._:-]+\+[A-Za-z0-9]+\+[A-Za-z0-9\._+:-]*$", value):
-            raise Exception
+        if type(value) is list:
+            for urn in value:
+                if not re.match(r"^urn:publicid:IDN+\+[A-Za-z0-9\._:-]+\+[A-Za-z0-9]+\+[A-Za-z0-9\._+:-]*$", urn):
+                    raise Exception
+        else:
+            if not re.match(r"^urn:publicid:IDN+\+[A-Za-z0-9\._:-]+\+[A-Za-z0-9]+\+[A-Za-z0-9\._+:-]*$", value):
+                raise Exception
 
     @staticmethod
     def check_url(value):

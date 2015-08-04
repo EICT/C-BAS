@@ -187,7 +187,7 @@ class TestGMAv2(unittest.TestCase):
         there is no concrete method to test add test data, and therefore no way
         to test member methods ('lookup', 'update').
         """
-        create_data = {'MEMBER_FIRSTNAME':'mem1', 'MEMBER_LASTNAME':'mem1', 'MEMBER_USERNAME':'mem1', 'MEMBER_EMAIL':'mem1@test.de', 'KEY_PUBLIC':'ssh-rsa DAAAB3NzaC1yc2EAAAADAQABAAABAQDhEds1KZkBCX9e91wN4ADs1+dGEm1wUYIe2WfDW3MwLkxwsiFvHAeD7uKUOOGXAZLevTaXWRuinkFaEu9hXfmnG46R2yyxgtq3zNQP+a7mPCbYV8x9LLQtGHXD9A19300WdsSmBlFvM6cTVWXeSnRSQq1LL2vbp0GlJk/UvqOoAEOEBMeQgQL4h1Bd4tMb8b2+FceFa43vDkHVy9QaVWjIVeCMqmYoR0A8MRI2Xm52KJ+XbyamtGWwyx817BSUurrVFc2levWHnz69GK9QuZWNL9LihkkMQoWRrKfr4lf5rbXCyRoUjZ+hTxxL0oEfjfXiaeinmJEMN5gudQ8oi6Z6'}
+        create_data = {'MEMBER_FIRSTNAME':'mem1', 'MEMBER_LASTNAME':'mem1', 'MEMBER_USERNAME':'mem1', 'MEMBER_EMAIL':'mem1@test.de'}
         urn = self._test_create(create_data, 'MEMBER', 'MEMBER_URN', 0)
         update_data = {'MEMBER_LASTNAME':'mem11'}
         self._test_update(urn, update_data, 'MEMBER', 'MEMBER_URN', 0)

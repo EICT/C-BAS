@@ -22,6 +22,7 @@ script:
   - "python test/unit/v2/reg_tests.py"
   - "python test/unit/v2/sa_tests.py"
   - "python test/unit/v2/ma_tests.py"
+  - "python test/combined/tests.py"
 # notify result of build to email address
 notifications:
   email:

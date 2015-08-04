@@ -35,10 +35,10 @@ class Report:
         with open(path, 'wb') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Expected Code', 'Actual Code', 'Method Call',
-                             'Reason', 'Value'])
+                             'Reason', 'Value', 'User'])
             for fail in self.tests.fail_details:
                 writer.writerow([fail['expected_code'], fail['actual_code'],
-                                 fail['call'], fail['reason'], fail['value']])
+                                 fail['call'], fail['reason'], fail['value'], fail['user']])
 
     def _generate_exit_code(self):
         if self.tests.fail > 0:
