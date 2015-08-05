@@ -15,7 +15,7 @@ Interested readers should consider reviewing the following papers, which overvie
 
 * Umar Toseef, Adel Zaalouk, Tom Rothe, Matthew Broadbent, and Kostas Pentikousis, "C-BAS: Certificate-based AAA for SDN Experimental Facilities", Proc. EWSDN 2014, Budapest, Hungary, September 2014. Preprint available at http://www.fp7-alien.eu/files/publications/EWSDN2014-ALIEN-CBAS.pdf
 
-* Umar Toseef and Kostas Pentikousis, "Implementation of C-BAS: Certificate-based AAA for SDN Experimental Facilities", Proc. IEEE NCCA 2015, Munich, Germany, June 2015. 
+* Umar Toseef and Kostas Pentikousis, "Implementation of C-BAS: Certificate-based AAA for SDN Experimental Facilities", Proc. IEEE NCCA 2015, Munich, Germany, June 2015. Preprint available at http://www.ict-felix.eu/wp-content/uploads/2015/06/CBAS_NCCA_15.pdf
 
 ##Acknowledgement
 This work has been partially funded by the Commission of the European Union within the framework of the FP7 projects ALIEN (www.fp7-alien.eu) and FELIX (www.ict-felix.eu).
