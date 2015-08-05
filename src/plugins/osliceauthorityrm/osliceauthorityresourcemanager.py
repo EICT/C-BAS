@@ -226,6 +226,8 @@ class OSliceAuthorityResourceManager(object):
         if len(lookup_results) > 0:
                 raise self.gfed_ex.GFedv2DuplicateError("A sliver_info with specified urn already exists.")
 
+        # Add creation info
+        fields['SLIVER_INFO_CREATION'] = pyrfc3339.generate(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
         return self._resource_manager_tools.object_create(self.AUTHORITY_NAME, fields, 'sliver_info')
 
     def update_sliver_info(self, urn, credentials, fields, options):
