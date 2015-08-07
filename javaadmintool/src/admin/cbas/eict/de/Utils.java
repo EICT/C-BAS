@@ -80,17 +80,20 @@ public class Utils {
 	
 	public static String utcTolocal(String utc)
 	{
-		DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-		Date date=null;
 		if(utc == null)
 			return "NULL";
+		
+		DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		
+		utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date date=null;
 		
 		try {
 			date = utcFormat.parse(utc);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return utc;
 		}
 		return formatDate(date);
 	}
