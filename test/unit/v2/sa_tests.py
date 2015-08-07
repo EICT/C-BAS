@@ -41,6 +41,7 @@ class TestGSAv2(unittest.TestCase):
         Check result for various valid/required fields.
         """
         code, value, output = sa_call('get_version')
+        print value
         self.assertEqual(code, 0) # no error
         self.assertIsInstance(value, dict)
         self.assertIn('VERSION', value)

@@ -113,7 +113,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
                     is_valid = self._delegate_tools.validate_expiration_time(str(keyed_lookup_result[urn]['SLICE_EXPIRATION']),
                                                                                 update_expiration_time, type_)
                     if not is_valid:
-                        raise gfed_ex.GFedv2ArgumentError("Invalid expiry date for object type: " + str(type_))
+                        raise gfed_ex.GFedv2ArgumentError("Slice Expiration can only be extended, never reduced. Current Expiration: "+str(keyed_lookup_result[urn]['SLICE_EXPIRATION']))
                 else:
                     raise gfed_ex.GFedv2ArgumentError("Specified slice object does not exist: " + urn)
 
@@ -148,7 +148,7 @@ class OSAv2Delegate(GSAv2DelegateBase):
                                                                         update_expiration_time)
 
                 if not is_valid:
-                    raise gfed_ex.GFedv2ArgumentError("Invalid expiry date for object type: " + str(type_))
+                    raise gfed_ex.GFedv2ArgumentError("Project Expiration can only be extended, never reduced. Current Expiration: "+str(keyed_lookup_result[urn]['PROJECT_EXPIRATION']))
 
             self._delegate_tools.object_update_check(fields, self._project_whitelist)
             self._delegate_tools.object_consistency_check(type_, fields)

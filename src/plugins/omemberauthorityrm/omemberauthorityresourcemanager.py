@@ -44,13 +44,14 @@ class OMemberAuthorityResourceManager(object):
         config = pm.getService("config")
         cert_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_path"))
         cert_key_path = expand_eisoil_path(config.get("delegatetools.trusted_cert_keys_path"))
-        hostname = config.get('flask.cbas_hostname')
-        self._ma_crl_path = expand_eisoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
-                                                    + hostname + '.authority.ma'
         self._ma_cert_str = self._resource_manager_tools.read_file(cert_path + '/' +
                                                             OMemberAuthorityResourceManager.MA_CERT_FILE)
         self._ma_cert_key_str = self._resource_manager_tools.read_file(cert_key_path + '/' +
                                                              OMemberAuthorityResourceManager.MA_KEY_FILE)
+
+        self._hostname = self._resource_manager_tools.get_hostname(self._ma_cert_str)
+        self._ma_crl_path = expand_eisoil_path(config.get("delegatetools.trusted_crl_path")) + '/' \
+                                                    + self._hostname + '.authority.ma'
 
         self.gfed_ex = pm.getService('apiexceptionsv2')
         self._urn = self.urn()
@@ -80,9 +81,7 @@ class OMemberAuthorityResourceManager(object):
         the URN.
 
         """
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
-        return 'urn:publicid:IDN+' + hostname + '+authority+ma'
+        return 'urn:publicid:IDN+' + self._hostname + '+authority+ma'
 
     def implementation(self):
         """
@@ -333,10 +332,8 @@ class OMemberAuthorityResourceManager(object):
              privileges = options['privileges']
 
         geniutil = pm.getService('geniutil')
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
 
-        u_urn = geniutil.encode_urn(hostname, 'user', str(user_name))
+        u_urn = geniutil.encode_urn(self._hostname, 'user', str(user_name))
         lookup_result = self._resource_manager_tools.object_lookup(self.AUTHORITY_NAME, 'member', {'MEMBER_URN': u_urn}, [])
         if not lookup_result:
 

@@ -16,6 +16,7 @@ public class ColoredJTable extends JTable {
 	Color alternate = new Color(227, 227, 227); //grey
 	Color sliceColor =  new Color(128, 0, 128); //dark purple
 	Color projectColor = new Color(0, 128, 0);  //dark green
+	Color keyColor = new Color(255, 0, 0);  //dark green
 	Color userColor = Color.blue;
 	TableModel model;
 	
@@ -59,6 +60,8 @@ public class ColoredJTable extends JTable {
 	        		stamp.setForeground(projectColor);
 	        	else if(value.startsWith("user"))
 	        		stamp.setForeground(userColor);        	
+	        	else if(value.startsWith("key"))
+	        		stamp.setForeground(keyColor);        	
 	        }
     	}
         	

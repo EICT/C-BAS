@@ -511,6 +511,15 @@ public class Slices extends JPanel {
 		return sliceListModel.toArray();
 	}
 	
+	public void refresh(Slice[] sliceData) {
+			
+			sliceListModel.clear();
+			if(sliceData != null)
+				sliceListModel.addAll(sliceData);
+			sliceList.setSelectedIndex(0);
+			updateDisplays();
+			
+	}
 	
 } //class
 

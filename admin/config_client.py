@@ -68,8 +68,8 @@ if __name__ == '__main__':
     parser.add_option("--list", action="store_true", help="Lists all available config items.")
     parser.add_option("--set", help="Sets the config item for the given key with the given value (KEY=VALUE).")
     parser.add_option("--interactive", action="store_true", help="Starts this client in an interactive shell mode.")
-    parser.add_option("--cert", help="Specifies the certificate which is used to connect. (in PEM format, defaults to 'admin-cert.pem')", default="admin-cert.pem")
-    parser.add_option("--key", help="Specifies the private key used to sign the messages sent. (in PEM format, defaults to 'admin-key.pem')", default="admin-key.pem")
+    parser.add_option("--cert", help="Specifies the certificate which is used to connect. (in PEM format, defaults to 'root-cert.pem')", default="root-cert.pem")
+    parser.add_option("--key", help="Specifies the private key used to sign the messages sent. (in PEM format, defaults to 'root-key.pem')", default="root-key.pem")
     opts, args = parser.parse_args(sys.argv)
 
     if len(args) == 1:
@@ -84,6 +84,7 @@ if __name__ == '__main__':
     server = xmlrpclib.ServerProxy("https://%s/amconfig" % (host_name,), transport=transport)
     
     if not (opts.list or opts.interactive or opts.set):
+        print "Please use one of the three switches: --list, --set, or --interactive"
         parser.print_help()
     
     if opts.cert:

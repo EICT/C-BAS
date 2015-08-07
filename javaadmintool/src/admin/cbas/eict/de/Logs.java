@@ -243,4 +243,17 @@ public class Logs extends JPanel {
 			 };
 		tableSorter.setRowFilter(filter);
 	}
-}
+
+	public void refresh(LogEvent[] logs)
+	{
+		Arrays.sort(logs);
+		tableModel.clear();
+		String[][] data = new String[logs.length][tableModel.getColumnCount()];
+		for(int x=0; x<logs.length; x++)
+			data[x] = logs[x].getEntry(dateFormatTimestamp);
+		
+		tableModel.addAll(data);
+	}
+
+
+}//class

@@ -66,8 +66,6 @@ public class Members extends JPanel{
 	private JScrollPane scrollPaneSlices;
 	private JLabel lblFirstName;
 	private JTextField tfFirstName;
-	private JLabel lblLastName;
-	private JTextField tfLastName;
 	private JLabel lblEmail;
 	private JTextField tfEmail;
 	private JLabel lblUrn;
@@ -84,6 +82,9 @@ public class Members extends JPanel{
 	private JLabel lblPrivileges;
 	private JTextArea taPrivileges;
 	private JButton btnManagePrivileges;
+	private JLabel lblPublicSshKey;
+	private JTextArea taSshKey;
+	private JButton btnEditSshKey;
 
 	/**
 	 * Create the application.
@@ -103,7 +104,8 @@ public class Members extends JPanel{
 		scrollPane.setViewportView(userList);
 		TitledBorder titled = new TitledBorder("List of Members");
 		scrollPane.setBorder(titled);
-		scrollPane.setPreferredSize(new Dimension(300,400));
+		scrollPane.setPreferredSize(new Dimension(200,400));
+		scrollPane.setMinimumSize(new Dimension(200,400));
 		buttonEditUser = new JButton("Edit Info");
 		buttonEditUser.addActionListener( new ActionListener(){
 			@Override
@@ -126,8 +128,7 @@ public class Members extends JPanel{
 						toEdit.fName = changes.fName;
 						toEdit.lName = changes.lName;
 						toEdit.email = changes.email;
-		                tfFirstName.setText(changes.fName);
-		                tfLastName.setText(changes.lName);
+		                tfFirstName.setText(changes.fName+" "+changes.lName);
 		                tfEmail.setText(changes.email);
 					}
 					else
@@ -226,13 +227,13 @@ public class Members extends JPanel{
 		gbl_infoPanel.columnWeights = new double[]{0.0, 1.0};
 		infoPanel.setLayout(gbl_infoPanel);
 		
-		lblFirstName = new JLabel("First Name:");
-		GridBagConstraints gbc_lblFirstName = new GridBagConstraints();
-		gbc_lblFirstName.insets = new Insets(0, 0, 7, 5);
-		gbc_lblFirstName.anchor = GridBagConstraints.EAST;
-		gbc_lblFirstName.gridx = 0;
-		gbc_lblFirstName.gridy = 0;
-		infoPanel.add(lblFirstName, gbc_lblFirstName);
+		lblFirstName = new JLabel("Name:");
+		GridBagConstraints gbc_lblName = new GridBagConstraints();
+		gbc_lblName.insets = new Insets(0, 0, 7, 5);
+		gbc_lblName.anchor = GridBagConstraints.EAST;
+		gbc_lblName.gridx = 0;
+		gbc_lblName.gridy = 0;
+		infoPanel.add(lblFirstName, gbc_lblName);
 		
 		tfFirstName = new JTextField();
 		tfFirstName.setEditable(false);
@@ -244,30 +245,12 @@ public class Members extends JPanel{
 		infoPanel.add(tfFirstName, gbc_tfFirstName);
 		tfFirstName.setColumns(10);
 		
-		tfLastName = new JTextField();
-		tfLastName.setEditable(false);
-		GridBagConstraints gbc_tfLastName = new GridBagConstraints();
-		gbc_tfLastName.insets = new Insets(0, 0, 7, 0);
-		gbc_tfLastName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_tfLastName.gridx = 1;
-		gbc_tfLastName.gridy = 1;
-		infoPanel.add(tfLastName, gbc_tfLastName);
-		tfLastName.setColumns(10);
-		
-		lblLastName = new JLabel("Last Name:");
-		GridBagConstraints gbc_lblLastName = new GridBagConstraints();
-		gbc_lblLastName.anchor = GridBagConstraints.EAST;
-		gbc_lblLastName.insets = new Insets(0, 0, 7, 5);
-		gbc_lblLastName.gridx = 0;
-		gbc_lblLastName.gridy = 1;
-		infoPanel.add(lblLastName, gbc_lblLastName);
-		
 		lblEmail = new JLabel("Email:");
 		GridBagConstraints gbc_lblEmail = new GridBagConstraints();
 		gbc_lblEmail.anchor = GridBagConstraints.EAST;
 		gbc_lblEmail.insets = new Insets(0, 0, 7, 5);
 		gbc_lblEmail.gridx = 0;
-		gbc_lblEmail.gridy = 2;
+		gbc_lblEmail.gridy = 1;
 		infoPanel.add(lblEmail, gbc_lblEmail);
 		
 		tfEmail = new JTextField();
@@ -276,7 +259,7 @@ public class Members extends JPanel{
 		gbc_tfEmail.insets = new Insets(0, 0, 7, 0);
 		gbc_tfEmail.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfEmail.gridx = 1;
-		gbc_tfEmail.gridy = 2;
+		gbc_tfEmail.gridy = 1;
 		infoPanel.add(tfEmail, gbc_tfEmail);
 		tfEmail.setColumns(10);
 		
@@ -285,7 +268,7 @@ public class Members extends JPanel{
 		gbc_lblUrn.anchor = GridBagConstraints.EAST;
 		gbc_lblUrn.insets = new Insets(0, 0, 7, 5);
 		gbc_lblUrn.gridx = 0;
-		gbc_lblUrn.gridy = 3;
+		gbc_lblUrn.gridy = 2;
 		infoPanel.add(lblUrn, gbc_lblUrn);
 		
 		tfUserURN = new JTextField();
@@ -294,7 +277,7 @@ public class Members extends JPanel{
 		gbc_tfUserURN.insets = new Insets(0, 0, 7, 0);
 		gbc_tfUserURN.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfUserURN.gridx = 1;
-		gbc_tfUserURN.gridy = 3;
+		gbc_tfUserURN.gridy = 2;
 		infoPanel.add(tfUserURN, gbc_tfUserURN);
 		tfUserURN.setColumns(10);
 		
@@ -303,7 +286,7 @@ public class Members extends JPanel{
 		gbc_lblCertificateCreation.anchor = GridBagConstraints.EAST;
 		gbc_lblCertificateCreation.insets = new Insets(0, 0, 7, 5);
 		gbc_lblCertificateCreation.gridx = 0;
-		gbc_lblCertificateCreation.gridy = 4;
+		gbc_lblCertificateCreation.gridy = 3;
 		infoPanel.add(lblCertificateCreation, gbc_lblCertificateCreation);
 		
 		tfValidFrom = new JTextField();
@@ -312,7 +295,7 @@ public class Members extends JPanel{
 		gbc_tfValidFrom.insets = new Insets(0, 0, 7, 0);
 		gbc_tfValidFrom.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfValidFrom.gridx = 1;
-		gbc_tfValidFrom.gridy = 4;
+		gbc_tfValidFrom.gridy = 3;
 		infoPanel.add(tfValidFrom, gbc_tfValidFrom);
 		tfValidFrom.setColumns(10);
 		
@@ -321,7 +304,7 @@ public class Members extends JPanel{
 		gbc_lblCertificateExpiration.anchor = GridBagConstraints.EAST;
 		gbc_lblCertificateExpiration.insets = new Insets(0, 0, 7, 5);
 		gbc_lblCertificateExpiration.gridx = 0;
-		gbc_lblCertificateExpiration.gridy = 5;
+		gbc_lblCertificateExpiration.gridy = 4;
 		infoPanel.add(lblCertificateExpiration, gbc_lblCertificateExpiration);
 		
 		tfValidUntil = new JTextField();
@@ -330,7 +313,7 @@ public class Members extends JPanel{
 		gbc_tfValidUntil.insets = new Insets(0, 0, 7, 0);
 		gbc_tfValidUntil.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfValidUntil.gridx = 1;
-		gbc_tfValidUntil.gridy = 5;
+		gbc_tfValidUntil.gridy = 4;
 		infoPanel.add(tfValidUntil, gbc_tfValidUntil);
 		tfValidUntil.setColumns(10);
 		
@@ -339,7 +322,7 @@ public class Members extends JPanel{
 		gbc_lblMembershipStatus.anchor = GridBagConstraints.EAST;
 		gbc_lblMembershipStatus.insets = new Insets(0, 0, 10, 5);
 		gbc_lblMembershipStatus.gridx = 0;
-		gbc_lblMembershipStatus.gridy = 6;
+		gbc_lblMembershipStatus.gridy = 5;
 		infoPanel.add(lblMembershipStatus, gbc_lblMembershipStatus);
 		
 		tfMembershipStatus = new JTextField();
@@ -348,16 +331,16 @@ public class Members extends JPanel{
 		gbc_tfMembershipStatus.insets = new Insets(0, 0, 10, 0);
 		gbc_tfMembershipStatus.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfMembershipStatus.gridx = 1;
-		gbc_tfMembershipStatus.gridy = 6;
+		gbc_tfMembershipStatus.gridy = 5;
 		infoPanel.add(tfMembershipStatus, gbc_tfMembershipStatus);
 		tfMembershipStatus.setColumns(10);
 		
 		lblPrivileges = new JLabel("Privileges:");
 		GridBagConstraints gbc_lblPrivileges = new GridBagConstraints();
 		gbc_lblPrivileges.anchor = GridBagConstraints.EAST;
-		gbc_lblPrivileges.insets = new Insets(0, 0, 0, 5);
+		gbc_lblPrivileges.insets = new Insets(0, 0, 5, 5);
 		gbc_lblPrivileges.gridx = 0;
-		gbc_lblPrivileges.gridy = 7;
+		gbc_lblPrivileges.gridy = 6;
 		infoPanel.add(lblPrivileges, gbc_lblPrivileges);
 		
 		taPrivileges = new JTextArea();
@@ -366,10 +349,31 @@ public class Members extends JPanel{
 		taPrivileges.setLineWrap(true);
 		taPrivileges.setRows(2);
 		GridBagConstraints gbc_taPrivileges= new GridBagConstraints();
+		gbc_taPrivileges.insets = new Insets(0, 0, 5, 0);
 		gbc_taPrivileges.fill = GridBagConstraints.BOTH;
 		gbc_taPrivileges.gridx = 1;
-		gbc_taPrivileges.gridy = 7;
+		gbc_taPrivileges.gridy = 6;
 		infoPanel.add(new JScrollPane(taPrivileges), gbc_taPrivileges);
+		
+		lblPublicSshKey = new JLabel("Public SSH Key:");
+		GridBagConstraints gbc_lblPublicSshKey = new GridBagConstraints();
+		gbc_lblPublicSshKey.anchor = GridBagConstraints.EAST;
+		gbc_lblPublicSshKey.insets = new Insets(0, 0, 0, 5);
+		gbc_lblPublicSshKey.gridx = 0;
+		gbc_lblPublicSshKey.gridy = 7;
+		infoPanel.add(lblPublicSshKey, gbc_lblPublicSshKey);
+		
+		taSshKey = new JTextArea();
+		taSshKey.setEditable(false);
+		taSshKey.setLineWrap(true);
+		taSshKey.setRows(2);
+		
+		GridBagConstraints gbc_textArea = new GridBagConstraints();
+		gbc_textArea.insets = new Insets(0, 0, 5, 0);
+		gbc_textArea.fill = GridBagConstraints.BOTH;
+		gbc_textArea.gridx = 1;
+		gbc_textArea.gridy = 7;
+		infoPanel.add(new JScrollPane(taSshKey), gbc_textArea);
 		
 		JSplitPane mid = new JSplitPane();		
 		mid.setLeftComponent(scrollPane);
@@ -455,6 +459,62 @@ public class Members extends JPanel{
 		});
 		buttonPanel.add(btnManagePrivileges);
 		
+		btnEditSshKey = new JButton("Edit SSH Key");
+		btnEditSshKey.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Member mem = (Member) userList.getSelectedValue();
+				JTextArea ta = new JTextArea(mem.pubSshKey);
+				ta.setRows(5);
+				ta.setColumns(40);
+				ta.setLineWrap(true);
+				Object[] choices;
+				if(mem.pubSshKey != null && mem.pubSshKey.length()>0)
+					choices = new String[]{"Update Key", "Delete Key", "Cancel"};
+				else
+					choices = new String[]{"Add Key", "Cancel"};
+				int rv = JOptionPane.showOptionDialog(Members.this, new JScrollPane(ta), "Public SSH Key for "+mem.username, choices.length==2?JOptionPane.OK_CANCEL_OPTION:JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, choices, choices[0]);
+				if(rv == JOptionPane.NO_OPTION || ta.getText().trim().length() == 0) //Delete Key Option
+				{
+					if(mem.pubSshKey != null && mem.pubSshKey.length()>0)
+					{
+						Member rsp = MemberAuthorityAPI.deleteKey(mem);
+						if(rsp == null)
+							showErrorMessage();
+						else
+							taSshKey.setText("");
+					}
+				}
+				else if(rv == JOptionPane.YES_OPTION || rv == JOptionPane.OK_OPTION) //Update key Option
+				{
+					//Return if nothing was edited
+					if(ta.getText().trim().equals(mem.pubSshKey))
+						return;
+					
+					Member rsp = null;
+					
+					if(mem.pubSshKey != null && mem.pubSshKey.length()>0) //Delete Existing Key
+					{
+						rsp = MemberAuthorityAPI.deleteKey(mem);
+						if(rsp == null)
+						{
+							showErrorMessage();
+							return;
+						}
+					}
+					mem.pubSshKey = ta.getText().trim();
+					rsp = MemberAuthorityAPI.addKey(mem);						
+					if(rsp == null)
+						showErrorMessage();
+					else
+					{
+						taSshKey.setText(mem.pubSshKey);
+						taSshKey.setToolTipText("KEY_ID:"+mem.pubSshKeyID);
+					}
+				}
+			}
+		});
+		buttonPanel.add(btnEditSshKey);
+		
 		userList.addListSelectionListener( new ListSelectionListener() {
 
             @Override
@@ -462,8 +522,7 @@ public class Members extends JPanel{
                 if (!arg0.getValueIsAdjusting()) {
   				  Member mem = (Member) userList.getSelectedValue();
                   
-                  tfFirstName.setText(mem.fName);
-                  tfLastName.setText(mem.lName);
+                  tfFirstName.setText(mem.fName+" "+mem.lName);
                   tfEmail.setText(mem.email);
                   //tfUsername.setText(memberDetails.get(index).username);
                   tfUserURN.setText(mem.urn);
@@ -474,6 +533,8 @@ public class Members extends JPanel{
                   tfMembershipStatus.setText(e==null?"Active":"Revoked");
                   tfMembershipStatus.setForeground(e==null?DARK_GREEN:Color.RED);
                   taPrivileges.setText(Utils.join(mem.privileges));
+                  taSshKey.setText(mem.pubSshKey);
+                  taSshKey.setToolTipText("KEY_ID:"+mem.pubSshKeyID);
                   
                   LinkedList<AnObject> slices = SliceAuthorityAPI.lookupForMembers(mem.urn, "SLICE"); 
                   if(slices != null)
@@ -543,31 +604,32 @@ public class Members extends JPanel{
 	    ((AbstractDocument) tfUsername.getDocument()).setDocumentFilter(new PatternFilter("^[a-zA-Z][\\w]{0,7}"));
 		
 	    JCheckBox allowProjectCreation = new JCheckBox("Can create projects");
-	    allowProjectCreation.setSelected(true);
+	    allowProjectCreation.setSelected(memDetails==null?true:memDetails.privileges.contains("PROJECT_CREATE"));
 	    
 		c.weightx = 0.9;
 		c.gridx = 1;
 		c.gridy = 0;		
 		infoPanel.add(tfFirstName, c);
-		c.gridy = 1;		
+		c.gridy=1;		
 		infoPanel.add(tfLastName, c);
-		c.gridy = 2;		
+		c.gridy=2;		
 		infoPanel.add(tfEmail, c);
 		
 		if( memDetails==null ) 
 		{
-			c.gridy = 3;		
+			c.gridy++;		
 			infoPanel.add(tfUsername, c);
 			c.weightx = 0.1;
 			c.gridx = 0;						
-			infoPanel.add(new JLabel("Username:"),c);
-			
-			c.gridy = 4;
+			infoPanel.add(new JLabel("Username:"),c);			
+
+			c.gridy++;
 			c.gridx = 0;
 			c.gridwidth=2;
 			infoPanel.add(allowProjectCreation, c);
 		}
 		
+
 		int response; 
 		do{
 			response = JOptionPane.showConfirmDialog(this, infoPanel,memDetails==null?"Add New Member":"Edit Member Details ",
@@ -592,8 +654,10 @@ public class Members extends JPanel{
 			d.lName = tfLastName.getText().trim();
 			d.email = tfEmail.getText().trim();
 			d.username = tfUsername.getText().trim();
-			if( memDetails==null && allowProjectCreation.isSelected()) //new member creation dialog
+			
+			if(memDetails==null && allowProjectCreation.isSelected())
 				d.privileges.add("PROJECT_CREATE");
+			
 			return d;
 		}
 	}
@@ -725,4 +789,14 @@ public class Members extends JPanel{
 		}
 		
 	}
+	
+	public void refresh(Member[] memberData) {
+		
+		listModelMembers.clear();
+		if(memberData != null)
+			listModelMembers.addAll(memberData);
+		userList.setSelectedIndex(0);
+		
+	}
 }
+

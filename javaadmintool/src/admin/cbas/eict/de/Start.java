@@ -14,6 +14,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
@@ -52,6 +53,7 @@ public class Start extends JDialog {
 	static Object credentials[];	
 	JLabel status;
 	private Preferences prefs;
+	static MainGUI mainGUI;
 	
 	/**
 	 * Launch the application.
@@ -197,7 +199,7 @@ public class Start extends JDialog {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				//For the moment valdation is bypassed
+				//For the moment validation is bypassed
 				host = textFieldIP.getText();
 				
 				//Validate Port number
@@ -235,7 +237,7 @@ public class Start extends JDialog {
 				} catch (BackingStoreException e) {}
 				
 				//Try connecting and loading data				
-				connectAndLoad();
+				connectAndLoad(status, true);
 				
 			}
 		});
@@ -272,35 +274,41 @@ public class Start extends JDialog {
 		setVisible(true);		
 	}
 	
-	private void connectAndLoad()
+	public static void connectAndLoad(final JLabel status, final boolean newInstance)
 	{
 		Runnable thread = new Runnable(){
 
 			@Override
 			public void run() {
 
-				//Set endpoints
-				MemberAuthorityAPI.setHostAndPort(host, port);
-				SliceAuthorityAPI.setHostAndPort(host, port);
-				LoggingAuthorityAPI.setHostAndPort(host, port);
-				
-				//Try connecting with C-BAS
-				status.setText("Trying to connect...");
-				try {
-					FAPIClient.init(certFile, certKeyFile);
-				} catch (Exception ex) {
+				if(newInstance == true)
+				{
+					//Set endpoints
+					MemberAuthorityAPI.setHostAndPort(host, port);
+					SliceAuthorityAPI.setHostAndPort(host, port);
+					LoggingAuthorityAPI.setHostAndPort(host, port);
 					
-					String userFriendlyMessage = ex.getMessage();
-					if(ex.getMessage().contains("invalid"))
-						userFriendlyMessage = "Certificate or key file contents are unexpected.<br/> <br/> ("+ex.getMessage()+")";
-					
-					JOptionPane.showMessageDialog(
-						    Start.this, "<html><body><p style='width: 300px;'>"+userFriendlyMessage+"</p></body></html>", 
-						    "Error", JOptionPane.ERROR_MESSAGE);	
-					
-					status.setText("Ready");
-					return;
-				}			
+					//Try connecting with C-BAS
+					status.setText("Trying to connect...");
+					try {
+						FAPIClient.init(certFile, certKeyFile);
+					} catch (Exception ex) {
+						
+						String userFriendlyMessage = ex.getMessage();
+						if(ex.getMessage().contains("invalid"))
+							userFriendlyMessage = "Certificate or key file contents are unexpected.<br/> <br/> ("+ex.getMessage()+")";
+						
+						JOptionPane.showMessageDialog(
+							    null, "<html><body><p style='width: 300px;'>"+userFriendlyMessage+"</p></body></html>", 
+							    "Error", JOptionPane.ERROR_MESSAGE);	
+						
+						if(newInstance)
+							status.setText("Ready");						
+						else
+							((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
+						return;
+					}
+				}
 				
 				//Fetch Credentials
 				status.setText("Fetching member credentials...");
@@ -309,10 +317,13 @@ public class Start extends JDialog {
 				credentials = MemberAuthorityAPI.getCredential(mem_urn);
 				if(credentials == null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+MemberAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 				MemberAuthorityAPI.credentials = credentials;
@@ -324,19 +335,25 @@ public class Start extends JDialog {
 				Member[] memberSet = MemberAuthorityAPI.lookupAll();
 				if(memberSet == null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+MemberAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 				MemberAuthorityAPI.fetchCRL();
 				if(MemberAuthorityAPI.crl == null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+MemberAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 				
@@ -345,10 +362,13 @@ public class Start extends JDialog {
 				Project[] projectSet = SliceAuthorityAPI.lookupAllProjects();
 				if(projectSet== null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+SliceAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 
@@ -357,10 +377,13 @@ public class Start extends JDialog {
 				Slice[] sliceSet = SliceAuthorityAPI.lookupAllSlices();
 				if(sliceSet == null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+SliceAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 
@@ -369,19 +392,32 @@ public class Start extends JDialog {
 				LogEvent[] logs = LoggingAuthorityAPI.lookupAll();
 				if(logs == null)
 				{
-					JOptionPane.showMessageDialog( Start.this, 
+					JOptionPane.showMessageDialog( null, 
 						    "<html><body><p style='width: 300px;'>"+LoggingAuthorityAPI.output+"</p></body></html>", 
 						    "Error", JOptionPane.ERROR_MESSAGE);
-					status.setText("Ready");
+					if(newInstance)
+						status.setText("Ready");						
+					else
+						((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
 					return;					
 				}
 
-				status.setText("Initializing GUI...");
-				MainGUI mainGUI = new MainGUI(memberSet, projectSet, sliceSet, logs);
+				if(newInstance)
+				{
+					status.setText("Initializing GUI...");
+					mainGUI = new MainGUI(memberSet, projectSet, sliceSet, logs);
+					
+					//Dispose dialog and show main GUI
+					((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
+					mainGUI.setVisible(true);
+				}
+				else
+				{
+					status.setText("Updating GUI...");
+					mainGUI.refresh(memberSet, projectSet, sliceSet, logs);
+					((java.awt.Window)SwingUtilities.getAncestorOfClass(java.awt.Window.class, status)).dispose();
+				}
 				
-				//Dispose dialog and show main GUI
-				Start.this.dispose();
-				mainGUI.setVisible(true);
 				
 			}
 			

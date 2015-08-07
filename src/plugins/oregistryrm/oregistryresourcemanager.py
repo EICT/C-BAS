@@ -39,9 +39,8 @@ class ORegistryResourceManager(object):
         the URN.
 
         """
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
-        return 'urn:publicid:IDN+' + hostname + '+authority+fr'
+        oma = pm.getService('omemberauthorityrm')
+        return 'urn:publicid:IDN+' + oma._hostname + '+authority+fr'
 
     def implementation(self):
         """

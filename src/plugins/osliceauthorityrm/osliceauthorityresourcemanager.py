@@ -22,7 +22,7 @@ class OSliceAuthorityResourceManager(object):
     AUTHORITY_NAME = 'sa' #: The short-name for this authority
     SUPPORTED_SERVICES = ['SLICE', 'SLICE_MEMBER', 'SLIVER_INFO', 'PROJECT', 'PROJECT_MEMBER'] #: The objects supported by this authority
     SUPPORTED_CREDENTIAL_TYPES = [{"type": "SFA", "version": "1"}] #: The credential type supported by this authority
-    SUPPORTED_ROLES = ['LEAD', 'ADMIN', 'MEMBET']
+    SUPPORTED_ROLES = ['LEAD', 'ADMIN', 'MEMBER']
 
     def __init__(self):
         """
@@ -45,6 +45,7 @@ class OSliceAuthorityResourceManager(object):
                                                              OSliceAuthorityResourceManager.SA_KEY_FILE)
 
         #<UT>
+        self._hostname = self._resource_manager_tools.get_hostname(self._sa_c)
         self._delegate_tools = pm.getService('delegatetools')
         self.gfed_ex = pm.getService('apiexceptionsv2')
 
@@ -71,9 +72,7 @@ class OSliceAuthorityResourceManager(object):
         the URN.
 
         """
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
-        return 'urn:publicid:IDN+' + hostname + '+authority+sa'
+        return 'urn:publicid:IDN+' + self._hostname + '+authority+sa'
 
     def implementation(self):
         """
@@ -144,10 +143,8 @@ class OSliceAuthorityResourceManager(object):
 
         # <UT> Shall we enforce existence of project to which this new slice would belong?
         # The information about project is sent in fields under SLICE_PROJECT_URN key
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
         _, _, project_name = geniutil.decode_urn(fields['SLICE_PROJECT_URN'])
-        slice_urn = geniutil.encode_urn(hostname, 'slice', str(fields.get('SLICE_NAME')), project_name)
+        slice_urn = geniutil.encode_urn(self._hostname, 'slice', str(fields.get('SLICE_NAME')), project_name)
 
         # Verify the uniqueness of slice name
         self._validate_slice_urn(slice_urn)
@@ -261,9 +258,7 @@ class OSliceAuthorityResourceManager(object):
                 has not yet expired
 
         """
-        config = pm.getService('config')
-        hostname = config.get('flask.cbas_hostname')
-        p_urn = 'urn:publicid:IDN+' + hostname + '+project+' + fields.get('PROJECT_NAME')
+        p_urn = 'urn:publicid:IDN+' + self._hostname + '+project+' + fields.get('PROJECT_NAME')
 
         fields['PROJECT_URN'] = p_urn
         fields['PROJECT_UID'] = str(uuid.uuid4())

@@ -571,5 +571,14 @@ public class Projects extends JPanel {
 	{
 		return projectListModel.toArray();
 	}
+	
+	public void refresh(Project[] projectData)
+	{
+		projectListModel.clear();
+		if(projectData != null)
+			projectListModel.addAll(projectData);
+		projectList.setSelectedIndex(0);
+		updateDisplays();
+	}
 } //class
 

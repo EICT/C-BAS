@@ -58,7 +58,7 @@ class OMAv2Delegate(GMAv2DelegateBase):
             # Logging
             key_member = fields_copy['KEY_MEMBER'] if 'KEY_MEMBER' in fields_copy.keys() else None
             self._logging_authority_resource_manager.append_event_log(authority='ma', method='create', target_type=type_.upper(),
-                    fields=None, options= None, target_urn=key_member, credentials=credentials)
+                    fields=None, options= None, target_urn=ret_values['KEY_ID'], credentials=credentials)
             return ret_values
 
         elif (type_.upper() =='MEMBER'):

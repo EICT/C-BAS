@@ -135,10 +135,9 @@ class DelegateTools(object):
             maximum_expansion_duration = self.STATIC['CONFIG'][type_]['max_%s_extension_time' %type_.lower()]
             configuration_delta = datetime.timedelta(days=maximum_expansion_duration)
             delta_time_days =  parsed_value_in_question - parsed_original_value
-            print str(parsed_original_value)+' < '+str(parsed_value_in_question)+ '\t '+str(delta_time_days)+' < '+str()
-            return True if parsed_original_value < parsed_value_in_question and delta_time_days < configuration_delta else False
+            return True if parsed_original_value <= parsed_value_in_question and delta_time_days < configuration_delta else False
         else:
-            return parsed_original_value < parsed_value_in_question
+            return parsed_original_value <= parsed_value_in_question
 
     @serviceinterface
     def get_fields(self, type_):
@@ -314,7 +313,6 @@ class DelegateTools(object):
 
         if not cred_accepted:
             raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")
-            print credentials
 
 
     # def check_if_authorized(self, credentials, owner_cert, method, type_, target_urn=None, fields=None):

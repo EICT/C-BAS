@@ -13,10 +13,10 @@ import javax.swing.JTabbedPane;
 import java.awt.BorderLayout;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -43,7 +43,7 @@ public class MainGUI {
 	Members panelUsers;
 	Slices panelSlices; 
 	Projects panelProjects;
-	JPanel panelLog;
+	Logs  panelLog;
 	JTabbedPane tabbedPane;
 	static final int MEMBERS_TAB_INDEX=0, PROJECTS_TAB_INDEX=1, SLICES_TAB_INDEX=2;
 
@@ -71,7 +71,7 @@ public class MainGUI {
 		panelSlices = new Slices(this, sliceSet);
 		tabbedPane.addTab("Slices", null, panelSlices, "Manage slices");
 
-		JPanel panelLog = new Logs(this, logs);
+		panelLog = new Logs(this, logs);
 		tabbedPane.addTab("Logs", null, panelLog, "View event logs");
 		
 		JMenuBar menuBar = new JMenuBar();
@@ -96,6 +96,34 @@ public class MainGUI {
 		mnFile.add(mntmAbout);
 		mntmExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
 		mnFile.add(mntmExit);
+		
+		JMenu mnRefresh = new JMenu("Refresh");
+		menuBar.add(mnRefresh);
+		
+		JMenuItem mntmLogs = new JMenuItem("Logs only");
+		mntmLogs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+			}
+		});
+		//mnRefresh.add(mntmLogs);
+		
+		JMenuItem mntmAll = new JMenuItem("All data");
+		mntmAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JDialog dialog = new JDialog(frame, "Refresh", true);
+				dialog.getContentPane().setLayout(new BorderLayout(5,5));
+				//dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+				JLabel status = new JLabel("Initiating process...");
+				dialog.getContentPane().add(status, BorderLayout.CENTER);
+				dialog.setAlwaysOnTop(true);
+				dialog.setSize(300, 100);
+				dialog.setLocationRelativeTo(frame);
+				Start.connectAndLoad(status, false);
+				dialog.setVisible(true);
+			}
+		});
+		mnRefresh.add(mntmAll);
 		
 		frame.pack();
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -209,6 +237,15 @@ public class MainGUI {
 
 	    // show
 	    JOptionPane.showMessageDialog(frame, ep, "About", JOptionPane.INFORMATION_MESSAGE);		
+	}
+
+	public void refresh(Member[] memberSet, Project[] projectSet,
+			Slice[] sliceSet, LogEvent[] logs) {
+		
+		panelUsers.refresh(memberSet);
+		panelProjects.refresh(projectSet);
+		panelSlices.refresh(sliceSet);
+		panelLog.refresh(logs);		
 	}
 
 }

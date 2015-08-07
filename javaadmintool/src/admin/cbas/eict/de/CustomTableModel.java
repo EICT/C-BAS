@@ -51,6 +51,13 @@ public class CustomTableModel extends AbstractTableModel {
 	}
 	
 	// a method to add a new line to the table
+	void addAll(String[][] data) {
+		for(int i=0; i<data.length; i++)
+			al.add(data[i]);
+		// inform the GUI that I have change
+		fireTableDataChanged();
+	}
+
 	void add(String member, String role) {
 		al.add(new String[]{member, role});
 		// inform the GUI that I have change

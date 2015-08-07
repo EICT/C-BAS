@@ -59,12 +59,100 @@ public class MemberAuthorityAPI {
         	d.uuid = m.get("MEMBER_UID");
         	d.username = m.get("MEMBER_USERNAME");
         	d.privileges = Utils.extractPrivileges(m.get("MEMBER_CREDENTIALS"));
+	        lookupKey(d);
         	memDetails[index++] = d;
         }
         
         return memDetails;
 	}
 
+	
+	@SuppressWarnings("unchecked")
+	public static boolean lookupKey(Member memDetails)
+	{
+		
+		Map<String, Object> options = new HashMap<String, Object>();
+		Map<String, String> match = new HashMap<String, String>();
+		match.put("KEY_MEMBER", memDetails.urn);
+		options.put("match", match);
+		
+        Object params[] = new Object[]{"KEY", "", options};
+        Map<String, Object> rsp = FAPIClient.execute(url, "lookup", params);
+        Integer code = (Integer)rsp.get("code");
+        if (code.intValue() != 0)
+        {
+        	output = (String)rsp.get("output");        	
+        	return false;
+        }
+        Map<String, Object> x = (Map<String, Object>) rsp.get("value");
+        Set<String> keyset = x.keySet();
+        Iterator<String> itr = keyset.iterator();
+        if(itr.hasNext())
+        {
+        	String keyID = itr.next();
+        	Map<String, String> kd = (Map<String, String>)x.get(keyID);
+        	memDetails.pubSshKey = kd.get("KEY_PUBLIC");
+        	memDetails.pubSshKeyID = keyID;
+        }
+        
+        return true;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public static Member addKey(Member memDetails)
+	{
+		
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put("KEY_MEMBER", memDetails.urn);
+		fields.put("KEY_DESCRIPTION", "");
+		fields.put("KEY_TYPE", "rsa-ssh");
+		fields.put("KEY_PUBLIC", memDetails.pubSshKey);
+		
+		Map<String, Object> options = new HashMap<String, Object>();
+		options.put("fields", fields);
+						
+        Object params[] = new Object[]{"KEY", credentials, options};
+        
+        Map<String, Object> rsp = FAPIClient.execute(url, "create", params);
+        Integer code = (Integer)rsp.get("code");
+        if (code.intValue() != 0)
+        {
+        	output = (String)rsp.get("output");
+        	return null;
+        }
+        
+        Map<String, Object> x = (Map<String, Object>) rsp.get("value");        
+    	memDetails.pubSshKeyID = x.get("KEY_ID").toString();
+
+        return memDetails;
+	}
+	
+	
+	public static Member deleteKey(Member memDetails)
+	{
+		
+		Map<String, String> fields = new HashMap<String, String>();
+		Map<String, Object> options = new HashMap<String, Object>();
+		options.put("fields", fields);
+						
+        Object params[] = new Object[]{"KEY", memDetails.pubSshKeyID, credentials, options};
+        
+        Map<String, Object> rsp = FAPIClient.execute(url, "delete", params);
+        Integer code = (Integer)rsp.get("code");
+        if (code.intValue() != 0)
+        {
+        	output = (String)rsp.get("output");
+        	return null;
+        }
+        else
+        {
+        	memDetails.pubSshKey = "";
+        	memDetails.pubSshKeyID = null;
+        	return memDetails;
+        }
+
+	}	
 	
 	@SuppressWarnings("unchecked")
 	public static Member lookupMember(String urn)
@@ -279,7 +367,7 @@ public class MemberAuthorityAPI {
 	
 	static class Member implements Comparable<Member>
 	{
-		String fName, lName, username, email, urn, uuid, certStr, privateKey;
+		String fName, lName, username, email, urn, uuid, certStr, privateKey, pubSshKey, pubSshKeyID;
 		X509Certificate cert;
 		ArrayList<String> privileges;
 

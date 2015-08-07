@@ -270,5 +270,15 @@ class ResourceManagerTools(object):
         """
         api_versions = {}
         for endpoint in endpoints:
-            api_versions[endpoint.get('version')] = 'https://' + hostname + ':' + port + endpoint.get('url')
+            api_versions[endpoint.get('version')] = 'https://' + pm.getService('gregistryv2handler').bindAddress() + endpoint.get('url')
         return api_versions
+
+    @serviceinterface
+    def get_hostname(self, certificate):
+
+        geniutil = pm.getService('geniutil')
+        urn, _, _ = geniutil.extract_certificate_info(certificate)
+        host, _, _ = geniutil.decode_urn(urn)
+        return host
+
+
