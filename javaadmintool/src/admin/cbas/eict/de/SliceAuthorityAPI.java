@@ -22,7 +22,7 @@ public class SliceAuthorityAPI {
 	public static Slice[] lookupSlices(String projectURN)
 	{
 		Map<String, Object> options = new HashMap<String, Object>();				
-		String filter[] = {"SLICE_NAME", "SLICE_EXPIRATION", "SLICE_UID", "SLICE_URN", "SLICE_DESCRIPTION", "SLICE_CREATION"};				
+		String filter[] = {"SLICE_NAME", "SLICE_EXPIRATION", "SLICE_UID", "SLICE_URN", "SLICE_DESCRIPTION", "SLICE_CREATION", "SLICE_PROJECT_URN"};				
 		options.put("filter", filter);
 
 		if(projectURN != null)

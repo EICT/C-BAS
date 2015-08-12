@@ -22,6 +22,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIDefaults;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -115,6 +116,7 @@ public class MainGUI {
 				dialog.getContentPane().setLayout(new BorderLayout(5,5));
 				//dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 				JLabel status = new JLabel("Initiating process...");
+				status.setBorder(new EmptyBorder(0, 10, 0, 0));
 				dialog.getContentPane().add(status, BorderLayout.CENTER);
 				dialog.setAlwaysOnTop(true);
 				dialog.setSize(300, 100);

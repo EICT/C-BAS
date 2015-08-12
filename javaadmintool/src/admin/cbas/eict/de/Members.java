@@ -413,6 +413,7 @@ public class Members extends JPanel{
 		});
 		scrollPaneProjects = new JScrollPane(listProjects);
 		scrollPaneProjects.setBorder(new TitledBorder("Member Projects"));
+		scrollPaneProjects.setPreferredSize(new Dimension(280,400));
 		splitPaneProjectSlices.setLeftComponent(scrollPaneProjects);
 		
 		JPanel buttonPanel = new JPanel();
