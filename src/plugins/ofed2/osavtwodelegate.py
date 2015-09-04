@@ -192,6 +192,10 @@ class OSAv2Delegate(GSAv2DelegateBase):
         # options_copy = copy.copy(options) if options else None
 
         if type_.upper() == 'SLICE':
+
+            if 'SLICE_EXPIRED' in match: # Compatability issue with OMNI. OMNI passes 'f' and 't' instead of BOOL
+                match.pop('SLICE_EXPIRED')
+
             # Consistency check
             self._delegate_tools.object_lookup_check(match, self._slice_whitelist)
             self._delegate_tools.object_consistency_check(type_, match)

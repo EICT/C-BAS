@@ -299,11 +299,14 @@ def get_expiration(credentials_str):
 
 def extract_certificate_info(certificate):
     """Returns the urn, uuid and email of the given certificate."""
-    user_gid = GID(string=certificate)
-    user_urn = user_gid.get_urn()
-    user_uuid = user_gid.get_uuid()
-    user_email = user_gid.get_email()
-    return user_urn, user_uuid, user_email
+    try:
+        user_gid = GID(string=certificate)
+        user_urn = user_gid.get_urn()
+        user_uuid = user_gid.get_uuid()
+        user_email = user_gid.get_email()
+        return user_urn, user_uuid, user_email
+    except:
+        pass
 
 def get_serial_number(certificate):
     "Returns the serial number of given certificate"
@@ -403,3 +406,6 @@ def infer_client_cert(client_cert, credentials):
         return sfa_cred.Credential(string=first_cred_val).gidCaller.save_to_string(save_parents=True)
     else:
         raise RuntimeError("The workaround could not determine the client SSL certificate (bloody werkzeug library! please try to use production mode)")
+
+
+

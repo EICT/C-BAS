@@ -2,6 +2,7 @@ import eisoil.core.pluginmanager as pm
 from eisoil.config import  expand_eisoil_path
 import os
 import eisoil.core.log
+from trustedcertsrepository import SynchRootCerts
 logger=eisoil.core.log.getLogger('oregistryrm')
 
 
@@ -30,6 +31,9 @@ class ORegistryResourceManager(object):
         self._resource_manager_tools = pm.getService('resourcemanagertools')
         # TODO: this isn't a delegate!
         self._delegate_tools = pm.getService('delegatetools')
+
+        # Initialize SynchRootCerts
+        synch = SynchRootCerts()
 
     def urn(self):
         """

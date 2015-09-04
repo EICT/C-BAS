@@ -272,10 +272,10 @@ class DelegateTools(object):
         required_privileges = self.get_required_privilege_for(method, type_)
         geniutil = pm.getService('geniutil')
         slice_authority_resource_manager = pm.getService('osliceauthorityrm')
-
         cred_accepted = False
         for cred in credentials:
             try:
+
                 priv_from_cred, target_urn_from_cred = geniutil.get_privileges_and_target_urn([cred])
                 user_urn_from_cert, _, _ = geniutil.extract_certificate_info(owner_cert)
                 _, cred_typ, _ = geniutil.decode_urn(target_urn_from_cred)
@@ -309,7 +309,9 @@ class DelegateTools(object):
                     cred_accepted = True
                     break
             except Exception as e:
-                print e
+                import traceback
+                traceback.print_exc()
+                #print e
 
         if not cred_accepted:
             raise GFedv2AuthorizationError("Your credentials do not provide enough privileges to execute "+ method + " call on " + type_ + " object")

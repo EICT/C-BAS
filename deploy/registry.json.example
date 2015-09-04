@@ -34,11 +34,21 @@
             "service_urn" : "urn:publicid:IDN+Resolved.runtime+authority+ma"
         }
     ],
+        "__comment": "The certificates under deploy/trusted/certs are returned by default. Additional entries can be mentioned here (see two examples below)",
+        "__comment": "<certificate>additional certificate which does not show up above</certificate>",
+        "__comment": "if there is an entry 'INFER_SAs' the certificates from the slice authorities in 'services' will be included. Same goes for 'INFER_MAs'",
+        "__comment": "'INFER_SAs', 'INFER_MAs' ",
     "TRUST_ROOTS" : [
-        "__comment: The certificates under deploy/trusted/certs are returned by default. Additional entries can be mentioned here (see two examples below)",
-        "__comment: <certificate>additional certificate which does not show up above</certificate>",
-        "__Comment: if there is an entry 'INFER_SAs' the certificates from the slice authorities in 'services' will be included. Same goes for 'INFER_MAs'",
-        "__comment: 'INFER_SAs', 'INFER_MAs' "
-        ]
+        ],
+    "__comments": "Add information of federating peers in the following. The given entry is an example. Please change it to something meaningful",
+    "TRUSTED_PEERS" :[
+        {
+            "host_ip": "0.0.0.0",
+            "host_port": 8008,
+            "host_endpoint": "reg/2"
+        }
+
+    ]
+
 
 }

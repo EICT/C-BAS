@@ -1,9 +1,0 @@
-{
-  "name" : "Registration Application",
-  "author" : "Adel Zaalouk  ",
-  "author-email" : "adel.zaalouk@eict.de",
-  "version" : 1,
-  "implements" : ["registration"],
-  "loads-after" : ["geniutil"],
-  "requires" : []
-}
