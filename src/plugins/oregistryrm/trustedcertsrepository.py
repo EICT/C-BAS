@@ -97,6 +97,8 @@ class SynchRootCerts(object):
             else:
                 logger.error('failed to pull trusted cert from %s', host)
         except:
+                # import traceback
+                # traceback.print_exc()
                 logger.error('failed to pull trusted cert from %s', host)
 
     def get_self_authority(self):

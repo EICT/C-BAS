@@ -125,12 +125,13 @@ do_stop() {
 	rm -f $PID_FILE
 	if [ "$PID" != "" ]; then
         # Debian 7
-        PIDS=`ps xaww | grep "$PROCESS_TYPE" | grep "$EXEC" | grep -v "grep" | cut -d " " -f1`
+        pkill -TERM -P $PID
+        #PIDS=`ps xaww | grep "$PROCESS_TYPE" | grep "$EXEC" | grep -v "grep" | cut -d " " -f1`
+        echo $PIDS
         # XXX: Several processes are being initialised! Take care of them.
-        for PID in "${PIDS##*:}"; do
-            kill -QUIT $PID
-        done
-#		kill $PID
+        #for PE in "${PIDS##*:}"; do
+        #    kill -QUIT $PE
+        #done
 		for i in {1..30}
 		do
 			if [ -n "`ps aux | grep $PROCESS_TYPE | grep $EXEC`" ]; then
@@ -146,7 +147,7 @@ do_stop() {
 		return $RET_SUCCESS
 	fi
 	# Should never reach this...?
-	kill -QUIT $PID | return $RET_FAILURE # Instant death. If THAT fails, return error
+	pkill -TERM -P $PID | return $RET_FAILURE # Instant death. If THAT fails, return error
 	return $RET_SUCCESS
 }
 
