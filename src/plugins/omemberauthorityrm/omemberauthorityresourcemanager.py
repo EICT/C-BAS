@@ -327,9 +327,9 @@ class OMemberAuthorityResourceManager(object):
         else:
             public_key = None
 
-        privileges = []
+        privileges = ['info']
         if 'privileges' in options:
-             privileges = options['privileges']
+             privileges.extend(options['privileges'])
 
         geniutil = pm.getService('geniutil')
 

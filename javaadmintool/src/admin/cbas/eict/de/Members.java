@@ -715,7 +715,7 @@ public class Members extends JPanel{
 	@SuppressWarnings("serial")
 	private void showPrivilegesManagementDialog()
 	{
-		final String[] allPrivileges = { "PROJECT_CREATE"};
+		final String[] allPrivileges = { "PROJECT_CREATE","refresh", "resolve", "info"};
 		Member member = (Member) userList.getSelectedValue();
 		
 		TransferHandler handler = new ListItemTransferHandler();

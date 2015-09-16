@@ -40,7 +40,6 @@ class TestGRegistryv2(unittest.TestCase):
 
     def test_get_trust_roots(self):
         code, value, output = reg_call('get_trust_roots')
-        print value
         self.assertEqual(code, 0) # no error
         self.assertIsInstance(value, list)
         if len(value) == 0:
@@ -83,6 +82,7 @@ class TestGRegistryv2(unittest.TestCase):
 
     def _check_a_listing(self, method_name, type_, entity_name):
         code, value, output = reg_call(method_name, [type_, {}, {}])
+        print value
         self.assertEqual(code, 0) # no error
         self.assertIsInstance(value, list)
         for agg in value:
